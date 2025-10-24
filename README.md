@@ -10,4 +10,6 @@
 ```bash
 git clone --recursive http://github.com/lsck0/specturm.git
 cd specturm
+cc build.c -o build
+./build
 ```

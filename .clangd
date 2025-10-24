@@ -1,0 +1,60 @@
+CompileFlags:
+  Compiler: clang
+  Add:
+    [
+      -xc,
+      -std=c23,
+      -fenable-matrix,
+      -pedantic,
+      -Wall,
+      -Wextra,
+      -Wpedantic,
+      -Wno-gnu,
+      -Wno-gcc-compat,
+      -Wno-empty-translation-unit,
+      -DIS_DEBUG=true,
+      -I/home/luca/code/specturm/src/,
+      -I/home/luca/code/specturm/vendor/,
+      -I/home/luca/code/specturm/vendor/sdl/include/,
+    ]
+
+Diagnostics:
+  UnusedIncludes: None
+  ClangTidy:
+    Add:
+      [
+        bugprone-*,
+        cert-*,
+        clang-analyzer-*,
+        concurrency-*,
+        linuxkernel-*,
+        misc-*,
+        modernize-*,
+        performance-*,
+        portability-*,
+        readability-*,
+      ]
+    Remove:
+      [
+        bugprone-assignment-in-if-condition,
+        bugprone-easily-swappable-parameters,
+        bugprone-inc-dec-in-conditions,
+        bugprone-multi-level-implicit-pointer-conversion,
+        bugprone-reserved-identifier,
+        bugprone-suspicious-include,
+        bugprone-suspicious-missing-comma,
+        cert-dcl37-c,
+        cert-dcl51-cpp,
+        cert-int09-c,
+        concurrency-mt-unsafe,
+        modernize-use-nullptr,
+        performance-no-int-to-ptr,
+        readability-braces-around-statements,
+        readability-enum-initial-value,
+        readability-function-cognitive-complexity,
+        readability-identifier-length,
+        readability-implicit-bool-conversion,
+        readability-magic-numbers,
+        readability-math-missing-parentheses,
+        readability-redundant-control-flow,
+      ]

@@ -1,0 +1,97 @@
+BasedOnStyle: LLVM
+
+AlignAfterOpenBracket: BlockIndent
+AlignArrayOfStructures: Right
+AlignConsecutiveAssignments:
+  Enabled: true
+  AcrossEmptyLines: false
+  AlignCompound: true
+AlignConsecutiveDeclarations:
+  Enabled: true
+  AcrossEmptyLines: false
+  AcrossComments: true
+AlignConsecutiveMacros:
+  Enabled: true
+  AcrossEmptyLines: false
+  AcrossComments: true
+AlignConsecutiveShortCaseStatements:
+  Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: true
+  AlignCaseColons: false
+AlignEscapedNewlines: Right
+AlignTrailingComments:
+  Kind: Always
+  OverEmptyLines: 0
+AlignOperands: AlignAfterOperator
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: true
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortLoopsOnASingleLine: true
+BinPackArguments: false
+BinPackParameters: false
+BreakAfterAttributes: Always
+ColumnLimit: 120
+IncludeBlocks: Regroup
+IndentCaseLabels: true
+IncludeCategories:
+  - Regex: "^<.*>$"
+    Priority: 1
+  - Regex: '^"SDL3/.*$'
+    Priority: 2
+  - Regex: '^"nyangine/.*$'
+    Priority: 3
+  - Regex: '^"gnyame/.*$'
+    Priority: 4
+  - Regex: '^".*"$'
+    Priority: 5
+IndentWidth: 2
+PointerAlignment: Left
+SortIncludes: CaseInsensitive
+AttributeMacros:
+  - __attr_alias
+  - __attr_always_inline
+  - __attr_always_unused
+  - __attr_always_used
+  - __attr_api
+  - __attr_cleanup
+  - __attr_cold
+  - __attr_compiletime_warning
+  - __attr_constructor
+  - __attr_counted_by
+  - __attr_counted_by_or_null
+  - __attr_deprecated
+  - __attr_destructor
+  - __attr_flag_enum
+  - __attr_fmt_printf
+  - __attr_fmt_scanf
+  - __attr_hot
+  - __attr_malloc
+  - __attr_matrix
+  - __attr_maybe_unused
+  - __attr_nodiscard
+  - __attr_noinline
+  - __attr_noreturn
+  - __attr_overloaded
+  - __attr_pure
+  - __attr_sized_by
+  - __attr_sized_by_or_null
+  - __attr_used
+  - __attr_vector
+ForEachMacros:
+  - nya_array_for
+  - nya_array_for_reverse
+  - nya_array_foreach
+  - nya_array_foreach_reverse
+  - nya_hmap_foreach_key
+  - nya_hmap_foreach_value
+  - nya_hset_foreach
+  - nya_range_for
+  - nya_range_for_t
+TypenameMacros:
+  - nya_derive_array
+  - nya_derive_hmap
+  - nya_derive_hset

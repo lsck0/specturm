@@ -1,0 +1,8 @@
+assets/icon.res
+assets/shaders/compiled/
+docs/doxygen/
+
+build
+*.debug
+*.windows-x86_64.exe
+*.linux-x86_64

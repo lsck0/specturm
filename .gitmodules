@@ -1,0 +1,9 @@
+[submodule "vendor/nob"]
+	path = vendor/nob
+	url = https://github.com/tsoding/nob.h.git
+[submodule "vendor/sdl"]
+	path = vendor/sdl
+	url = https://github.com/libsdl-org/SDL.git
+[submodule "vendor/sdl-shadercross"]
+	path = vendor/sdl-shadercross
+	url = https://github.com/libsdl-org/SDL_shadercross.git
