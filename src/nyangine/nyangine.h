@@ -13,3 +13,4 @@
 #include "nyangine/base/base_bits.h"
 #include "nyangine/base/base_ints.h"
 #include "nyangine/base/base_logging.h"
+#include "nyangine/base/base_math.h"
