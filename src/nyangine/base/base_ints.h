@@ -64,7 +64,7 @@ static_assert(sizeof(f64) == 8);
 #define S16_MAX (32767)
 #define S32_MIN (-2147483648L)
 #define S32_MAX (2147483647L)
-#define S64_MIN (-9223372036854775808LL)
+#define S64_MIN (-9223372036854775807LL) // TRUE_S64_MIN + 1 since TRUE_S64_MIN is not representable by literal in C
 #define S64_MAX (9223372036854775807LL)
 
 #define F16_MIN (-65504.0f)
@@ -82,67 +82,67 @@ static_assert(sizeof(f64) == 8);
 
 #define nya_cast_to_u8(val)                                                                                            \
   ({                                                                                                                   \
-    nya_assert((val) >= U8_MIN && (val) <= U8_MAX);                                                                    \
+    nya_assert((val) >= U8_MIN && (val) <= U8_MAX, "Cannot cast to u8.");                                              \
     (u8)(val);                                                                                                         \
   })
 
 #define nya_cast_to_u16(val)                                                                                           \
   ({                                                                                                                   \
-    nya_assert((val) >= U16_MIN && (val) <= U16_MAX);                                                                  \
+    nya_assert((val) >= U16_MIN && (val) <= U16_MAX, "Cannot cast to u16.");                                           \
     (u16)(val);                                                                                                        \
   })
 
 #define nya_cast_to_u32(val)                                                                                           \
   ({                                                                                                                   \
-    nya_assert((val) >= U32_MIN && (val) <= U32_MAX);                                                                  \
+    nya_assert((val) >= U32_MIN && (val) <= U32_MAX, "Cannot cast to u32.");                                           \
     (u32)(val);                                                                                                        \
   })
 
 #define nya_cast_to_u64(val)                                                                                           \
   ({                                                                                                                   \
-    nya_assert((val) >= U64_MIN && (val) <= U64_MAX);                                                                  \
+    nya_assert((val) >= U64_MIN && (val) <= U64_MAX, "Cannot cast to u64.");                                           \
     (u64)(val);                                                                                                        \
   })
 
 #define nya_cast_to_s8(val)                                                                                            \
   ({                                                                                                                   \
-    nya_assert((val) >= S8_MIN && (val) <= S8_MAX);                                                                    \
+    nya_assert((val) >= S8_MIN && (val) <= S8_MAX, "Cannot cast to s8.");                                              \
     (s8)(val);                                                                                                         \
   })
 
 #define nya_cast_to_s16(val)                                                                                           \
   ({                                                                                                                   \
-    nya_assert((val) >= S16_MIN && (val) <= S16_MAX);                                                                  \
+    nya_assert((val) >= S16_MIN && (val) <= S16_MAX, "Cannot cast to s16.");                                           \
     (s16)(val);                                                                                                        \
   })
 
 #define nya_cast_to_s32(val)                                                                                           \
   ({                                                                                                                   \
-    nya_assert((val) >= S32_MIN && (val) <= S32_MAX);                                                                  \
+    nya_assert((val) >= S32_MIN && (val) <= S32_MAX, "Cannot cast to s32.");                                           \
     (s32)(val);                                                                                                        \
   })
 
 #define nya_cast_to_s64(val)                                                                                           \
   ({                                                                                                                   \
-    nya_assert((val) >= S64_MIN && (val) <= S64_MAX);                                                                  \
+    nya_assert((val) >= S64_MIN && (val) <= S64_MAX, "Cannot cast to s64.");                                           \
     (s64)(val);                                                                                                        \
   })
 
 #define nya_cast_to_f16(val)                                                                                           \
   ({                                                                                                                   \
-    nya_assert((val) >= F16_MIN && (val) <= F16_MAX);                                                                  \
+    nya_assert((val) >= F16_MIN && (val) <= F16_MAX, "Cannot cast to f16.");                                           \
     (f16)(val);                                                                                                        \
   })
 
 #define nya_cast_to_f32(val)                                                                                           \
   ({                                                                                                                   \
-    nya_assert((val) >= F32_MIN && (val) <= F32_MAX);                                                                  \
+    nya_assert((val) >= F32_MIN && (val) <= F32_MAX, "Cannot cast to f32.");                                           \
     (f32)(val);                                                                                                        \
   })
 
 #define nya_cast_to_f64(val)                                                                                           \
   ({                                                                                                                   \
-    nya_assert((val) >= F64_MIN && (val) <= F64_MAX);                                                                  \
+    nya_assert((val) >= F64_MIN && (val) <= F64_MAX, "Cannot cast to f64.");                                           \
     (f64)(val);                                                                                                        \
   })
 
