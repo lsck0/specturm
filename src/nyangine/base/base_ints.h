@@ -2,6 +2,12 @@
 
 #include <stdint.h>
 
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * TYPES
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
 typedef uint8_t   b8;
 typedef uint16_t  b16;
 typedef uint32_t  b32;
@@ -37,22 +43,11 @@ static_assert(sizeof(f16) == 2);
 static_assert(sizeof(f32) == 4);
 static_assert(sizeof(f64) == 8);
 
-// use like: nya_debug("number: "FMTu64, number);
-#define FMTb8  "%" PRIu8
-#define FMTb16 "%" PRIu16
-#define FMTb32 "%" PRIu32
-#define FMTb64 "%" PRIu64
-#define FMTu8  "%" PRIu8
-#define FMTu16 "%" PRIu16
-#define FMTu32 "%" PRIu32
-#define FMTu64 "%" PRIu64
-#define FMTs8  "%" PRId8
-#define FMTs16 "%" PRId16
-#define FMTs32 "%" PRId32
-#define FMTs64 "%" PRId64
-#define FMTf16 "%e"
-#define FMTf32 "%f"
-#define FMTf64 "%lf"
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * LIMITS
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
 
 #define U8_MIN  (0U)
 #define U8_MAX  (255U)
@@ -78,6 +73,12 @@ static_assert(sizeof(f64) == 8);
 #define F32_MAX (__FLT_MAX__)
 #define F64_MIN (-__DBL_MAX__)
 #define F64_MAX (__DBL_MAX__)
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * SAFE CASTING UTILITIES
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
 
 #define nya_cast_to_u8(val)                                                                                            \
   ({                                                                                                                   \
@@ -144,3 +145,26 @@ static_assert(sizeof(f64) == 8);
     nya_assert((val) >= F64_MIN && (val) <= F64_MAX);                                                                  \
     (f64)(val);                                                                                                        \
   })
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * FORMATTING UTILITIES
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+// use like: nya_debug("number: "FMTu64, number);
+#define FMTb8  "%" PRIu8
+#define FMTb16 "%" PRIu16
+#define FMTb32 "%" PRIu32
+#define FMTb64 "%" PRIu64
+#define FMTu8  "%" PRIu8
+#define FMTu16 "%" PRIu16
+#define FMTu32 "%" PRIu32
+#define FMTu64 "%" PRIu64
+#define FMTs8  "%" PRId8
+#define FMTs16 "%" PRId16
+#define FMTs32 "%" PRId32
+#define FMTs64 "%" PRId64
+#define FMTf16 "%e"
+#define FMTf32 "%f"
+#define FMTf64 "%lf"

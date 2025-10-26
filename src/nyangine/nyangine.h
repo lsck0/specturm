@@ -5,9 +5,12 @@
  * -DVERSION="<version_string>" : Set the engine version string.
  * -DGIT_COMMIT="<git_commit_hash>" : Set the git commit hash.
  * -DNYA_NO_ASSERT : Disable runtime assertions.
+ * -DNYA_ARENA_FORCE_DEBUG : Force arena to use debug mode, to enable it in release builds.
+ * -DNYA_ARENA_FORCE_NODEBUG : Force arena to use no-debug mode, to disable it in debug builds.
  * */
 
 #include "nyangine/base/base.h"
+#include "nyangine/base/base_arena.h"
 #include "nyangine/base/base_assert.h"
 #include "nyangine/base/base_attributes.h"
 #include "nyangine/base/base_bits.h"

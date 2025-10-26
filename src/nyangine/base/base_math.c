@@ -3,10 +3,34 @@
 #include "nyangine/base/base_assert.h"
 
 /*
- * ─────────────────────────────────────────
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  * PUBLIC API IMPLEMENTATION
- * ─────────────────────────────────────────
- * */
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+/*
+ * ─────────────────────────────────────────────────────────
+ * MATRIX CONSTRUCTORS
+ * ─────────────────────────────────────────────────────────
+ */
+
+f16_2x2 nya_new_matrix(f16x2 row1, f16x2 row2) __attr_overloaded {
+  nya_unused(row1, row2);
+
+  nya_todo();
+}
+
+f16_3x3 nya_new_matrix(f16x3 row1, f16x3 row2, f16x3 row3) __attr_overloaded {
+  nya_unused(row1, row2, row3);
+
+  nya_todo();
+}
+
+f16_4x4 nya_new_matrix(f16x4 row1, f16x4 row2, f16x4 row3, f16x4 row4) __attr_overloaded {
+  nya_unused(row1, row2, row3, row4);
+
+  nya_todo();
+}
 
 f32_2x2 nya_new_matrix(f32x2 row1, f32x2 row2) __attr_overloaded {
   nya_unused(row1, row2);
@@ -40,6 +64,30 @@ f64_3x3 nya_new_matrix(f64x3 row1, f64x3 row2, f64x3 row3) __attr_overloaded {
 
 f64_4x4 nya_new_matrix(f64x4 row1, f64x4 row2, f64x4 row3, f64x4 row4) __attr_overloaded {
   nya_unused(row1, row2, row3, row4);
+
+  nya_todo();
+}
+
+/*
+ * ─────────────────────────────────────────────────────────
+ * VECTOR MATRIX MULTIPLICATION
+ * ─────────────────────────────────────────────────────────
+ */
+
+f16x2 matrix_times_vector(f16_2x2 mat, f16x2 vec) __attr_overloaded {
+  nya_unused(mat, vec);
+
+  nya_todo();
+}
+
+f16x3 matrix_times_vector(f16_3x3 mat, f16x3 vec) __attr_overloaded {
+  nya_unused(mat, vec);
+
+  nya_todo();
+}
+
+f16x4 matrix_times_vector(f16_4x4 mat, f16x4 vec) __attr_overloaded {
+  nya_unused(mat, vec);
 
   nya_todo();
 }

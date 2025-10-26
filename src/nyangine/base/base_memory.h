@@ -3,6 +3,12 @@
 #include <memory.h>
 #include <stdlib.h>
 
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * MEMORY OPERATIONS
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
 #define nya_alloca  __builtin_alloca
 #define nya_malloc  malloc
 #define nya_realloc realloc
@@ -15,6 +21,12 @@
 #define nya_memset  memset
 
 #define nya_is_zeroed(val) (nya_memcmp(&(val), &(typeof(val)){0}, sizeof(val)) == 0)
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * TYPE AND OFFSET MACROS
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
 
 #define nya_typeof_field(type, member) typeof(((type*)0)->member)
 #define nya_sizeof_field(type, member) sizeof((((type*)0)->member))
@@ -32,6 +44,12 @@
     assert_type_match(*(ptr), ((type*)0)->member);                                                                     \
     ((type*)(ptr_var - offsetof(type, member)));                                                                       \
   })
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * UNIT CONVERSION UTILITIES
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
 
 #define nya_byte_to_kibyte(val) ((val) >> 10)
 #define nya_byte_to_mebyte(val) ((val) >> 20)

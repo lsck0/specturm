@@ -29,6 +29,12 @@ void nya_log_level_set(NYA_LogLevel level) {
   log_level_current = level;
 }
 
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * PRIVATE API IMPLEMENTATION
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
 void _nya_log_message(NYA_LogLevel level, const char* function, const char* file, u32 line, const char* format, ...) {
   if (level < log_level_current) return;
 
