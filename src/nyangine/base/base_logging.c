@@ -55,10 +55,7 @@ void _nya_log_message(NYA_LogLevel level, const char* function, const char* file
   printf("\n");
 
   if (nya_unlikely(level == NYA_LOG_LEVEL_PANIC)) {
-    if (NYA_IS_DEBUG) {
-      __builtin_trap();
-    } else {
-      abort();
-    }
+    if (NYA_IS_DEBUG) __builtin_trap();
+    abort();
   }
 }

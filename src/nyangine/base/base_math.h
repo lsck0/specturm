@@ -7,36 +7,6 @@
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- * UTILITIES
- * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- */
-
-#define nya_min(a, b)                                                                                                  \
-  ({                                                                                                                   \
-    nya_assert_type_match(a, b);                                                                                       \
-    (a) < (b) ? (a) : (b);                                                                                             \
-  })
-#define nya_max(a, b)                                                                                                  \
-  ({                                                                                                                   \
-    nya_assert_type_match(a, b);                                                                                       \
-    (a) > (b) ? (a) : (b);                                                                                             \
-  })
-#define nya_clamp(val, min, max)                                                                                       \
-  ({                                                                                                                   \
-    nya_assert_type_match(val, min);                                                                                   \
-    nya_assert_type_match(val, max);                                                                                   \
-    nya_min(nya_max((val), (min)), (max));                                                                             \
-  })
-#define nya_lerp(a, b, t)                                                                                              \
-  ({                                                                                                                   \
-    nya_assert_type_match(a, b);                                                                                       \
-    nya_assert_type_match(a, t);                                                                                       \
-    nya_assert_type_match(b, t);                                                                                       \
-    (a) + ((b) - (a)) * (t);                                                                                           \
-  })
-
-/*
- * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  * VECTOR TYPES
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
@@ -169,3 +139,33 @@ NYA_API extern f64x2 nya_matrix_times_vector(f64_2x2 mat, f64x2 vec) __attr_over
 NYA_API extern f64x3 nya_matrix_times_vector(f64_3x3 mat, f64x3 vec) __attr_overloaded;
 NYA_API extern f64x4 nya_matrix_times_vector(f64_4x4 mat, f64x4 vec) __attr_overloaded;
 #endif // defined(__has_feature) && __has_attribute(ext_vector_type) && __has_attribute(matrix_type)
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * UTILITIES
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+#define nya_min(a, b)                                                                                                  \
+  ({                                                                                                                   \
+    nya_assert_type_match(a, b);                                                                                       \
+    (a) < (b) ? (a) : (b);                                                                                             \
+  })
+#define nya_max(a, b)                                                                                                  \
+  ({                                                                                                                   \
+    nya_assert_type_match(a, b);                                                                                       \
+    (a) > (b) ? (a) : (b);                                                                                             \
+  })
+#define nya_clamp(val, min, max)                                                                                       \
+  ({                                                                                                                   \
+    nya_assert_type_match(val, min);                                                                                   \
+    nya_assert_type_match(val, max);                                                                                   \
+    nya_min(nya_max((val), (min)), (max));                                                                             \
+  })
+#define nya_lerp(a, b, t)                                                                                              \
+  ({                                                                                                                   \
+    nya_assert_type_match(a, b);                                                                                       \
+    nya_assert_type_match(a, t);                                                                                       \
+    nya_assert_type_match(b, t);                                                                                       \
+    (a) + ((b) - (a)) * (t);                                                                                           \
+  })

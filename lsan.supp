@@ -1,6 +1,7 @@
 leak:GetGlobalContentScale
 leak:SDL_Vulkan_CreateInstanceExtensionsList
 leak:VULKAN_INTERNAL_PrepareVulkan
+leak:X11_CreateSystemCursor
 leak:X11_InitKeyboard
 leak:_xcb_in_read
 leak:asan_thread_start

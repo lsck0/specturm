@@ -52,40 +52,25 @@ IndentWidth: 2
 PointerAlignment: Left
 SortIncludes: CaseInsensitive
 AttributeMacros:
-  - __attr_alias
-  - __attr_always_inline
-  - __attr_always_unused
-  - __attr_always_used
-  - __attr_api
   - __attr_cleanup
   - __attr_cold
-  - __attr_compiletime_warning
   - __attr_constructor
-  - __attr_counted_by
-  - __attr_counted_by_or_null
-  - __attr_deprecated
   - __attr_destructor
-  - __attr_flag_enum
   - __attr_fmt_printf
   - __attr_fmt_scanf
   - __attr_hot
   - __attr_malloc
   - __attr_matrix
-  - __attr_maybe_unused
-  - __attr_nodiscard
-  - __attr_noinline
+  - __attr_no_discard
   - __attr_noreturn
   - __attr_overloaded
-  - __attr_pure
-  - __attr_sized_by
-  - __attr_sized_by_or_null
-  - __attr_used
   - __attr_vector
 ForEachMacros:
   - nya_array_for
   - nya_array_for_reverse
   - nya_array_foreach
   - nya_array_foreach_reverse
+  - nya_dll_foreach
   - nya_hmap_foreach_key
   - nya_hmap_foreach_value
   - nya_hset_foreach

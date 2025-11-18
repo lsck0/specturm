@@ -12,6 +12,7 @@ CompileFlags:
       -Wno-gnu,
       -Wno-gcc-compat,
       -Wno-empty-translation-unit,
+      -Wno-initializer-overrides,
       -DIS_DEBUG=true,
       -I/home/luca/code/specturm/src/,
       -I/home/luca/code/specturm/vendor/,

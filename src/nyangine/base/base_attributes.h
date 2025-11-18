@@ -4,6 +4,12 @@
 #define __has_attribute(x) 0
 #endif
 
+#if __has_attribute(cleanup)
+#define __attr_cleanup(func) __attribute__((cleanup(func)))
+#else
+#define __attr_cleanup(func)
+#endif
+
 #if __has_attribute(cold)
 #define __attr_cold __attribute__((cold))
 #else
@@ -48,10 +54,10 @@
 #define __attr_matrix(rows, cols)
 #endif
 
-#if __has_attribute(unused)
-#define __attr_maybe_unused __attribute__((unused))
+#if __has_attribute(warn_unused_result)
+#define __attr_no_discard __attribute__((warn_unused_result))
 #else
-#define __attr_maybe_unused
+#define __attr_no_discard
 #endif
 
 #if __has_attribute(noreturn)

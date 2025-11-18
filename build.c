@@ -23,7 +23,7 @@
 // clang-format off
 #define CC            "clang"
 #define CFLAGS        "-std=c23", "-ggdb", "-fenable-matrix", "-DVERSION=" VERSION, nob_temp_sprintf("-DGIT_COMMIT=%s", GIT_COMMIT)
-#define WARNINGS      "-pedantic", "-Wall", "-Wextra", "-Wpedantic", "-Wno-gnu", "-Wno-gcc-compat"
+#define WARNINGS      "-pedantic", "-Wall", "-Wextra", "-Wpedantic", "-Wno-gnu", "-Wno-gcc-compat", "-Wno-initializer-overrides"
 #define INCLUDE_PATHS "-I./src/", "-I./vendor/sdl/include/"
 #define LINKER_FLAGS  "-lm", "-pthread", "-lSDL3"
 #define NPROCS        16

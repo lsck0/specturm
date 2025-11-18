@@ -1,0 +1,476 @@
+#include "nyangine/base/base_arena.h"
+
+#include "nyangine/base/base.h"
+#include "nyangine/base/base_assert.h"
+#include "nyangine/base/base_dll.h"
+#include "nyangine/base/base_math.h"
+#include "nyangine/base/base_memory.h"
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * PRIVATE API DECLARATION
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+static void  _nya_arena_align_and_pad_size(NYA_Arena* arena, u64* size);
+static void  _nya_arena_region_destroy(NYA_Arena* arena, NYA_ArenaRegion* region);
+static void* _nya_arena_free_list_find(NYA_ArenaFreeList* free_list, u32 size) __attr_no_discard;
+static void  _nya_arena_free_list_add(NYA_ArenaFreeList* free_list, void* ptr, u32 size);
+static void  _nya_arena_free_list_defragment(NYA_ArenaFreeList* free_list);
+static void  _nya_arena_free_list_destroy(NYA_ArenaFreeList* free_list);
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * NON-DEBUG API IMPLEMENTATION
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+NYA_Arena* _nya_arena_nodebug_new_with_options(NYA_ArenaOptions options) {
+  nya_assert(options.region_size >= nya_kibyte_to_byte(4), "Minimum region size is 4 KiB.");
+  nya_assert(options.alignment >= 8, "Minimum alignment is 8 bytes.");
+  nya_assert(options.region_size % options.alignment == 0, "Region size must be divisible by alignment.");
+  nya_assert(ASAN_PADDING % options.alignment == 0, "ASAN padding must be divisible by alignment.");
+
+  NYA_Arena* arena = nya_malloc(sizeof(NYA_Arena));
+  nya_assert(arena != nullptr);
+
+  *arena = (NYA_Arena){
+      .options = options,
+      .head    = nullptr,
+      .tail    = nullptr,
+  };
+
+  return arena;
+}
+
+void* _nya_arena_nodebug_alloc(NYA_Arena* arena, u64 size) __attr_malloc {
+  nya_assert(arena != nullptr);
+
+  if (nya_unlikely(size == 0)) return nullptr;
+
+  _nya_arena_align_and_pad_size(arena, &size);
+
+  if (nya_unlikely(size > arena->options.region_size)) goto skip_search;
+
+  nya_dll_foreach (arena, region) {
+    // check free list if the average free size is bigger than the requested size
+    if (region->free_list != nullptr && region->free_list->average_free_size >= (f32)size) {
+      void* ptr = _nya_arena_free_list_find(region->free_list, size);
+      if (ptr != nullptr) {
+        asan_unpoison_memory_region(ptr, size - ASAN_PADDING);
+        asan_poison_memory_region((u8*)ptr + size - ASAN_PADDING, ASAN_PADDING);
+
+        return ptr;
+      }
+    }
+
+    // check if there is space left in the region
+    if (region->capacity - region->used >= size) {
+      u8* ptr       = region->memory + region->used;
+      region->used += size;
+
+      asan_unpoison_memory_region(ptr, size - ASAN_PADDING);
+      asan_poison_memory_region(ptr + size - ASAN_PADDING, ASAN_PADDING);
+
+      return ptr;
+    }
+
+    continue;
+  }
+
+skip_search:
+  // we didnt find a region with enough space or didnt want to search
+  u32              new_region_size   = nya_max(arena->options.region_size, size);
+  NYA_ArenaRegion* new_region        = nya_malloc(sizeof(NYA_ArenaRegion));
+  u8*              new_region_memory = nya_malloc(new_region_size);
+  nya_assert(new_region != nullptr);
+  nya_assert(new_region_memory != nullptr);
+
+  *new_region = (NYA_ArenaRegion){
+      .used       = size,
+      .capacity   = new_region_size,
+      .memory     = new_region_memory,
+      .gc_counter = 0,
+      .free_list  = nullptr,
+      .next       = nullptr,
+      .prev       = nullptr,
+  };
+  nya_dll_node_push(arena, new_region);
+
+  u8* ptr = new_region->memory;
+
+  asan_unpoison_memory_region(ptr, size - ASAN_PADDING);
+  asan_poison_memory_region(ptr + size - ASAN_PADDING, new_region->capacity - size + ASAN_PADDING);
+
+  return ptr;
+}
+
+void* _nya_arena_nodebug_realloc(NYA_Arena* arena, void* ptr, u64 old_size, u64 new_size) {
+  nya_assert(arena != nullptr);
+
+  // edge cases
+  if (nya_unlikely(ptr == nullptr)) return nullptr;
+  if (nya_unlikely(new_size == old_size)) return ptr;
+  if (nya_unlikely(new_size == 0)) {
+    nya_arena_free(arena, ptr, old_size);
+    return nullptr;
+  }
+
+  _nya_arena_align_and_pad_size(arena, &old_size);
+  _nya_arena_align_and_pad_size(arena, &new_size);
+  u8* old_ptr = (u8*)ptr;
+
+  // realloc to smaller size = partial free
+  if (new_size < old_size) {
+    // use old memory as the asan padding
+    asan_poison_memory_region(old_ptr + new_size - ASAN_PADDING, ASAN_PADDING);
+
+    nya_arena_free(arena, old_ptr + new_size, old_size - new_size - ASAN_PADDING);
+
+    return old_ptr;
+  }
+
+  // find the region
+  nya_dll_foreach (arena, region) {
+    if (!(region->memory <= old_ptr && old_ptr < region->memory + region->capacity)) continue;
+
+    // no checking if we are followed by big freed memory, makes free list much more complex
+
+    // if its the last allocation in the region, we can maybe just extend it
+    if (old_ptr + old_size == region->memory + region->used &&
+        region->used + (new_size - old_size) <= region->capacity) {
+      region->used += new_size - old_size;
+
+      asan_unpoison_memory_region(old_ptr, new_size - ASAN_PADDING);
+
+      return old_ptr;
+    }
+
+    // allocate new memory and copy, dont double dipp on the padding
+    void* new_ptr = nya_arena_alloc(arena, new_size - ASAN_PADDING);
+    nya_memmove(new_ptr, old_ptr, old_size - ASAN_PADDING);
+    nya_arena_free(arena, old_ptr, old_size - ASAN_PADDING);
+
+    return new_ptr;
+  }
+
+  nya_unreachable();
+}
+
+void _nya_arena_nodebug_free(NYA_Arena* arena, void* ptr, u64 size) {
+  nya_assert(arena != nullptr);
+
+  if (ptr == nullptr || size == 0) return;
+
+  _nya_arena_align_and_pad_size(arena, &size);
+  u8* casted_ptr = (u8*)ptr;
+
+  asan_poison_memory_region(ptr, size);
+
+  // find the region
+  nya_dll_foreach (arena, region) {
+    if (!(region->memory <= casted_ptr && casted_ptr < region->memory + region->capacity)) continue;
+
+    // last allocation, just move the used pointer back
+    if (casted_ptr + size == region->memory + region->used) {
+      region->used -= size;
+      return;
+    }
+
+    // add to free list otherwise
+    _nya_arena_free_list_add(region->free_list, ptr, size);
+
+    // maybe defragment
+    if (arena->options.defragmentation_enabled &&
+        region->free_list->defragmentation_counter >= arena->options.defragmentation_threshold) {
+      _nya_arena_free_list_defragment(region->free_list);
+    }
+
+    return;
+  }
+
+  nya_unreachable();
+}
+
+void _nya_arena_nodebug_free_all(NYA_Arena* arena) {
+  nya_assert(arena != nullptr);
+
+  nya_dll_foreach (arena, region) {
+    // deallocate region if unused long enough
+    if (arena->options.defragmentation_enabled && region->used == 0 &&
+        region->gc_counter++ >= arena->options.garbage_collection_threshold) {
+      _nya_arena_region_destroy(arena, region);
+    }
+
+    region->used = 0;
+
+    asan_poison_memory_region(region->memory, region->capacity);
+
+    if (region->free_list != nullptr) _nya_arena_free_list_destroy(region->free_list);
+  }
+}
+
+void _nya_arena_nodebug_garbage_collect(NYA_Arena* arena) {
+  nya_assert(arena != nullptr);
+
+  for (NYA_ArenaRegion* region = arena->head; region != nullptr;) {
+    if (region->used > 0) continue;
+
+    NYA_ArenaRegion* next = region->next;
+    _nya_arena_region_destroy(arena, region);
+    region = next;
+  }
+}
+
+void _nya_arena_nodebug_destroy(NYA_Arena* arena) {
+  nya_assert(arena != nullptr);
+
+  for (NYA_ArenaRegion* region = arena->head; region != nullptr;) {
+    NYA_ArenaRegion* next = region->next;
+    _nya_arena_region_destroy(arena, region);
+    region = next;
+  }
+
+  nya_free(arena);
+}
+
+void* _nya_arena_nodebug_copy(NYA_Arena* dst, void* ptr, u64 size) {
+  nya_assert(dst != nullptr);
+  if (ptr == nullptr || size == 0) return nullptr;
+
+  void* new_ptr = nya_arena_alloc(dst, size);
+  if (!new_ptr) return nullptr;
+
+  nya_memmove(new_ptr, ptr, size);
+  return new_ptr;
+}
+
+void* _nya_arena_nodebug_move(NYA_Arena* src, NYA_Arena* dst, void* ptr, u64 size) {
+  nya_assert(src != nullptr);
+  nya_assert(dst != nullptr);
+
+  if (ptr == nullptr || size == 0) return nullptr;
+
+  void* new_ptr = nya_arena_alloc(dst, size);
+  if (!new_ptr) return nullptr;
+
+  nya_memmove(new_ptr, ptr, size);
+  nya_arena_free(src, ptr, size);
+  return new_ptr;
+}
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * DEBUG API IMPLEMENTATION
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+NYA_Arena*
+_nya_arena_debug_new_with_options(NYA_ArenaOptions options, const char* function, const char* file, u32 line) {
+  nya_unused(function, file, line);
+
+  return _nya_arena_nodebug_new_with_options(options);
+}
+
+void* _nya_arena_debug_alloc(NYA_Arena* arena, u64 size, const char* function, const char* file, u32 line) {
+  nya_unused(function, file, line);
+
+  return _nya_arena_nodebug_alloc(arena, size);
+}
+
+void* _nya_arena_debug_realloc(
+    NYA_Arena*  arena,
+    void*       ptr,
+    u64         old_size,
+    u64         new_size,
+    const char* function,
+    const char* file,
+    u32         line
+) {
+  nya_unused(function, file, line);
+
+  return _nya_arena_nodebug_realloc(arena, ptr, old_size, new_size);
+}
+
+void _nya_arena_debug_free(NYA_Arena* arena, void* ptr, u64 size, const char* function, const char* file, u32 line) {
+  nya_unused(function, file, line);
+
+  _nya_arena_nodebug_free(arena, ptr, size);
+}
+
+void _nya_arena_debug_free_all(NYA_Arena* arena, const char* function, const char* file, u32 line) {
+  nya_unused(function, file, line);
+
+  _nya_arena_nodebug_free_all(arena);
+}
+
+void _nya_arena_debug_garbage_collect(NYA_Arena* arena, const char* function, const char* file, u32 line) {
+  nya_unused(function, file, line);
+
+  _nya_arena_nodebug_garbage_collect(arena);
+}
+
+void _nya_arena_debug_destroy(NYA_Arena* arena, const char* function, const char* file, u32 line) {
+  nya_unused(function, file, line);
+
+  _nya_arena_nodebug_destroy(arena);
+}
+
+void* _nya_arena_debug_copy(NYA_Arena* dst, void* ptr, u64 size, const char* function, const char* file, u32 line) {
+  nya_unused(function, file, line);
+
+  return _nya_arena_nodebug_copy(dst, ptr, size);
+}
+
+void* _nya_arena_debug_move(
+    NYA_Arena*  src,
+    NYA_Arena*  dst,
+    void*       ptr,
+    u64         size,
+    const char* function,
+    const char* file,
+    u32         line
+) {
+  nya_unused(function, file, line);
+
+  return _nya_arena_nodebug_move(src, dst, ptr, size);
+}
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * PRIVATE API IMPLEMENTATION
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+void _nya_arena_align_and_pad_size(NYA_Arena* arena, u64* size) {
+  nya_assert(arena != nullptr);
+  nya_assert(size != nullptr);
+
+  if (nya_unlikely(*size == 0)) return;
+
+  *size = ((*size + (arena->options.alignment - 1)) & ~(arena->options.alignment - 1)) + ASAN_PADDING;
+}
+
+static void _nya_arena_region_destroy(NYA_Arena* arena, NYA_ArenaRegion* region) {
+  nya_dll_node_unlink(arena, region);
+
+  if (region->free_list != nullptr) _nya_arena_free_list_destroy(region->free_list);
+  nya_free(region->memory);
+  nya_free(region);
+}
+
+void* _nya_arena_free_list_find(NYA_ArenaFreeList* free_list, u32 size) {
+  nya_assert(free_list != nullptr);
+
+  nya_dll_foreach (free_list, node) {
+    if (node->size < size) continue;
+
+    // exact fit
+    if (node->size == size) {
+      void* ptr = node->ptr;
+
+      nya_dll_node_unlink(free_list, node);
+      nya_free(node);
+
+      free_list->average_free_size = (free_list->average_free_size * (f32)free_list->node_counter - (f32)size) /
+                                     (f32)(free_list->node_counter - 1);
+      free_list->node_counter--;
+
+      return ptr;
+    }
+
+    // free node is bigger than we need
+    void* ptr = node->ptr;
+
+    node->ptr   = (u8*)node->ptr + size;
+    node->size -= size;
+    free_list->average_free_size =
+        (free_list->average_free_size * (f32)free_list->node_counter - (f32)size) / (f32)(free_list->node_counter);
+
+    return ptr;
+  }
+
+  return nullptr;
+}
+
+void _nya_arena_free_list_add(NYA_ArenaFreeList* free_list, void* ptr, u32 size) {
+  nya_assert(ptr != nullptr);
+
+  if (free_list == nullptr) {
+    free_list = nya_malloc(sizeof(NYA_ArenaFreeList));
+    nya_assert(free_list != nullptr);
+
+    *free_list = (NYA_ArenaFreeList){
+        .node_counter            = 0,
+        .average_free_size       = 0.0F,
+        .defragmentation_counter = 0,
+        .head                    = nullptr,
+        .tail                    = nullptr,
+    };
+  }
+
+  NYA_ArenaFreeListNode* new_node = nya_malloc(sizeof(NYA_ArenaFreeListNode));
+  nya_assert(new_node != nullptr);
+
+  *new_node = (NYA_ArenaFreeListNode){
+      .ptr  = ptr,
+      .size = size,
+      .prev = nullptr,
+      .next = nullptr,
+  };
+
+  nya_dll_foreach (free_list, free_node) {
+    if (free_node->next && (u8*)free_node->next->ptr < (u8*)new_node->ptr) continue;
+
+    // we are now in the situation free_node < new_node < free_node->next by address
+    nya_dll_node_link(free_list, free_node, new_node, free_node->next);
+  }
+
+  if (free_list->node_counter == 0) {
+    free_list->node_counter      = 1;
+    free_list->average_free_size = (f32)size;
+  } else {
+    free_list->average_free_size = ((free_list->average_free_size * (f32)free_list->node_counter) + (f32)size) /
+                                   (f32)(free_list->node_counter + 1);
+    free_list->node_counter++;
+  }
+}
+
+void _nya_arena_free_list_defragment(NYA_ArenaFreeList* free_list) {
+  nya_assert(free_list != nullptr);
+
+  for (NYA_ArenaFreeListNode* node = free_list->head; node != nullptr && node->next != nullptr;) {
+    // check if current node is directly before the next node
+    if ((u8*)node->ptr + node->size == (u8*)node->next->ptr) {
+      NYA_ArenaFreeListNode* next = node->next;
+
+      // merge nodes
+      node->size += next->size;
+      nya_dll_node_unlink(free_list, next);
+      nya_free(next);
+
+      free_list->average_free_size = (free_list->average_free_size * (f32)free_list->node_counter - (f32)next->size) /
+                                     (f32)(free_list->node_counter - 1);
+      free_list->node_counter--;
+
+      // continue with the same node
+      continue;
+    }
+
+    node = node->next;
+  }
+
+  free_list->defragmentation_counter = 0;
+}
+
+void _nya_arena_free_list_destroy(NYA_ArenaFreeList* free_list) {
+  nya_assert(free_list != nullptr);
+
+  for (NYA_ArenaFreeListNode* node = free_list->head; node != nullptr;) {
+    NYA_ArenaFreeListNode* next = node->next;
+    nya_free(node);
+    node = next;
+  }
+
+  nya_free(free_list);
+}

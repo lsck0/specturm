@@ -6,10 +6,12 @@
 #define nya_likely(expr)   __builtin_expect(!!(expr), 1)
 #define nya_unlikely(expr) __builtin_expect(!!(expr), 0)
 
-/// Usage:
-/// nya_assert(condition)
-/// nya_assert(condition, message)
-/// nya_assert(condition, format, ...) with a max. of 10 format arguments
+/**
+ * Usage:
+ * nya_assert(condition)
+ * nya_assert(condition, message)
+ * nya_assert(condition, format, ...) with a max. of 10 format arguments
+ * */
 #define nya_assert(...)     _nya_assert(__VA_ARGS__)
 #define nya_todo()          nya_assert(0, "Todo"); __builtin_unreachable();
 #define nya_unimplemented() nya_assert(0, "Unimplemented"); __builtin_unreachable();

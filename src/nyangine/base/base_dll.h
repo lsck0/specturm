@@ -1,0 +1,75 @@
+#pragma once
+
+/**
+ * To use those macros:
+ * - the dll structure needs to have 'head' and 'tail' pointers
+ * - the node structure needs to have 'prev' and 'next' pointers
+ * */
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * LINKING MACROS
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+#define nya_dll_node_link(dll_ptr, prev_ptr, node_ptr, next_ptr)                                                       \
+  ({                                                                                                                   \
+    typeof(node_ptr) _prev_ptr = (prev_ptr);                                                                           \
+    typeof(node_ptr) _next_ptr = (next_ptr);                                                                           \
+                                                                                                                       \
+    (node_ptr)->prev = _prev_ptr;                                                                                      \
+    (node_ptr)->next = _next_ptr;                                                                                      \
+    if (_prev_ptr) {                                                                                                   \
+      (_prev_ptr)->next = node_ptr;                                                                                    \
+    } else {                                                                                                           \
+      (dll_ptr)->head = node_ptr;                                                                                      \
+    }                                                                                                                  \
+    if (_next_ptr) {                                                                                                   \
+      (_next_ptr)->prev = node_ptr;                                                                                    \
+    } else {                                                                                                           \
+      (dll_ptr)->tail = node_ptr;                                                                                      \
+    }                                                                                                                  \
+  })
+
+#define nya_dll_node_unlink(dll_ptr, node_ptr)                                                                         \
+  ({                                                                                                                   \
+    if ((node_ptr)->prev) {                                                                                            \
+      (node_ptr)->prev->next = (node_ptr)->next;                                                                       \
+    } else {                                                                                                           \
+      (dll_ptr)->head = (node_ptr)->next;                                                                              \
+    }                                                                                                                  \
+    if ((node_ptr)->next) {                                                                                            \
+      (node_ptr)->next->prev = (node_ptr)->prev;                                                                       \
+    } else {                                                                                                           \
+      (dll_ptr)->tail = (node_ptr)->prev;                                                                              \
+    }                                                                                                                  \
+    (node_ptr)->prev = nullptr;                                                                                        \
+    (node_ptr)->next = nullptr;                                                                                        \
+  })
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * BASIC MACROS
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+#define nya_dll_node_push(dll_ptr, node_ptr) nya_dll_node_link((dll_ptr), (dll_ptr)->tail, (node_ptr), nullptr);
+
+#define nya_dll_node_pop(dll_ptr)                                                                                      \
+  ({                                                                                                                   \
+    typeof((dll_ptr)->tail)(tail_ptr) = (dll_ptr)->tail;                                                               \
+    nya_dll_node_unlink((dll_ptr), tail_ptr);                                                                          \
+    tail_ptr;                                                                                                          \
+  })
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * ITERATOR MACROS
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+#define nya_dll_foreach(dll_ptr, node_name)                                                                            \
+  for (typeof((dll_ptr)->head)(node_name) = (dll_ptr)->head; (node_name) != nullptr; (node_name) = (node_name)->next)
+
+#define nya_dll_foreach_reverse(dll_ptr, node_name)                                                                    \
+  for (typeof((dll_ptr)->tail)(node_name) = (dll_ptr)->tail; (node_name) != nullptr; (node_name) = (node_name)->prev)
