@@ -2,7 +2,6 @@
 
 #if !defined(__clang__) || __STDC_VERSION__ <= 201703L
 #error "nyangine requires clang and at least C23, add -std=c23 to your clang compiler flags."
-#include <stdbool.h>
 #define thread_local _Thread_local
 #define typeof       __typeof__
 #endif

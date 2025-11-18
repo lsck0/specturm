@@ -1,5 +1,6 @@
 #pragma once
 
+#include <inttypes.h>
 #include <stdint.h>
 
 /*
@@ -26,6 +27,9 @@ typedef intptr_t  sptr;
 typedef _Float16  f16;
 typedef float     f32;
 typedef double    f64;
+
+#define true  ((b8)1)
+#define false ((b8)0)
 
 static_assert(sizeof(b8) == 1);
 static_assert(sizeof(b16) == 2);

@@ -66,15 +66,11 @@ nya_derive_array(f64_4x4);
  */
 
 #define nya_array_new(arena_ptr, item_type) nya_array_new_with_capacity(arena_ptr, item_type, 16)
-#define nya_array_new_with_capacity(arena_ptr, item_type, capacity)                                                    \
-  ({                                                                                                                   \
-    (item_type##Array){                                                                                                \
-        .items    = nya_arena_alloc(arena_ptr, (capacity) * sizeof(item_type)),                                        \
-        .length   = 0,                                                                                                 \
-        .capacity = (capacity),                                                                                        \
-        .arena    = (arena_ptr),                                                                                       \
-    };                                                                                                                 \
-  })
+#define nya_array_new_with_capacity(arena_ptr, item_type, initial_capacity)                                            \
+  (item_type##Array) {                                                                                                 \
+    .items = nya_arena_alloc(arena_ptr, (initial_capacity) * sizeof(item_type)), .length = 0,                          \
+    .capacity = (initial_capacity), .arena = (arena_ptr),                                                              \
+  }
 
 #define nya_array_from_carray(arena_ptr, item_type, carray, carray_length)                                             \
   ({                                                                                                                   \
@@ -101,9 +97,9 @@ nya_derive_array(f64_4x4);
         (arr_ptr)->arena,                                                                                              \
         (arr_ptr)->items,                                                                                              \
         (arr_ptr)->capacity * sizeof(*(arr_ptr)->items),                                                               \
-        (arr_capacity) * sizeof(*(arr_ptr)->items)                                                                     \
+        (new_capacity) * sizeof(*(arr_ptr)->items)                                                                     \
     );                                                                                                                 \
-    (arr_ptr)->capacity = arr_capacity;                                                                                \
+    (arr_ptr)->capacity = new_capacity;                                                                                \
   })
 
 #define nya_array_reserve(arr_ptr, min_capacity)                                                                       \
@@ -133,7 +129,7 @@ nya_derive_array(f64_4x4);
   nya_assert(                                                                                                          \
       0 < (index) && (index) < (length),                                                                               \
       "Array index " FMTs64 " (length " FMTu64 ") out of bounds.",                                                     \
-      nya_cast_to_s64(index),                                                                                          \
+      (s64)(index),                                                                                                    \
       length                                                                                                           \
   );
 
@@ -285,7 +281,7 @@ nya_derive_array(f64_4x4);
   ({                                                                                                                   \
     nya_assert_type_match(item, (arr_ptr)->items[0]);                                                                  \
     typeof((arr_ptr)->items[0]) item_var = item;                                                                       \
-    bool                        contains = false;                                                                      \
+    b8                          contains = false;                                                                      \
     nya_array_for (arr_ptr, arr_index) {                                                                               \
       if (nya_memcmp(&(arr_ptr)->items[arr_index], &item_var, sizeof(item_var)) == 0) {                                \
         contains = true;                                                                                               \
@@ -323,7 +319,7 @@ nya_derive_array(f64_4x4);
 #define nya_array_equals(arr1_ptr, arr2_ptr)                                                                           \
   ({                                                                                                                   \
     nya_assert_type_match((arr1_ptr)->items[0], (arr2_ptr)->items[0]);                                                 \
-    bool equal = (arr1_ptr)->length == (arr2_ptr)->length;                                                             \
+    b8 equal = (arr1_ptr)->length == (arr2_ptr)->length;                                                               \
     if (equal) {                                                                                                       \
       for (u64 i = 0; i < (arr1_ptr)->length; i++) {                                                                   \
         if (nya_memcmp(&(arr1_ptr)->items[i], &(arr2_ptr)->items[i], sizeof((arr1_ptr)->items[i])) != 0) {             \

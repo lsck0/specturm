@@ -20,3 +20,4 @@
 #include "nyangine/base/base_logging.h"
 #include "nyangine/base/base_math.h"
 #include "nyangine/base/base_memory.h"
+#include "nyangine/base/base_string.h"

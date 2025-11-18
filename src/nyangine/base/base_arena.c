@@ -25,22 +25,17 @@ static void  _nya_arena_free_list_destroy(NYA_ArenaFreeList* free_list);
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_Arena* _nya_arena_nodebug_new_with_options(NYA_ArenaOptions options) {
+NYA_Arena _nya_arena_nodebug_new_with_options(NYA_ArenaOptions options) {
   nya_assert(options.region_size >= nya_kibyte_to_byte(4), "Minimum region size is 4 KiB.");
   nya_assert(options.alignment >= 8, "Minimum alignment is 8 bytes.");
   nya_assert(options.region_size % options.alignment == 0, "Region size must be divisible by alignment.");
   nya_assert(ASAN_PADDING % options.alignment == 0, "ASAN padding must be divisible by alignment.");
 
-  NYA_Arena* arena = nya_malloc(sizeof(NYA_Arena));
-  nya_assert(arena != nullptr);
-
-  *arena = (NYA_Arena){
+  return (NYA_Arena){
       .options = options,
       .head    = nullptr,
       .tail    = nullptr,
   };
-
-  return arena;
 }
 
 void* _nya_arena_nodebug_alloc(NYA_Arena* arena, u64 size) __attr_malloc {
@@ -230,8 +225,6 @@ void _nya_arena_nodebug_destroy(NYA_Arena* arena) {
     _nya_arena_region_destroy(arena, region);
     region = next;
   }
-
-  nya_free(arena);
 }
 
 void* _nya_arena_nodebug_copy(NYA_Arena* dst, void* ptr, u64 size) {
@@ -265,7 +258,7 @@ void* _nya_arena_nodebug_move(NYA_Arena* src, NYA_Arena* dst, void* ptr, u64 siz
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_Arena*
+NYA_Arena
 _nya_arena_debug_new_with_options(NYA_ArenaOptions options, const char* function, const char* file, u32 line) {
   nya_unused(function, file, line);
 
