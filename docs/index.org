@@ -1,0 +1,23 @@
+* PLAN
+
+- [ ] move the build system to nya_build
+    - [ ] fs utilities
+    - [ ] command running
+    - [ ] arg parsing (+ lexer)
+    - [ ] build tools: self rebuild with custom command, per file caching, maybe rules based
+- [ ] full code hot reloading in debug
+- [ ] implement test system and write tests for arena, string, array, ...
+- [ ] input and event system
+- [ ] 2d render primitives: shapes (reference raylib), texts, images
+- [ ] ui system: widgets, layout, styling
+- [ ] resource management
+- [ ] word simulation
+    - [ ] entity sheaf system
+    - [ ] physics engine
+    - [ ] entity renderer
+    - [ ] sound system
+
+* OTHER TODOs
+
+- [ ] entity ai utils: state machines, behavior trees
+- [ ] basic nn library: tensors, layers, autograd --> NEAT implementation
