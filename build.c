@@ -13,7 +13,7 @@
  */
 
 #define PROJECT_NAME "gnyame"
-#define PROJECT_PATH "./src/gnyame/main.c"
+#define PROJECT_PATH "./src/main.c"
 #define VERSION      "0.0.0"
 
 #define DEBUG_BINARY          PROJECT_NAME "." VERSION ".debug"
@@ -22,7 +22,7 @@
 
 // clang-format off
 #define CC            "clang"
-#define CFLAGS        "-std=c23", "-ggdb", "-fenable-matrix", "-DVERSION=" VERSION, nob_temp_sprintf("-DGIT_COMMIT=%s", GIT_COMMIT)
+#define CFLAGS        "-std=c23", "-ggdb", "-fenable-matrix", nob_temp_sprintf("-DVERSION=\"%s\"", VERSION), nob_temp_sprintf("-DGIT_COMMIT=\"%s\"", GIT_COMMIT)
 #define WARNINGS      "-pedantic", "-Wall", "-Wextra", "-Wpedantic", "-Wno-gnu", "-Wno-gcc-compat", "-Wno-initializer-overrides", "-Wno-keyword-macro"
 #define INCLUDE_PATHS "-I./src/", "-I./vendor/sdl/include/"
 #define LINKER_FLAGS  "-lm", "-pthread", "-lSDL3"

@@ -21,3 +21,5 @@
 #include "nyangine/base/base_math.h"
 #include "nyangine/base/base_memory.h"
 #include "nyangine/base/base_string.h"
+#include "nyangine/core/core_app.h"
+#include "nyangine/core/core_event.h"

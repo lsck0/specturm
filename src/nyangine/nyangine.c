@@ -2,3 +2,5 @@
 #include "nyangine/base/base_logging.c"
 #include "nyangine/base/base_math.c"
 #include "nyangine/base/base_string.c"
+#include "nyangine/core/core_app.c"
+#include "nyangine/core/core_window.c"
