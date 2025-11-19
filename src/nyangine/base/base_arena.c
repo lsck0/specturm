@@ -1,6 +1,5 @@
 #include "nyangine/base/base_arena.h"
 
-#include "nyangine/base/base.h"
 #include "nyangine/base/base_assert.h"
 #include "nyangine/base/base_dll.h"
 #include "nyangine/base/base_math.h"

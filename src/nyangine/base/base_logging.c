@@ -1,10 +1,5 @@
 #include "nyangine/base/base_logging.h"
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "nyangine/base/base.h"
 #include "nyangine/base/base_assert.h"
 
 /*

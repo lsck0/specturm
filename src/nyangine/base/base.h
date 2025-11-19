@@ -6,6 +6,15 @@
 #define typeof       __typeof__
 #endif
 
+#include <ctype.h>
+#include <inttypes.h>
+#include <memory.h>
+#include <stdarg.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  * DEBUG AND VERSION

@@ -1,7 +1,6 @@
 #pragma once
 
-#include <memory.h>
-#include <stdlib.h>
+#include "nyangine/base/base_memory.h"
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────

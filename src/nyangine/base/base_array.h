@@ -4,6 +4,7 @@
 #include "nyangine/base/base_assert.h"
 #include "nyangine/base/base_ints.h"
 #include "nyangine/base/base_math.h"
+#include "nyangine/base/base_memory.h"
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────

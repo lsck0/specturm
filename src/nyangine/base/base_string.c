@@ -1,12 +1,5 @@
 #include "nyangine/base/base_string.h"
 
-#include <ctype.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <string.h>
-
-#include "nyangine/base/base_array.h"
-
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  * PRIVATE API DECLARATION
