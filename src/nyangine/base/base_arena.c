@@ -1,5 +1,6 @@
 #include "nyangine/base/base_arena.h"
 
+#include "nyangine/base/base.h"
 #include "nyangine/base/base_assert.h"
 #include "nyangine/base/base_dll.h"
 #include "nyangine/base/base_math.h"
@@ -11,12 +12,12 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-static void  _nya_arena_align_and_pad_size(NYA_Arena* arena, u64* size);
-static void  _nya_arena_region_destroy(NYA_Arena* arena, NYA_ArenaRegion* region);
-static void* _nya_arena_free_list_find(NYA_ArenaFreeList* free_list, u32 size) __attr_no_discard;
-static void  _nya_arena_free_list_add(NYA_ArenaFreeList* free_list, void* ptr, u32 size);
-static void  _nya_arena_free_list_defragment(NYA_ArenaFreeList* free_list);
-static void  _nya_arena_free_list_destroy(NYA_ArenaFreeList* free_list);
+NYA_INTERNAL void  _nya_arena_align_and_pad_size(NYA_Arena* arena, u64* size);
+NYA_INTERNAL void  _nya_arena_region_destroy(NYA_Arena* arena, NYA_ArenaRegion* region);
+NYA_INTERNAL void* _nya_arena_free_list_find(NYA_ArenaFreeList* free_list, u32 size) __attr_no_discard;
+NYA_INTERNAL void  _nya_arena_free_list_add(NYA_ArenaFreeList* free_list, void* ptr, u32 size);
+NYA_INTERNAL void  _nya_arena_free_list_defragment(NYA_ArenaFreeList* free_list);
+NYA_INTERNAL void  _nya_arena_free_list_destroy(NYA_ArenaFreeList* free_list);
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -343,7 +344,7 @@ void _nya_arena_align_and_pad_size(NYA_Arena* arena, u64* size) {
   *size = ((*size + (arena->options.alignment - 1)) & ~(arena->options.alignment - 1)) + ASAN_PADDING;
 }
 
-static void _nya_arena_region_destroy(NYA_Arena* arena, NYA_ArenaRegion* region) {
+void _nya_arena_region_destroy(NYA_Arena* arena, NYA_ArenaRegion* region) {
   nya_dll_node_unlink(arena, region);
 
   if (region->free_list != nullptr) _nya_arena_free_list_destroy(region->free_list);

@@ -31,8 +31,8 @@ typedef enum {
 #define nya_error(format, ...) _nya_log_message(NYA_LOG_LEVEL_ERROR, __FUNCTION__, __FILE__, __LINE__, format __VA_OPT__(, __VA_ARGS__))
 #define nya_panic(format, ...) _nya_log_message(NYA_LOG_LEVEL_PANIC, __FUNCTION__, __FILE__, __LINE__, format __VA_OPT__(, __VA_ARGS__)); __builtin_unreachable();
 
-NYA_API extern NYA_LogLevel nya_log_level_get(void);
-NYA_API extern void         nya_log_level_set(NYA_LogLevel level);
+NYA_API NYA_EXTERN NYA_LogLevel nya_log_level_get(void);
+NYA_API NYA_EXTERN void         nya_log_level_set(NYA_LogLevel level);
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -40,4 +40,4 @@ NYA_API extern void         nya_log_level_set(NYA_LogLevel level);
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_API extern void _nya_log_message(NYA_LogLevel level, const char* function, const char* file, u32 line, const char* format, ...) __attr_fmt_printf(5, 6);
+NYA_API NYA_EXTERN void _nya_log_message(NYA_LogLevel level, const char* function, const char* file, u32 line, const char* format, ...) __attr_fmt_printf(5, 6);

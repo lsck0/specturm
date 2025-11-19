@@ -6,7 +6,7 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-static char* _nya_strstrn(char* haystack, char* needle, u64 haystack_len, u64 needle_len);
+NYA_INTERNAL char* _nya_strstrn(char* haystack, char* needle, u64 haystack_len, u64 needle_len);
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
