@@ -79,7 +79,7 @@ nya_derive_array(f64_4x4);
     nya_assert_type_match(carray, (item_type*)0);                                                                      \
     nya_assert_type_match(carray_length, (u64)0);                                                                      \
     item_type##Array arr = nya_array_new_with_capacity(arena_ptr, item_type, carray_length);                           \
-    nya_range_for (idx, 0, carray_length) nya_array_push(&arr, (carray)[idx]);                                         \
+    nya_range_for (idx, 0, carray_length) nya_array_push_back(&arr, (carray)[idx]);                                    \
     arr;                                                                                                               \
   })
 
@@ -88,7 +88,7 @@ nya_derive_array(f64_4x4);
     nya_assert_type_match(arena_ptr, (NYA_Arena*)0);                                                                   \
     nya_assert_type_match(argv, (const char**)0);                                                                      \
     NYA_StringArray args = nya_array_new_with_capacity(&arena, string, argc);                                          \
-    nya_range_for (idx, 0, argc) nya_array_push(&args, nya_string_from(&arena, (argv)[idx]));                          \
+    nya_range_for (idx, 0, argc) nya_array_push_back(&args, nya_string_from(&arena, (argv)[idx]));                     \
     args;                                                                                                              \
   })
 
@@ -337,6 +337,9 @@ nya_derive_array(f64_4x4);
  * MISC MACROS
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
+
+#define nya_carray_length(carray) (sizeof(carray) / sizeof((carray)[0]))
+#define nya_array_length(arr_ptr) ((arr_ptr)->length)
 
 #define nya_array_swap(arr_ptr, index1, index2)                                                                        \
   ({                                                                                                                   \

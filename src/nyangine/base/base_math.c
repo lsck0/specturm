@@ -1,6 +1,4 @@
-#include "nyangine/base/base_math.h"
-
-#include "nyangine/base/base_assert.h"
+#include "nyangine/nyangine.h"
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -70,7 +68,7 @@ f64_4x4 nya_new_matrix(f64x4 row1, f64x4 row2, f64x4 row3, f64x4 row4) __attr_ov
 
 /*
  * ─────────────────────────────────────────────────────────
- * VECTOR MATRIX MULTIPLICATION
+ * MATRIX VECTOR MULTIPLICATION
  * ─────────────────────────────────────────────────────────
  */
 

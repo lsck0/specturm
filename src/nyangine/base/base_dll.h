@@ -49,17 +49,24 @@
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- * BASIC MACROS
+ * PUSH/POP MACROS
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-#define nya_dll_node_push(dll_ptr, node_ptr) nya_dll_node_link((dll_ptr), (dll_ptr)->tail, (node_ptr), nullptr);
-
-#define nya_dll_node_pop(dll_ptr)                                                                                      \
+#define nya_dll_node_push_back(dll_ptr, node_ptr) nya_dll_node_link((dll_ptr), (dll_ptr)->tail, (node_ptr), nullptr);
+#define nya_dll_node_pop_back(dll_ptr)                                                                                 \
   ({                                                                                                                   \
     typeof((dll_ptr)->tail)(tail_ptr) = (dll_ptr)->tail;                                                               \
     nya_dll_node_unlink((dll_ptr), tail_ptr);                                                                          \
     tail_ptr;                                                                                                          \
+  })
+
+#define nya_dll_node_push_front(dll_ptr, node_ptr) nya_dll_node_link((dll_ptr), nullptr, (node_ptr), (dll_ptr)->head);
+#define nya_dll_node_pop_front(dll_ptr)                                                                                \
+  ({                                                                                                                   \
+    typeof((dll_ptr)->head)(head_ptr) = (dll_ptr)->head;                                                               \
+    nya_dll_node_unlink((dll_ptr), head_ptr);                                                                          \
+    head_ptr;                                                                                                          \
   })
 
 /*

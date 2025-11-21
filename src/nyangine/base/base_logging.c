@@ -1,6 +1,4 @@
-#include "nyangine/base/base_logging.h"
-
-#include "nyangine/base/base_assert.h"
+#include "nyangine/nyangine.h"
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────

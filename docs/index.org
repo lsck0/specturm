@@ -1,8 +1,8 @@
 * PLAN
 
-- [ ] move the build system to nya_build
+- [-] move the build system to nya_build
     - [ ] fs utilities
-    - [ ] command running
+    - [X] command running
     - [ ] arg parsing (+ lexer)
     - [ ] build tools: self rebuild with custom command, per file caching, maybe rules based
 - [ ] full code hot reloading in debug
