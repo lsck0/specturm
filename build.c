@@ -31,6 +31,8 @@
 // clang-format on
 
 NYA_INTERNAL void add_version_flag_and_git_hash(NYA_BuildRule* rule);
+NYA_INTERNAL void remove_output_file(NYA_BuildRule* rule);
+NYA_INTERNAL void test_runner(NYA_BuildRule* rule);
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -300,6 +302,12 @@ NYA_BuildRule run_debug = {
     .dependencies = { &build_project_debug },
 };
 
+NYA_BuildRule run_tests = {
+    .name   = "run_tests",
+    .is_metarule  = true,
+    .pre_build_hooks = { &test_runner },
+};
+
 NYA_BuildRule build_project = {
     .name         = "build_project",
     .is_metarule  = true,
@@ -338,7 +346,7 @@ NYA_BuildRule show_stats = {
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-void add_version_flag_and_git_hash(NYA_BuildRule* rule) {
+NYA_INTERNAL void add_version_flag_and_git_hash(NYA_BuildRule* rule) {
   nya_assert(rule);
 
   static b8          initialized = false;
@@ -370,17 +378,90 @@ skip_initialization:
   rule->command.arguments[length + 1] = VERSION_FLAG;
 }
 
+NYA_INTERNAL void remove_output_file(NYA_BuildRule* rule) {
+  nya_assert(rule);
+  nya_assert(rule->output_file);
+
+  nya_filesystem_file_delete(rule->output_file);
+}
+
+NYA_INTERNAL void test_runner(NYA_BuildRule* rule) {
+  nya_assert(rule);
+
+  NYA_Command find_tests_command = {
+      .arena     = &nya_global_arena,
+      .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
+      .program   = "find",
+      .arguments = {"./tests/", "-name", "*.c"},
+  };
+  nya_command_run(&find_tests_command);
+  NYA_StringArray tests = nya_string_split_lines(&nya_global_arena, &find_tests_command.stdout_content);
+
+  nya_array_foreach (&tests, test) {
+    NYA_CString test_cstr = nya_string_to_cstring(&nya_global_arena, test);
+
+    nya_string_strip_suffix(test, ".c");
+    NYA_CString test_binary = nya_string_to_cstring(&nya_global_arena, test);
+
+    // clang-format off
+    NYA_String    build_test_name = nya_string_sprintf(&nya_global_arena, "build_test:%s", test_binary);
+    NYA_BuildRule build_test = {
+        .name        = nya_string_to_cstring(&nya_global_arena, &build_test_name),
+        .policy      = NYA_BUILD_ALWAYS,
+        .output_file = test_binary,
+
+        .command = {
+            .program   = CC,
+            .arguments = {
+                test_cstr,
+                "-o", test_binary,
+                CFLAGS,
+                WARNINGS,
+                INCLUDE_PATHS,
+                LINKER_FLAGS,
+                FLAGS_DEBUG,
+                FLAGS_LINUX_X86_64,
+            },
+        },
+
+        .pre_build_hooks = { &add_version_flag_and_git_hash },
+    };
+
+    NYA_String    run_test_name = nya_string_sprintf(&nya_global_arena, "run_test:%s", test_binary);
+    NYA_BuildRule run_test = {
+        .name        = nya_string_to_cstring(&nya_global_arena, &run_test_name),
+        .policy      = NYA_BUILD_ALWAYS,
+        .output_file = test_binary,
+
+        .command = {
+            .program     = test_binary,
+            .environment = {
+                "ASAN_OPTIONS=detect_leaks=1:strict_string_checks=1:halt_on_error=1",
+                "LSAN_OPTIONS=suppressions=lsan.supp",
+                "UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1",
+            },
+        },
+
+        .dependencies      = { &build_test },
+        .post_build_hooks  = { &remove_output_file },
+    };
+    // clang-format on
+
+    nya_build(&run_test);
+  }
+}
+
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  * ENTRY POINT
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-void usage_and_exit(NYA_CString program_name) {
+NYA_INTERNAL void usage_and_exit(NYA_CString program_name) {
   printf("Usage: %s [task]\n", program_name);
   printf("Tasks:\n");
   printf("  run:debug\n");
-  // printf("  run:tests\n");
+  printf("  run:tests\n");
   printf("  run:stats\n");
   printf("  run:docs\n");
   printf("  build:debug\n");
@@ -397,6 +478,8 @@ s32 main(s32 argc, NYA_CString* argv) {
   NYA_CString task = argv[1];
   if (nya_string_equals(task, "run:debug")) {
     nya_build(&run_debug);
+  } else if (nya_string_equals(task, "run:tests")) {
+    nya_build(&run_tests);
   } else if (nya_string_equals(task, "run:stats")) {
     nya_build(&show_stats);
   } else if (nya_string_equals(task, "run:docs")) {

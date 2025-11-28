@@ -4,9 +4,10 @@
     - [X] fs utilities
     - [X] command running
     - [X] build tools: self rebuild with custom command, per file caching, maybe rules based
-- [ ] full code hot reloading in debug
-- [ ] implement test system and write tests for arena, string, array, ...
+- [X] implement test system 
+- [ ] write tests for arena, string, array, ...
 - [ ] arg parsing (+ lexer)
+- [ ] full code hot reloading in debug
 - [ ] input and event system
 - [ ] 2d render primitives: shapes (reference raylib), texts, images
 - [ ] ui system: widgets, layout, styling

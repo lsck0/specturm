@@ -363,6 +363,12 @@ void nya_string_destroy(NYA_String* str) {
 void nya_string_print(const NYA_String* str) {
   nya_assert(str);
 
+  printf(NYA_FMT_STRING, NYA_FMT_STRING_ARG(*str));
+}
+
+void nya_string_println(const NYA_String* str) {
+  nya_assert(str);
+
   printf(NYA_FMT_STRING "\n", NYA_FMT_STRING_ARG(*str));
 }
 

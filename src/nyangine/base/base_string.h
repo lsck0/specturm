@@ -47,6 +47,7 @@ NYA_API NYA_EXTERN void            nya_string_extend(NYA_String* str, NYA_ConstC
 NYA_API NYA_EXTERN void            nya_string_extend(NYA_String* str, const NYA_String* extension) __attr_overloaded;
 NYA_API NYA_EXTERN void            nya_string_destroy(NYA_String *str);
 NYA_API NYA_EXTERN void            nya_string_print(const NYA_String* str);
+NYA_API NYA_EXTERN void            nya_string_println(const NYA_String* str);
 NYA_API NYA_EXTERN void            nya_string_remove(NYA_String* str, NYA_ConstCString substr) __attr_overloaded;
 NYA_API NYA_EXTERN void            nya_string_remove(NYA_String* str, NYA_String* substr) __attr_overloaded;
 NYA_API NYA_EXTERN void            nya_string_replace(NYA_String* str, NYA_ConstCString old, NYA_ConstCString new) __attr_overloaded;
