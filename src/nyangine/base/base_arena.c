@@ -13,6 +13,16 @@ NYA_INTERNAL void  _nya_arena_free_list_add(NYA_ArenaRegion* region, void* ptr, 
 NYA_INTERNAL void  _nya_arena_free_list_defragment(NYA_ArenaFreeList* free_list);
 NYA_INTERNAL void  _nya_arena_free_list_destroy(NYA_ArenaFreeList* free_list);
 
+NYA_Arena nya_global_arena;
+
+__attr_constructor NYA_INTERNAL void _nya_arena_init(void) {
+  nya_global_arena = nya_arena_new();
+}
+
+__attr_destructor NYA_INTERNAL void _nya_arena_shutdown(void) {
+  nya_arena_destroy(&nya_global_arena);
+}
+
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  * NON-DEBUG API IMPLEMENTATION

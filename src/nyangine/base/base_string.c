@@ -479,10 +479,10 @@ void nya_string_strip_suffix(NYA_String* str, NYA_ConstCString suffix) {
   }
 }
 
-NYA_CString nya_string_to_cstr(const NYA_String* str) {
+NYA_CString nya_string_to_cstring(NYA_Arena* arena, const NYA_String* str) {
   nya_assert(str);
 
-  NYA_CString cstr = nya_alloca(str->length + 1);
+  NYA_CString cstr = nya_arena_alloc(arena, str->length + 1);
   nya_memmove(cstr, str->items, str->length);
   cstr[str->length] = '\0';
 

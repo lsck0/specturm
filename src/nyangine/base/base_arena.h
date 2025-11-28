@@ -2,7 +2,9 @@
 
 #include "nyangine/base/base.h"
 #include "nyangine/base/base_attributes.h"
+#include "nyangine/base/base_guard.h"
 #include "nyangine/base/base_ints.h"
+#include "nyangine/base/base_memory.h"
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -76,6 +78,8 @@ struct NYA_ArenaFreeListNode {
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
+NYA_API NYA_EXTERN NYA_Arena nya_global_arena;
+
 // clang-format off
 #if (NYA_IS_DEBUG || defined(NYA_ARENA_FORCE_DEBUG)) && !defined(NYA_ARENA_FORCE_NODEBUG)
 #define nya_arena_new(...)                                _nya_arena_debug_new_with_options((NYA_ArenaOptions){_NYA_ARENA_DEFAULT_OPTIONS, __VA_ARGS__}, __FUNCTION__, __FILE__, __LINE__)
@@ -134,3 +138,5 @@ NYA_API NYA_EXTERN void*      _nya_arena_nodebug_copy(NYA_Arena* dst, void* ptr,
 NYA_API NYA_EXTERN void*      _nya_arena_nodebug_move(NYA_Arena* src, NYA_Arena* dst, void* ptr, u64 size) __attr_no_discard;
 #endif // (NYA_IS_DEBUG || defined(NYA_ARENA_FORCE_DEBUG)) && !defined(NYA_ARENA_FORCE_NODEBUG)
 // clang-format on
+
+NYA_DEFINE_CLEANUP_FN(nya_arena_destroy, NYA_Arena, arena, nya_arena_destroy(&arena))

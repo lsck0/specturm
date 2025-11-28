@@ -56,8 +56,16 @@ NYA_API NYA_EXTERN void            nya_string_reverse(NYA_String* str);
 NYA_API NYA_EXTERN s32             nya_string_sscanf(NYA_String* str, NYA_ConstCString fmt, ...) __attr_fmt_scanf(2, 3);
 NYA_API NYA_EXTERN void            nya_string_strip_prefix(NYA_String* str, NYA_ConstCString prefix);
 NYA_API NYA_EXTERN void            nya_string_strip_suffix(NYA_String* str, NYA_ConstCString suffix);
-NYA_API NYA_EXTERN NYA_CString     nya_string_to_cstring(const NYA_String* str);
+NYA_API NYA_EXTERN NYA_CString     nya_string_to_cstring(NYA_Arena* arena, const NYA_String* str);
 NYA_API NYA_EXTERN void            nya_string_to_lower(NYA_String* str);
 NYA_API NYA_EXTERN void            nya_string_to_upper(NYA_String* str);
 NYA_API NYA_EXTERN void            nya_string_trim_whitespace(NYA_String* str);
 // clang-format on
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * INTERNALS
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+NYA_DEFINE_CLEANUP_FN(nya_string_destroy, NYA_String, string, nya_string_destroy(&string))

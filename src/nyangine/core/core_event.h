@@ -2,11 +2,19 @@
 
 #include "nyangine/base/base_ints.h"
 
+typedef struct NYA_Event     NYA_Event;
+typedef struct NYA_EventHook NYA_EventHook;
+
 typedef enum {
   NYA_EVENT_COUNT,
 } NYA_EventType;
 
-typedef struct {
+struct NYA_Event {
   NYA_EventType type;
   b8            was_handled;
-} NYA_Event;
+};
+
+struct NYA_EventHook {
+  void (*fn)(NYA_Event*);
+  bool (*condition)(NYA_Event*);
+};

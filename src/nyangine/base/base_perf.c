@@ -90,7 +90,6 @@ __attr_constructor NYA_INTERNAL void _nya_perf_init(void) {
 
 __attr_destructor NYA_INTERNAL void _nya_perf_shutdown(void) {
   nya_arena_destroy(&_nya_perf_arena);
-  nya_array_destroy(&_nya_perf_measurements);
 }
 #endif // NYA_IS_DEBUG
 

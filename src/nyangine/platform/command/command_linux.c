@@ -1,3 +1,4 @@
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 
@@ -5,19 +6,21 @@
 
 void nya_command_run(NYA_Command* command) {
   nya_assert(command);
-  nya_assert(command->arena);
   nya_assert(command->program);
 
   u64 start_time = nya_clock_get_unix_timestamp_ms();
-
-  command->stdout_content = nya_string_new(command->arena);
-  command->stderr_content = nya_string_new(command->arena);
 
   s32 stdout_pipe[2];
   s32 stderr_pipe[2];
   if (pipe(stdout_pipe) != 0 || pipe(stderr_pipe) != 0) {
     command->exit_code = 255;
     return;
+  }
+
+  if (nya_flag_check(command->flags, NYA_COMMAND_FLAG_OUTPUT_CAPTURE)) {
+    nya_assert(command->arena != nullptr, "Arena must be provided when capturing output.");
+    command->stdout_content = nya_string_new(command->arena);
+    command->stderr_content = nya_string_new(command->arena);
   }
 
   pid_t pid = fork();
@@ -28,19 +31,31 @@ void nya_command_run(NYA_Command* command) {
 
   // CHILD
   if (pid == 0) {
-    // redirect stdout and stderr
-    dup2(stdout_pipe[1], STDOUT_FILENO);
-    dup2(stderr_pipe[1], STDERR_FILENO);
+    int devnull_fd = -1;
+    if (nya_flag_check(command->flags, NYA_COMMAND_FLAG_OUTPUT_CAPTURE)) {
+      // capture output: redirect stdout/stderr to pipe write ends
+      dup2(stdout_pipe[1], STDOUT_FILENO);
+      dup2(stderr_pipe[1], STDERR_FILENO);
+    } else if (nya_flag_check(command->flags, NYA_COMMAND_FLAG_OUTPUT_SUPPRESS)) {
+      // suppress output: redirect stdout/stderr to /dev/null
+      devnull_fd = open("/dev/null", O_WRONLY);
+      if (devnull_fd >= 0) {
+        dup2(devnull_fd, STDOUT_FILENO);
+        dup2(devnull_fd, STDERR_FILENO);
+      }
+    }
+
     close(stdout_pipe[0]);
     close(stdout_pipe[1]);
     close(stderr_pipe[0]);
     close(stderr_pipe[1]);
+    if (devnull_fd >= 0) close(devnull_fd);
 
     // change working directory
     if (command->working_directory != nullptr && strlen(command->working_directory) != 0) {
       if (chdir(command->working_directory) != 0) {
         perror("chdir");
-        _exit(1);
+        exit(1);
       }
     }
 
@@ -51,15 +66,15 @@ void nya_command_run(NYA_Command* command) {
     }
 
     // build argv
-    NYA_ConstCString* argv = nya_alloca(sizeof(NYA_CString) * (2 + nya_carray_length(command->arguments)));
+    NYA_ConstCString* argv = nya_alloca((nya_carray_length(command->arguments) + 2) * sizeof(NYA_ConstCString));
     argv[0]                = command->program;
     nya_memcpy(argv + 1, command->arguments, nya_carray_length(command->arguments) * sizeof(NYA_ConstCString));
-    argv[1 + nya_carray_length(command->arguments)] = nullptr;
+    argv[nya_carray_length(command->arguments) + 1] = nullptr;
 
     // do the thing
     execvp(command->program, (char* const*)argv);
     perror("execvp");
-    _exit(1);
+    exit(1);
   }
 
   // PARENT
@@ -67,13 +82,21 @@ void nya_command_run(NYA_Command* command) {
   close(stderr_pipe[1]);
 
   // read stdout and stderr
-  nya_fd_read(stdout_pipe[0], &command->stdout_content);
-  nya_fd_read(stderr_pipe[0], &command->stderr_content);
+  if (nya_flag_check(command->flags, NYA_COMMAND_FLAG_OUTPUT_CAPTURE)) {
+    nya_fd_read(stdout_pipe[0], &command->stdout_content);
+    nya_fd_read(stderr_pipe[0], &command->stderr_content);
+  }
   close(stdout_pipe[0]);
   close(stderr_pipe[0]);
 
   // read exit code
-  waitpid(pid, &command->exit_code, 0);
+  s32 status;
+  waitpid(pid, &status, 0);
+  if (WIFEXITED(status)) {
+    command->exit_code = WEXITSTATUS(status);
+  } else if (WIFSIGNALED(status)) {
+    command->exit_code = 128 + WTERMSIG(status);
+  }
 
   u64 end_time               = nya_clock_get_unix_timestamp_ms();
   command->execution_time_ms = end_time - start_time;
@@ -82,6 +105,8 @@ void nya_command_run(NYA_Command* command) {
 void nya_command_destroy(NYA_Command* command) {
   nya_assert(command);
 
-  nya_string_destroy(&command->stdout_content);
-  nya_string_destroy(&command->stderr_content);
+  if (nya_flag_check(command->flags, NYA_COMMAND_FLAG_OUTPUT_CAPTURE)) {
+    nya_string_destroy(&command->stdout_content);
+    nya_string_destroy(&command->stderr_content);
+  }
 }

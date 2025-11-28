@@ -10,6 +10,6 @@
 ```bash
 git clone --recursive http://github.com/lsck0/specturm.git
 cd specturm
-cc build.c -o build
+clang build.c -o build -std=c23 -fenable-matrix -Wno-gcc-compat -Wno-initializer-overrides -I./src -lm -lSDL3
 ./build
 ```

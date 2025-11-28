@@ -13,13 +13,23 @@
 
 typedef struct NYA_Command NYA_Command;
 
+typedef enum {
+  NYA_COMMAND_FLAG_NONE            = 0,
+  NYA_COMMAND_FLAG_OUTPUT_SUPPRESS = (1 << 0),
+  NYA_COMMAND_FLAG_OUTPUT_SHOW     = (1 << 1),
+  NYA_COMMAND_FLAG_OUTPUT_CAPTURE  = (1 << 2),
+  NYA_COMMAND_FLAG_DEFAULT         = NYA_COMMAND_FLAG_OUTPUT_SHOW,
+} NYA_CommandFlags;
+
 struct NYA_Command {
-  NYA_Arena* arena;
+  NYA_CommandFlags flags;
 
   NYA_ConstCString working_directory;
   NYA_ConstCString program;
   NYA_ConstCString arguments[NYA_COMMAND_MAX_ARGUMENTS];
   NYA_CString      environment[NYA_COMMAND_MAX_ENV_VARS];
+
+  NYA_Arena* arena;
 
   /** will be filled after execution */
   s32        exit_code;

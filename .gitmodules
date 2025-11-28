@@ -1,6 +1,3 @@
-[submodule "vendor/nob"]
-	path = vendor/nob
-	url = https://github.com/tsoding/nob.h.git
 [submodule "vendor/sdl"]
 	path = vendor/sdl
 	url = https://github.com/libsdl-org/SDL.git
