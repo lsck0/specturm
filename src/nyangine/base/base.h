@@ -12,6 +12,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <inttypes.h>
+#include <math.h>
 #include <memory.h>
 #include <stdarg.h>
 #include <stdint.h>

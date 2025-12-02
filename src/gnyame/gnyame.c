@@ -1,9 +1,7 @@
 #include "gnyame/gnyame.h"
 
-#include "nyangine/base/base_arena.h"
-#include "nyangine/base/base_array.h"
-#include "nyangine/base/base_build.h"
 #include "nyangine/nyangine.c"
+#include "nyangine/nyangine.h"
 
 void on_create(void);
 void on_destroy(void);

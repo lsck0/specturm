@@ -31,6 +31,7 @@
 // clang-format on
 
 NYA_INTERNAL void add_version_flag_and_git_hash(NYA_BuildRule* rule);
+NYA_INTERNAL void convert_perf_data_to_plain(NYA_BuildRule* rule);
 NYA_INTERNAL void remove_output_file(NYA_BuildRule* rule);
 NYA_INTERNAL void test_runner(NYA_BuildRule* rule);
 
@@ -291,7 +292,15 @@ NYA_BuildRule run_debug = {
     .policy = NYA_BUILD_ALWAYS,
 
     .command = {
-        .program     = "./" DEBUG_BINARY,
+        .program = "perf",
+        .arguments = {
+            "record",
+            "-T",
+            "-F", "100",
+            "-g", "--call-graph", "dwarf",
+            "-e", "cycles,instructions,cache-misses",
+            "./" DEBUG_BINARY,
+        },
         .environment = {
             "ASAN_OPTIONS=detect_leaks=1:strict_string_checks=1:halt_on_error=1",
             "LSAN_OPTIONS=suppressions=lsan.supp",
@@ -300,6 +309,8 @@ NYA_BuildRule run_debug = {
     },
 
     .dependencies = { &build_project_debug },
+
+    .post_build_hooks = { &convert_perf_data_to_plain },
 };
 
 NYA_BuildRule run_tests = {
@@ -314,6 +325,31 @@ NYA_BuildRule build_project = {
     .dependencies = {
         &build_project_linux_x86_64,
         &build_project_windows_x86_64,
+    },
+};
+
+NYA_BuildRule open_perf_report = {
+    .name        = "open_perf_report",
+    .is_metarule = true,
+    .dependencies = {
+        &(NYA_BuildRule){
+            .name   = "open_speedscope",
+            .policy = NYA_BUILD_ALWAYS,
+
+            .command = {
+                .program   = "speedscope",
+                .arguments = {"./perf.data.txt"},
+            },
+        },
+        &(NYA_BuildRule){
+            .name   = "open_hotspot",
+            .policy = NYA_BUILD_ALWAYS,
+
+            .command = {
+                .program   = "hotspot",
+                .arguments = {"./perf.data"},
+            },
+        },
     },
 };
 
@@ -376,6 +412,20 @@ skip_initialization:
   nya_assert(length < NYA_COMMAND_MAX_ARGUMENTS - 2, "Not enough space to add version flags.");
   rule->command.arguments[length + 0] = GIT_HASH_FLAG;
   rule->command.arguments[length + 1] = VERSION_FLAG;
+}
+
+NYA_INTERNAL void convert_perf_data_to_plain(NYA_BuildRule* rule) {
+  nya_assert(rule);
+
+  NYA_Command command = {
+      .arena     = &nya_global_arena,
+      .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
+      .program   = "perf",
+      .arguments = {"script", "-i", "./perf.data"},
+  };
+  nya_command_run(&command);
+
+  nya_file_write("./perf.data.txt", &command.stdout_content);
 }
 
 NYA_INTERNAL void remove_output_file(NYA_BuildRule* rule) {
@@ -462,8 +512,9 @@ NYA_INTERNAL void usage_and_exit(NYA_CString program_name) {
   printf("Tasks:\n");
   printf("  run:debug\n");
   printf("  run:tests\n");
-  printf("  run:stats\n");
-  printf("  run:docs\n");
+  printf("  open:perf\n");
+  printf("  open:docs\n");
+  printf("  open:stats\n");
   printf("  build:debug\n");
   printf("  build:release\n");
 
@@ -480,10 +531,12 @@ s32 main(s32 argc, NYA_CString* argv) {
     nya_build(&run_debug);
   } else if (nya_string_equals(task, "run:tests")) {
     nya_build(&run_tests);
-  } else if (nya_string_equals(task, "run:stats")) {
-    nya_build(&show_stats);
-  } else if (nya_string_equals(task, "run:docs")) {
+  } else if (nya_string_equals(task, "open:perf")) {
+    nya_build(&open_perf_report);
+  } else if (nya_string_equals(task, "open:docs")) {
     nya_build(&open_docs);
+  } else if (nya_string_equals(task, "open:stats")) {
+    nya_build(&show_stats);
   } else if (nya_string_equals(task, "build:debug")) {
     nya_build(&build_project_debug);
   } else if (nya_string_equals(task, "build:release")) {
