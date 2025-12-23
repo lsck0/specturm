@@ -1,0 +1,88 @@
+# issue types
+- name: "bug"
+  color: "d73a4a"
+  description: "Something isn't working"
+
+- name: "feature"
+  color: "a2eeef"
+  description: "New feature or request"
+
+- name: "change"
+  color: "fbca04"
+  description: "Change to existing functionality"
+
+- name: "documentation"
+  color: "0075ca"
+  description: "Related to documentation"
+
+- name: "invalid"
+  color: "e4e669"
+  description: "This issue or PR is invalid"
+
+- name: "duplicate"
+  color: "cfd3d7"
+  description: "Already reported or exists"
+
+- name: "wontfix"
+  color: "ffffff"
+  description: "This won't be fixed"
+
+# status workflow
+- name: "status: waiting"
+  color: "fef2c0"
+  description: "Waiting on input or dependency"
+
+- name: "status: in progress"
+  color: "bfdadc"
+  description: "Actively being worked on"
+
+- name: "status: ready"
+  color: "c5def5"
+  description: "Ready for review or next step"
+
+- name: "status: stale"
+  color: "eeeeee"
+  description: "Inactive; may need follow-up"
+
+- name: "status: done"
+  color: "bfe5bf"
+  description: "Completed and resolved"
+
+# triage priority
+- name: "triage: low"
+  color: "c2e0c6"
+  description: "Triage: low priority"
+
+- name: "triage: medium"
+  color: "fef2c0"
+  description: "Triage: medium priority"
+
+- name: "triage: high"
+  color: "f9d0c4"
+  description: "Triage: high priority"
+
+# size / effort estimation
+- name: "size: hours"
+  color: "bfe5bf"
+  description: "Estimated effort: hours"
+
+- name: "size: days"
+  color: "bfdadc"
+  description: "Estimated effort: days"
+
+- name: "size: weeks"
+  color: "d4c5f9"
+  description: "Estimated effort: weeks"
+
+- name: "size: months"
+  color: "e99695"
+  description: "Estimated effort: months"
+
+# contributor-friendly
+- name: "good first issue"
+  color: "7057ff"
+  description: "Good for newcomers"
+
+- name: "help wanted"
+  color: "008672"
+  description: "Extra attention needed"

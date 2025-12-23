@@ -1,0 +1,11 @@
+name: Feature Change
+description: Propose changing or removing a Feature
+title: "[Change]: "
+labels: ["change"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+    validations:
+      required: true

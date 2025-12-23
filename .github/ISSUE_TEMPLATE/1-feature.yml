@@ -1,0 +1,11 @@
+name: Feature Proposal
+description: Propose a new Feature
+title: "[Feature]: "
+labels: ["feature"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+    validations:
+      required: true
