@@ -302,9 +302,10 @@ NYA_BuildRule run_debug = {
             "./" DEBUG_BINARY,
         },
         .environment = {
-            "ASAN_OPTIONS=detect_leaks=1:strict_string_checks=1:halt_on_error=1",
-            "LSAN_OPTIONS=suppressions=lsan.supp",
-            "UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1",
+            "ASAN_OPTIONS=suppressions=./.sanitizers/asan.supp:detect_leaks=1:strict_string_checks=1:halt_on_error=1",
+            "LSAN_OPTIONS=suppressions=./.sanitizers/lsan.supp",
+            "TSAN_OPTIONS=suppressions=./.sanitizers/tsan.supp",
+            "UBSAN_OPTIONS=suppressions=./.sanitizers/ubsan.supp:print_stacktrace=1:halt_on_error=1",
         },
     },
 
