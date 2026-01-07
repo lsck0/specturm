@@ -17,7 +17,7 @@
 
 // clang-format off
 #define CC            "clang"
-#define CFLAGS        "-std=c23", "-ggdb", "-fenable-matrix"
+#define CFLAGS        "-std=c23", "-ggdb", "-fenable-matrix", "-mavx", "-mavx2"
 #define WARNINGS      "-pedantic", "-Wall", "-Wextra", "-Wpedantic", "-Wno-gnu", "-Wno-gcc-compat", "-Wno-initializer-overrides", "-Wno-keyword-macro"
 #define INCLUDE_PATHS "-I./src/", "-I./vendor/sdl/include/"
 #define LINKER_FLAGS  "-lm", "-pthread", "-lSDL3"
