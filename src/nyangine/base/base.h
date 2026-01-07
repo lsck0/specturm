@@ -11,6 +11,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <immintrin.h>
 #include <inttypes.h>
 #include <math.h>
 #include <memory.h>

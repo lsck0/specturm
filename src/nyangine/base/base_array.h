@@ -36,6 +36,24 @@ nya_derive_array(f16);
 nya_derive_array(f32);
 nya_derive_array(f64);
 
+nya_derive_array(b8ptr);
+nya_derive_array(b16ptr);
+nya_derive_array(b32ptr);
+nya_derive_array(b64ptr);
+nya_derive_array(voidptr);
+nya_derive_array(u0ptr);
+nya_derive_array(u8ptr);
+nya_derive_array(u16ptr);
+nya_derive_array(u32ptr);
+nya_derive_array(u64ptr);
+nya_derive_array(s8ptr);
+nya_derive_array(s16ptr);
+nya_derive_array(s32ptr);
+nya_derive_array(s64ptr);
+nya_derive_array(f16ptr);
+nya_derive_array(f32ptr);
+nya_derive_array(f64ptr);
+
 #if defined(__has_feature) && __has_attribute(ext_vector_type)
 nya_derive_array(f16x2);
 nya_derive_array(f16x3);

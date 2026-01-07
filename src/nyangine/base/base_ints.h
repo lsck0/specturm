@@ -27,6 +27,24 @@ typedef _Float16  f16;
 typedef float     f32;
 typedef double    f64;
 
+typedef b8*   b8ptr;
+typedef b16*  b16ptr;
+typedef b32*  b32ptr;
+typedef b64*  b64ptr;
+typedef void* voidptr;
+typedef u0*   u0ptr;
+typedef u8*   u8ptr;
+typedef u16*  u16ptr;
+typedef u32*  u32ptr;
+typedef u64*  u64ptr;
+typedef s8*   s8ptr;
+typedef s16*  s16ptr;
+typedef s32*  s32ptr;
+typedef s64*  s64ptr;
+typedef f16*  f16ptr;
+typedef f32*  f32ptr;
+typedef f64*  f64ptr;
+
 #define true  ((b8)1)
 #define false ((b8)0)
 

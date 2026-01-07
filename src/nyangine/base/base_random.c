@@ -1,0 +1,166 @@
+#include "nyangine/base/base_random.h"
+
+#include "nyangine/nyangine.h"
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * PRIVATE API DECLARATION
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+// Nothing up my sleeve: those are the hex digits of Φ,
+// the least approximable irrational number.
+// $ echo 'scale=310;obase=16;(sqrt(5)-1)/2' | bc
+NYA_INTERNAL const u64 PHI[16] = {
+    0x9E3779B97F4A7C15,
+    0xF39CC0605CEDC834,
+    0x1082276BF3A27251,
+    0xF86C6A11D0C18E95,
+    0x2767F0B153D27B7F,
+    0x0347045B5BF1827F,
+    0x01886F0928403002,
+    0xC1D64BA40F335E36,
+    0xF06AD7AE9717877E,
+    0x85839D6EFFBD7DC6,
+    0x64D325D1C5371682,
+    0xCADD0CCCFDFFBBE1,
+    0x626E33B8D04B4331,
+    0xBBF73C790D94F79D,
+    0x471C4AB3ED3D82A5,
+    0xFEC507705E4AE6E5,
+};
+
+NYA_INTERNAL void _nya_rng_fill_buffer(NYA_RNG* rng) {
+  __m256i o0 = rng->output[0];
+  __m256i o1 = rng->output[1];
+  __m256i o2 = rng->output[2];
+  __m256i o3 = rng->output[3];
+  __m256i s0 = rng->state[0];
+  __m256i s1 = rng->state[1];
+  __m256i s2 = rng->state[2];
+  __m256i s3 = rng->state[3];
+  __m256i t0;
+  __m256i t1;
+  __m256i t2;
+  __m256i t3;
+  __m256i u0;
+  __m256i u1;
+  __m256i u2;
+  __m256i u3;
+  __m256i counter = rng->counter;
+
+  // The following shuffles move weak (low-diffusion) 32-bit parts of 64-bit
+  // additions to strong positions for enrichment. The low 32-bit part of a
+  // 64-bit chunk never moves to the same 64-bit chunk as its high part.
+  // They do not remain in the same chunk. Each part eventually reaches all
+  // positions ringwise: A to B, B to C, …, H to A.
+  // You may notice that they are simply 256-bit rotations (96 and 160).
+  __m256i shu0 = _mm256_set_epi32(4, 3, 2, 1, 0, 7, 6, 5);
+  __m256i shu1 = _mm256_set_epi32(2, 1, 0, 7, 6, 5, 4, 3);
+
+  // The counter is not necessary to beat PractRand.
+  // It sets a lower bound of 2^71 bytes = 2 ZiB to the period,
+  // or about 7 millennia at 10 GiB/s.
+  // The increments are picked as odd numbers,
+  // since only coprimes of the base cover the full cycle,
+  // and all odd numbers are coprime of 2.
+  // I use different odd numbers for each 64-bit chunk
+  // for a tiny amount of variation stirring.
+  // I used the smallest odd numbers to avoid having a magic number.
+  __m256i increment = _mm256_set_epi64x(1, 3, 5, 7);
+
+  for (u64 index = 0; index < _NYA_RNG_BUFFER_SIZE; index += 128) {
+    _mm256_storeu_si256((__m256i*)&rng->buffer[index + 0], o0);
+    _mm256_storeu_si256((__m256i*)&rng->buffer[index + 32], o1);
+    _mm256_storeu_si256((__m256i*)&rng->buffer[index + 64], o2);
+    _mm256_storeu_si256((__m256i*)&rng->buffer[index + 96], o3);
+
+    // I apply the counter to s1, since it is the one whose shift loses most entropy.
+    s1      = _mm256_add_epi64(s1, counter);
+    s3      = _mm256_add_epi64(s3, counter);
+    counter = _mm256_add_epi64(counter, increment);
+
+    // SIMD does not support rotations. Shift is the next best thing to entangle
+    // bits with other 64-bit positions. We must shift by an odd number so that
+    // each bit reaches all 64-bit positions, not just half. We must lose bits
+    // of information, so we minimize it: 1 and 3. We use different shift values
+    // to increase divergence between the two sides. We use rightward shift
+    // because the rightmost bits have the least diffusion in addition (the low
+    // bit is just a XOR of the low bits).
+    u0 = _mm256_srli_epi64(s0, 1);
+    u1 = _mm256_srli_epi64(s1, 3);
+    u2 = _mm256_srli_epi64(s2, 1);
+    u3 = _mm256_srli_epi64(s3, 3);
+    t0 = _mm256_permutevar8x32_epi32(s0, shu0);
+    t1 = _mm256_permutevar8x32_epi32(s1, shu1);
+    t2 = _mm256_permutevar8x32_epi32(s2, shu0);
+    t3 = _mm256_permutevar8x32_epi32(s3, shu1);
+
+    // Addition is the main source of diffusion.
+    // Storing the output in the state keeps that diffusion permanently.
+    s0 = _mm256_add_epi64(t0, u0);
+    s1 = _mm256_add_epi64(t1, u1);
+    s2 = _mm256_add_epi64(t2, u2);
+    s3 = _mm256_add_epi64(t3, u3);
+
+    // Two orthogonally grown pieces evolving independently, XORed.
+    o0 = _mm256_xor_si256(u0, t1);
+    o1 = _mm256_xor_si256(u2, t3);
+    o2 = _mm256_xor_si256(s0, s3);
+    o3 = _mm256_xor_si256(s2, s1);
+  }
+
+  rng->output[0] = o0;
+  rng->output[1] = o1;
+  rng->output[2] = o2;
+  rng->output[3] = o3;
+  rng->state[0]  = s0;
+  rng->state[1]  = s1;
+  rng->state[2]  = s2;
+  rng->state[3]  = s3;
+  rng->counter   = counter;
+}
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * PUBLIC API IMPLEMENTATION
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+NYA_RNG nya_rng_new_with_options(NYA_RNGOptions options) {
+  NYA_RNG rng = {0};
+
+  // handle empty seed
+  if (options.seed[0] == 0 && options.seed[1] == 0 && options.seed[2] == 0 && options.seed[3] == 0) {
+    u64 now         = nya_clock_get_unix_timestamp_ms();
+    options.seed[0] = now;
+    options.seed[2] = now ^ 0x123456789ABCDEF0;
+    options.seed[3] = now ^ 0x0FEDCBA987654321;
+    options.seed[1] = now ^ 0xBEEFBEEFBEEFBEEF;
+  }
+
+  rng.seed[0] = options.seed[0];
+  rng.seed[1] = options.seed[1];
+  rng.seed[2] = options.seed[2];
+  rng.seed[3] = options.seed[3];
+
+  // Diffuse first two seed elements in s0, then the last two. Same for s1.
+  // We must keep half of the state unchanged so users cannot set a bad state.
+  rng.state[0] = _mm256_set_epi64x((s64)PHI[3], (s64)(PHI[2] ^ rng.seed[1]), (s64)PHI[1], (s64)(PHI[0] ^ rng.seed[0]));
+  rng.state[1] = _mm256_set_epi64x((s64)PHI[7], (s64)(PHI[6] ^ rng.seed[3]), (s64)PHI[5], (s64)(PHI[4] ^ rng.seed[2]));
+  rng.state[2] =
+      _mm256_set_epi64x((s64)PHI[11], (s64)(PHI[10] ^ rng.seed[3]), (s64)PHI[9], (s64)(PHI[8] ^ rng.seed[2]));
+  rng.state[3] =
+      _mm256_set_epi64x((s64)PHI[15], (s64)(PHI[14] ^ rng.seed[1]), (s64)PHI[13], (s64)(PHI[12] ^ rng.seed[0]));
+
+  for (u64 round = 0; round < _NYA_RNG_INIT_ROUNDS; round++) {
+    _nya_rng_fill_buffer(&rng);
+
+    rng.state[0] = rng.output[3];
+    rng.state[1] = rng.output[2];
+    rng.state[2] = rng.output[1];
+    rng.state[3] = rng.output[0];
+  }
+
+  return rng;
+}
