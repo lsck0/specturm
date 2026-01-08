@@ -1,5 +1,3 @@
-#include "nyangine/base/base_random.h"
-
 #include "nyangine/nyangine.h"
 
 /*
@@ -163,4 +161,175 @@ NYA_RNG nya_rng_new_with_options(NYA_RNGOptions options) {
   }
 
   return rng;
+}
+
+void nya_rng_gen_bytes(NYA_RNG* rng, u8 buffer[], u64 size) {
+  u64 remaining_bytes   = size;
+  u64 rng_buffer_offset = 0;
+
+  while (remaining_bytes > 0) {
+    // did we exhaust the buffer?
+    if (rng->cursor >= _NYA_RNG_BUFFER_SIZE) {
+      _nya_rng_fill_buffer(rng);
+      rng->cursor = 0;
+    }
+
+    u64 available_bytes = nya_min(remaining_bytes, _NYA_RNG_BUFFER_SIZE - rng->cursor);
+    nya_memcpy(&buffer[rng_buffer_offset], &rng->buffer[rng->cursor], available_bytes);
+
+    rng->cursor       += available_bytes;
+    rng_buffer_offset += available_bytes;
+    remaining_bytes   -= available_bytes;
+  }
+}
+
+u8 nya_rng_sample_u8(NYA_RNG* rng, NYA_RNGDistribution distribution) {
+  return nya_cast_to_u8(roundl(nya_rng_sample_f64(rng, distribution)));
+}
+
+u16 nya_rng_sample_u16(NYA_RNG* rng, NYA_RNGDistribution distribution) {
+  return nya_cast_to_u16(roundl(nya_rng_sample_f64(rng, distribution)));
+}
+
+u32 nya_rng_sample_u32(NYA_RNG* rng, NYA_RNGDistribution distribution) {
+  return nya_cast_to_u32(roundl(nya_rng_sample_f64(rng, distribution)));
+}
+
+u64 nya_rng_sample_u64(NYA_RNG* rng, NYA_RNGDistribution distribution) {
+  return nya_cast_to_u64(roundl(nya_rng_sample_f64(rng, distribution)));
+}
+
+s8 nya_rng_sample_s8(NYA_RNG* rng, NYA_RNGDistribution distribution) {
+  return nya_cast_to_s8(roundl(nya_rng_sample_f64(rng, distribution)));
+}
+
+s16 nya_rng_sample_s16(NYA_RNG* rng, NYA_RNGDistribution distribution) {
+  return nya_cast_to_s16(roundl(nya_rng_sample_f64(rng, distribution)));
+}
+
+s32 nya_rng_sample_s32(NYA_RNG* rng, NYA_RNGDistribution distribution) {
+  return nya_cast_to_s32(roundl(nya_rng_sample_f64(rng, distribution)));
+}
+
+s64 nya_rng_sample_s64(NYA_RNG* rng, NYA_RNGDistribution distribution) {
+  return nya_cast_to_s64(roundl(nya_rng_sample_f64(rng, distribution)));
+}
+
+f16 nya_rng_sample_f16(NYA_RNG* rng, NYA_RNGDistribution distribution) {
+  return nya_cast_to_f16(nya_rng_sample_f64(rng, distribution));
+}
+
+f32 nya_rng_sample_f32(NYA_RNG* rng, NYA_RNGDistribution distribution) {
+  return nya_cast_to_f32(nya_rng_sample_f64(rng, distribution));
+}
+
+f64 nya_rng_sample_f64(NYA_RNG* rng, NYA_RNGDistribution distribution) {
+  switch (distribution.type) {
+    // clamping and moving
+    case NYA_RNG_DISTRIBUTION_UNIFORM: {
+      f64 min = distribution.uniform.min;
+      f64 max = distribution.uniform.max;
+      nya_assert(min <= max);
+
+      f64 range = max - min + 1;
+
+      f64 result;
+      nya_rng_gen_bytes(rng, (u8*)&result, sizeof(f64));
+
+      return min + fmod(result, range);
+    } break;
+
+    // using Box-Muller transform
+    case NYA_RNG_DISTRIBUTION_NORMAL: {
+      f64 mean   = distribution.normal.mean;
+      f64 stddev = distribution.normal.stddev;
+      nya_assert(stddev > 0.0);
+
+      u64 r1;
+      u64 r2;
+      nya_rng_gen_bytes(rng, (u8*)&r1, sizeof(u64));
+      nya_rng_gen_bytes(rng, (u8*)&r2, sizeof(u64));
+      f64 u1 = (f64)r1 / (f64)U64_MAX;
+      f64 u2 = (f64)r2 / (f64)U64_MAX;
+
+      f64 z0     = sqrt(-2.0 * log(u1)) * cos(2.0 * M_PI * u2);
+      f64 result = z0 * stddev + mean;
+
+      return result;
+    } break;
+
+    // Inverse transform sampling: X = -ln(1-u) / lambda
+    case NYA_RNG_DISTRIBUTION_EXPONENTIAL: {
+      f64 lambda = distribution.exponential.lambda;
+
+      u64 r;
+      nya_rng_gen_bytes(rng, (u8*)&r, sizeof(u64));
+      f64 u = (f64)r / (f64)U64_MAX;
+
+      f64 result = -log(1.0 - u) / lambda;
+      return result;
+    } break;
+
+    // Knuth algorithm for small lambda
+    case NYA_RNG_DISTRIBUTION_POISSON: {
+      f64 lambda = distribution.poisson.lambda;
+      nya_assert(lambda > 0.0);
+
+      f64 L = exp(-lambda);
+      f64 p = 1.0;
+      u64 k = 0;
+
+      do {
+        k++;
+        u64 r;
+        nya_rng_gen_bytes(rng, (u8*)&r, sizeof(u64));
+        f64 u  = (f64)r / (f64)U64_MAX;
+        p     *= u;
+      } while (p > L);
+
+      return (f64)(k - 1);
+    } break;
+
+    // Count successes in n trials
+    case NYA_RNG_DISTRIBUTION_BINOMIAL: {
+      u64 n = distribution.binomial.n;
+      f64 p = distribution.binomial.p;
+      nya_assert(p >= 0.0 && p <= 1.0);
+
+      u64 successes = 0;
+      for (u64 i = 0; i < n; i++) {
+        u64 r;
+        nya_rng_gen_bytes(rng, (u8*)&r, sizeof(u64));
+        f64 u = (f64)r / (f64)U64_MAX;
+        if (u < p) successes++;
+      }
+
+      return (f64)successes;
+    } break;
+
+    // Inverse transform: number of trials until first success
+    case NYA_RNG_DISTRIBUTION_GEOMETRIC: {
+      f64 p = distribution.geometric.p;
+      nya_assert(p > 0.0 && p <= 1.0);
+
+      u64 r;
+      nya_rng_gen_bytes(rng, (u8*)&r, sizeof(u64));
+      f64 u = (f64)r / (f64)U64_MAX;
+
+      return floor(log(1.0 - u) / log(1.0 - p)) + 1.0;
+    } break;
+
+    default: nya_unreachable();
+  }
+  static_assert(NYA_RNG_DISTRIBUTION_COUNT == 6, "Unhandled NYA_RNGDistributionType enum value.");
+}
+
+b8 nya_rng_gen_bool(NYA_RNG* rng, f32 true_chance) {
+  nya_assert(true_chance >= 0.0F && true_chance <= 1.0F);
+
+  u64 r;
+  nya_rng_gen_bytes(rng, (u8*)&r, sizeof(u64));
+  f64 u = (f64)r / (f64)U64_MAX;
+
+  return u < (f64)true_chance;
 }
