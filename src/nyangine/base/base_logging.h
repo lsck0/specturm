@@ -1,5 +1,5 @@
-#pragma once
 // clang-format off
+#pragma once
 
 #include "nyangine/base/base_attributes.h"
 #include "nyangine/base/base_ints.h"

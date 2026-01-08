@@ -8,7 +8,7 @@ void nya_command_run(NYA_Command* command) {
   nya_assert(command);
   nya_assert(command->program);
 
-  u64 start_time = nya_clock_get_unix_timestamp_ms();
+  u64 start_time = nya_clock_get_timestamp_ms();
 
   s32 stdout_pipe[2];
   s32 stderr_pipe[2];
@@ -98,7 +98,7 @@ void nya_command_run(NYA_Command* command) {
     command->exit_code = 128 + WTERMSIG(status);
   }
 
-  u64 end_time               = nya_clock_get_unix_timestamp_ms();
+  u64 end_time               = nya_clock_get_timestamp_ms();
   command->execution_time_ms = end_time - start_time;
 }
 

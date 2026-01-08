@@ -84,7 +84,10 @@ nya_derive_array(f64_4x4);
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-#define nya_array_new(arena_ptr, item_type) nya_array_new_with_capacity(arena_ptr, item_type, 16)
+#define _NYA_ARRAY_DEFAULT_CAPACITY 16
+
+#define nya_array_new(arena_ptr, item_type)                                                                            \
+  nya_array_new_with_capacity(arena_ptr, item_type, _NYA_ARRAY_DEFAULT_CAPACITY)
 #define nya_array_new_with_capacity(arena_ptr, item_type, initial_capacity)                                            \
   (item_type##Array) {                                                                                                 \
     .items = nya_arena_alloc(arena_ptr, (initial_capacity) * sizeof(item_type)), .length = 0,                          \
@@ -447,14 +450,11 @@ nya_derive_array(f64_4x4);
 
 #define nya_array_for(arr_ptr, index_name) for (u64 index_name = 0; (index_name) < (arr_ptr)->length; (index_name)++)
 
-#define nya_array_for_reverse(arr_ptr, index_name)                                                                     \
-  for (u64 index_name = (arr_ptr)->length - 1; (index_name) >= 0; (index_name)--)
+#define nya_array_for_reverse(arr_ptr, index_name) for (u64 index_name = (arr_ptr)->length; (index_name)-- > 0;)
 
 #define nya_array_foreach(arr_ptr, item_name)                                                                          \
   for (typeof(*(arr_ptr)->items)*(item_name) = (arr_ptr)->items; (item_name) < (arr_ptr)->items + (arr_ptr)->length;   \
        (item_name)++)
 
 #define nya_array_foreach_reverse(arr_ptr, item_name)                                                                  \
-  for (typeof(*(arr_ptr)->items)*(item_name) = (arr_ptr)->items + (arr_ptr)->length - 1;                               \
-       (item_name) >= (arr_ptr)->items;                                                                                \
-       (item_name)--)
+  for (typeof(*(arr_ptr)->items)*(item_name) = (arr_ptr)->items + (arr_ptr)->length; (item_name)-- > (arr_ptr)->items;)

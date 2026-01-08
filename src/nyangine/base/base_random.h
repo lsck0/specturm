@@ -18,6 +18,7 @@ typedef struct NYA_RNGOptions NYA_RNGOptions;
 #define _NYA_RNG_INIT_ROUNDS     16
 #define _NYA_RNG_DEFAULT_OPTIONS .seed = {0, 0, 0, 0}
 
+// TODO: take the seed in a different format, like a string A-Za-z-0-9 and convert it to u64[4] internally
 struct NYA_RNGOptions {
   u64 seed[4]; // seed == 0 => take random seed
 };
@@ -44,6 +45,7 @@ static_assert(_NYA_RNG_BUFFER_SIZE % 128 == 0, "RNG buffer size must be a multip
 #define nya_rng_new(...) _nya_rng_new_with_options((NYA_RNGOptions){_NYA_RNG_DEFAULT_OPTIONS, __VA_ARGS__})
 NYA_API NYA_EXTERN NYA_RNG nya_rng_new_with_options(NYA_RNGOptions options) __attr_no_discard;
 
+// TODO: that api is terrible lmao: do sampling from distributions and generate random bytes etc, similar to rust rng
 NYA_API NYA_EXTERN b8  nya_rng_gen_b8(NYA_RNG* rng) __attr_no_discard;
 NYA_API NYA_EXTERN b16 nya_rng_gen_b16(NYA_RNG* rng) __attr_no_discard;
 NYA_API NYA_EXTERN b32 nya_rng_gen_b32(NYA_RNG* rng) __attr_no_discard;

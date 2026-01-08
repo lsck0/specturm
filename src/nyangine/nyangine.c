@@ -1,4 +1,5 @@
 #include "nyangine/base/base.h"
+
 #if OS_WINDOWS
 #include "nyangine/platform/platform_windows.c"
 #elif OS_LINUX
@@ -16,4 +17,6 @@
 #include "nyangine/base/base_random.c"
 #include "nyangine/base/base_string.c"
 #include "nyangine/core/core_app.c"
+#include "nyangine/core/core_entity.c"
+#include "nyangine/core/core_event.c"
 #include "nyangine/core/core_window.c"

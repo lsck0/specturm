@@ -5,6 +5,8 @@ CompileFlags:
       -xc,
       -std=c23,
       -fenable-matrix,
+      -mavx,
+      -mavx2,
       -pedantic,
       -Wall,
       -Wextra,

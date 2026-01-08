@@ -2,7 +2,7 @@
 
 #include "nyangine/nyangine.h"
 
-b8 nya_filesystem_is_file(NYA_ConstCString path) {
+b8 nya_filesystem_file_exists(NYA_ConstCString path) {
   DWORD attributes = GetFileAttributesA(path);
   if (attributes == INVALID_FILE_ATTRIBUTES) return false;
   return (attributes & FILE_ATTRIBUTE_DIRECTORY) == 0;

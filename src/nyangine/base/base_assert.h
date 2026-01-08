@@ -1,5 +1,5 @@
-#pragma once
 // clang-format off
+#pragma once
 
 #include "nyangine/base/base_logging.h"
 

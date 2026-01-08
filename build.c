@@ -63,7 +63,7 @@ NYA_Command build_rebuild_command = {
  */
 
 NYA_BuildRule build_prepare_linux_x86_64_sdl = {
-    .name        = "build_linux_x86_64_sdl_prepare",
+    .name        = "build_prepare_linux_x86_64_sdl",
     .policy      = NYA_BUILD_ONCE,
     .output_file = "./vendor/sdl/build-linux-x86_64/libSDL3.a",
 
@@ -82,7 +82,7 @@ NYA_BuildRule build_prepare_linux_x86_64_sdl = {
 };
 
 NYA_BuildRule build_linux_x64_64_sdl = {
-    .name        = "build_linux_x86_64_sdl",
+    .name        = "build_linux_x64_64_sdl",
     .policy      = NYA_BUILD_ONCE,
     .output_file = "./vendor/sdl/build-linux-x86_64/libSDL3.a",
 
@@ -99,7 +99,7 @@ NYA_BuildRule build_linux_x64_64_sdl = {
 };
 
 NYA_BuildRule build_prepare_windows_x86_64_sdl = {
-    .name        = "build_windows_x86_64_sdl_prepare",
+    .name        = "build_prepare_windows_x86_64_sdl",
     .policy      = NYA_BUILD_ONCE,
     .output_file = "./vendor/sdl/build-window-x86_64/libSDL3.a",
 
@@ -144,7 +144,7 @@ NYA_BuildRule build_windows_x86_64_sdl = {
 };
 
 NYA_BuildRule build_prepare_shadercross_linux_x86_64 = {
-    .name        = "build_shadercross_linux_x86_64_prepare",
+    .name        = "build_prepare_shadercross_linux_x86_64",
     .policy      = NYA_BUILD_ONCE,
     .output_file = "./vendor/sdl-shadercross/build/shadercross",
 
@@ -524,6 +524,7 @@ NYA_INTERNAL void usage_and_exit(NYA_CString program_name) {
 }
 
 s32 main(s32 argc, NYA_CString* argv) {
+  // TODO: add a way to skip this for faster rebuilds during development
   nya_rebuild_yourself(&argc, argv, build_rebuild_command);
 
   if (argc != 2) usage_and_exit(argv[0]);

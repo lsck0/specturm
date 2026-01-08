@@ -8,8 +8,8 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-#define NYA_COMMAND_MAX_ARGUMENTS 64
-#define NYA_COMMAND_MAX_ENV_VARS  64
+#define NYA_COMMAND_MAX_ARGUMENTS 128
+#define NYA_COMMAND_MAX_ENV_VARS  128
 
 typedef struct NYA_Command NYA_Command;
 

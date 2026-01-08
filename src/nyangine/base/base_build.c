@@ -6,7 +6,7 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-#define NYA_BUILD_MAX_BUILD_DEPTH 64
+#define _NYA_BUILD_MAX_BUILD_DEPTH 64
 
 NYA_INTERNAL b8 _nya_build_always(NYA_BuildRule* build_rule);
 
@@ -24,7 +24,7 @@ b8 nya_build(NYA_BuildRule* build_rule) {
 
     case NYA_BUILD_ONCE:   {
       nya_assert(build_rule->output_file, "NYA_BUILD_ONCE rules must specify an output_file.");
-      if (nya_filesystem_is_file(build_rule->output_file)) return true;
+      if (nya_filesystem_file_exists(build_rule->output_file)) return true;
       return _nya_build_always(build_rule);
     }
 
@@ -32,7 +32,7 @@ b8 nya_build(NYA_BuildRule* build_rule) {
       nya_assert(build_rule->input_file, "NYA_BUILD_IF_OUTDATED rules must specify an input_file.");
       nya_assert(build_rule->output_file, "NYA_BUILD_IF_OUTDATED rules must specify an output_file.");
 
-      if (!nya_filesystem_is_file(build_rule->output_file)) return _nya_build_always(build_rule);
+      if (!nya_filesystem_file_exists(build_rule->output_file)) return _nya_build_always(build_rule);
 
       u64 input_mod_time  = 0;
       u64 output_mod_time = 0;
@@ -113,7 +113,7 @@ b8 _nya_build_always(NYA_BuildRule* build_rule) {
 
   // build dependencies first
   for (u64 i = 0; i < NYA_BUILD_MAX_DEPENDENCIES; i++) {
-    nya_assert(depth <= NYA_BUILD_MAX_BUILD_DEPTH, "Maximum build depth exceeded (possible circular dependency).");
+    nya_assert(depth <= _NYA_BUILD_MAX_BUILD_DEPTH, "Maximum build depth exceeded (possible circular dependency).");
 
     NYA_BuildRule* dependency = build_rule->dependencies[i];
     if (!dependency) break;
@@ -147,7 +147,6 @@ b8 _nya_build_always(NYA_BuildRule* build_rule) {
 
   nya_command_run(&build_rule->command);
   ok = build_rule->command.exit_code == 0;
-
   if (ok) {
     printf("[OK] Took " FMTu64 " ms.\n\n", build_rule->command.execution_time_ms);
   } else {

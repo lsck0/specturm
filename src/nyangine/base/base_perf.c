@@ -85,7 +85,7 @@ __attr_constructor NYA_INTERNAL void _nya_perf_init(void) {
   _nya_perf_arena        = nya_arena_new();
   _nya_perf_measurements = nya_array_new(&_nya_perf_arena, NYA_PerfMeasurement);
 
-  _nya_perf_start_time_ms = nya_clock_get_unix_timestamp_ms();
+  _nya_perf_start_time_ms = nya_clock_get_timestamp_ms();
 }
 
 __attr_destructor NYA_INTERNAL void _nya_perf_shutdown(void) {
@@ -94,5 +94,5 @@ __attr_destructor NYA_INTERNAL void _nya_perf_shutdown(void) {
 #endif // NYA_IS_DEBUG
 
 NYA_INTERNAL u64 _nya_perf_time_since_start_ms(void) {
-  return nya_clock_get_unix_timestamp_ms() - _nya_perf_start_time_ms;
+  return nya_clock_get_timestamp_ms() - _nya_perf_start_time_ms;
 }

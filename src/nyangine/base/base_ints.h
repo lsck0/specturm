@@ -8,25 +8,24 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-typedef uint8_t   b8;
-typedef uint16_t  b16;
-typedef uint32_t  b32;
-typedef uint64_t  b64;
-typedef void      u0;
-typedef uint8_t   u8;
-typedef uint16_t  u16;
-typedef uint32_t  u32;
-typedef uint64_t  u64;
-typedef uintptr_t uptr;
-typedef int8_t    s8;
-typedef int16_t   s16;
-typedef int32_t   s32;
-typedef int64_t   s64;
-typedef intptr_t  sptr;
-typedef _Float16  f16;
-typedef float     f32;
-typedef double    f64;
+typedef uint8_t  b8;
+typedef uint16_t b16;
+typedef uint32_t b32;
+typedef uint64_t b64;
+typedef void     u0;
+typedef uint8_t  u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef uint64_t u64;
+typedef int8_t   s8;
+typedef int16_t  s16;
+typedef int32_t  s32;
+typedef int64_t  s64;
+typedef _Float16 f16;
+typedef float    f32;
+typedef double   f64;
 
+// those are to derive arrays/maps/sets for pointer types
 typedef b8*   b8ptr;
 typedef b16*  b16ptr;
 typedef b32*  b32ptr;
@@ -97,7 +96,7 @@ static_assert(sizeof(f64) == 8);
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- * SAFE CASTING UTILITIES
+ * SAFE CASTING
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
@@ -169,7 +168,7 @@ static_assert(sizeof(f64) == 8);
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- * FORMATTING UTILITIES
+ * FORMATTING
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 

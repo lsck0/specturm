@@ -3,15 +3,37 @@
 
 #include "nyangine/nyangine.h"
 
-b8 nya_filesystem_is_file(NYA_ConstCString path) {
+b8 nya_filesystem_file_exists(NYA_ConstCString path) {
+  b8 ok;
+
   struct stat path_stat;
-  if (stat(path, &path_stat) != 0) return false;
+  ok = stat(path, &path_stat) == 0;
+  if (!ok) return false;
 
   return S_ISREG(path_stat.st_mode);
 }
 
+b8 nya_filesystem_file_last_modified(NYA_ConstCString path, OUT u64* out_timestamp) {
+  b8 ok;
+
+  struct stat path_stat;
+  ok = stat(path, &path_stat) == 0;
+  if (!ok) return false;
+
+  if (out_timestamp) {
+    *out_timestamp = (u64)path_stat.st_mtim.tv_sec * 1000ULL + (u64)(path_stat.st_mtim.tv_nsec / 1000000ULL);
+  }
+
+  return true;
+}
+
 b8 nya_filesystem_file_move(NYA_ConstCString source, NYA_ConstCString destination) {
-  return rename(source, destination) == 0;
+  b8 ok;
+
+  ok = rename(source, destination);
+  if (ok != 0) return false;
+
+  return true;
 }
 
 b8 nya_filesystem_file_copy(NYA_ConstCString source, NYA_ConstCString destination) {
@@ -36,16 +58,10 @@ b8 nya_filesystem_file_copy(NYA_ConstCString source, NYA_ConstCString destinatio
 }
 
 b8 nya_filesystem_file_delete(NYA_ConstCString path) {
-  return remove(path) == 0;
-}
+  b8 ok;
 
-b8 nya_filesystem_file_last_modified(NYA_ConstCString path, OUT u64* out_timestamp) {
-  struct stat path_stat;
-  if (stat(path, &path_stat) != 0) return false;
-
-  if (out_timestamp) {
-    *out_timestamp = (u64)path_stat.st_mtim.tv_sec * 1000ULL + (u64)(path_stat.st_mtim.tv_nsec / 1000000ULL);
-  }
+  ok = remove(path);
+  if (ok != 0) return false;
 
   return true;
 }

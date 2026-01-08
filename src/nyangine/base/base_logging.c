@@ -6,7 +6,7 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_INTERNAL NYA_LogLevel log_level_current = NYA_LOG_LEVEL_INFO;
+NYA_INTERNAL NYA_LogLevel _nya_log_level_current = NYA_LOG_LEVEL_INFO;
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -15,11 +15,11 @@ NYA_INTERNAL NYA_LogLevel log_level_current = NYA_LOG_LEVEL_INFO;
  */
 
 NYA_LogLevel nya_log_level_get(void) {
-  return log_level_current;
+  return _nya_log_level_current;
 }
 
 void nya_log_level_set(NYA_LogLevel level) {
-  log_level_current = level;
+  _nya_log_level_current = level;
 }
 
 /*
@@ -29,7 +29,7 @@ void nya_log_level_set(NYA_LogLevel level) {
  */
 
 void _nya_log_message(NYA_LogLevel level, const char* function, const char* file, u32 line, const char* format, ...) {
-  if (level < log_level_current) return;
+  if (level < _nya_log_level_current) return;
 
   static const char* log_level_strings[] = {
       [NYA_LOG_LEVEL_DEBUG] = "DEBUG",

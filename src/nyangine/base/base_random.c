@@ -132,7 +132,7 @@ NYA_RNG nya_rng_new_with_options(NYA_RNGOptions options) {
 
   // handle empty seed
   if (options.seed[0] == 0 && options.seed[1] == 0 && options.seed[2] == 0 && options.seed[3] == 0) {
-    u64 now         = nya_clock_get_unix_timestamp_ms();
+    u64 now         = nya_clock_get_timestamp_ms();
     options.seed[0] = now;
     options.seed[2] = now ^ 0x123456789ABCDEF0;
     options.seed[3] = now ^ 0x0FEDCBA987654321;
