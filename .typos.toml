@@ -1,2 +1,4 @@
+# format: wrong = "correct"
+
 [default.extend-words]
 specturm = "specturm"
