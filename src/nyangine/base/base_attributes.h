@@ -54,6 +54,12 @@
 #define __attr_matrix(rows, cols)
 #endif
 
+#if __has_attribute(no_sanitize)
+#define __attr_no_sanitize(x) __attribute__((no_sanitize(x)))
+#else
+#define __attr_no_sanitize(x)
+#endif
+
 #if __has_attribute(warn_unused_result)
 #define __attr_no_discard __attribute__((warn_unused_result))
 #else
