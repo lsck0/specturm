@@ -162,6 +162,56 @@ f64_4x4 nya_matrix_new(f64x4 row1, f64x4 row2, f64x4 row3, f64x4 row4) __attr_ov
   return result;
 }
 
+f128_2x2 nya_matrix_new(f128x2 row1, f128x2 row2) __attr_overloaded {
+  f128_2x2 result;
+
+  result[0][0] = row1[0];
+  result[0][1] = row1[1];
+  result[1][0] = row2[0];
+  result[1][1] = row2[1];
+
+  return result;
+}
+
+f128_3x3 nya_matrix_new(f128x3 row1, f128x3 row2, f128x3 row3) __attr_overloaded {
+  f128_3x3 result;
+
+  result[0][0] = row1[0];
+  result[0][1] = row1[1];
+  result[0][2] = row1[2];
+  result[1][0] = row2[0];
+  result[1][1] = row2[1];
+  result[1][2] = row2[2];
+  result[2][0] = row3[0];
+  result[2][1] = row3[1];
+  result[2][2] = row3[2];
+
+  return result;
+}
+
+f128_4x4 nya_matrix_new(f128x4 row1, f128x4 row2, f128x4 row3, f128x4 row4) __attr_overloaded {
+  f128_4x4 result;
+
+  result[0][0] = row1[0];
+  result[0][1] = row1[1];
+  result[0][2] = row1[2];
+  result[0][3] = row1[3];
+  result[1][0] = row2[0];
+  result[1][1] = row2[1];
+  result[1][2] = row2[2];
+  result[1][3] = row2[3];
+  result[2][0] = row3[0];
+  result[2][1] = row3[1];
+  result[2][2] = row3[2];
+  result[2][3] = row3[3];
+  result[3][0] = row4[0];
+  result[3][1] = row4[1];
+  result[3][2] = row4[2];
+  result[3][3] = row4[3];
+
+  return result;
+}
+
 /*
  * ─────────────────────────────────────────────────────────
  * MATRIX VECTOR MULTIPLICATION
@@ -233,6 +283,30 @@ f64x3 nya_matrix_times_vector(f64_3x3 mat, f64x3 vec) __attr_overloaded {
 
 f64x4 nya_matrix_times_vector(f64_4x4 mat, f64x4 vec) __attr_overloaded {
   return (f64x4){
+      mat[0][0] * vec[0] + mat[0][1] * vec[1] + mat[0][2] * vec[2] + mat[0][3] * vec[3],
+      mat[1][0] * vec[0] + mat[1][1] * vec[1] + mat[1][2] * vec[2] + mat[1][3] * vec[3],
+      mat[2][0] * vec[0] + mat[2][1] * vec[1] + mat[2][2] * vec[2] + mat[2][3] * vec[3],
+      mat[3][0] * vec[0] + mat[3][1] * vec[1] + mat[3][2] * vec[2] + mat[3][3] * vec[3],
+  };
+}
+
+f128x2 nya_matrix_times_vector(f128_2x2 mat, f128x2 vec) __attr_overloaded {
+  return (f128x2){
+      mat[0][0] * vec[0] + mat[0][1] * vec[1],
+      mat[1][0] * vec[0] + mat[1][1] * vec[1],
+  };
+}
+
+f128x3 nya_matrix_times_vector(f128_3x3 mat, f128x3 vec) __attr_overloaded {
+  return (f128x3){
+      mat[0][0] * vec[0] + mat[0][1] * vec[1] + mat[0][2] * vec[2],
+      mat[1][0] * vec[0] + mat[1][1] * vec[1] + mat[1][2] * vec[2],
+      mat[2][0] * vec[0] + mat[2][1] * vec[1] + mat[2][2] * vec[2],
+  };
+}
+
+f128x4 nya_matrix_times_vector(f128_4x4 mat, f128x4 vec) __attr_overloaded {
+  return (f128x4){
       mat[0][0] * vec[0] + mat[0][1] * vec[1] + mat[0][2] * vec[2] + mat[0][3] * vec[3],
       mat[1][0] * vec[0] + mat[1][1] * vec[1] + mat[1][2] * vec[2] + mat[1][3] * vec[3],
       mat[2][0] * vec[0] + mat[2][1] * vec[1] + mat[2][2] * vec[2] + mat[2][3] * vec[3],

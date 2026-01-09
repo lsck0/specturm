@@ -35,6 +35,7 @@ nya_derive_array(s64);
 nya_derive_array(f16);
 nya_derive_array(f32);
 nya_derive_array(f64);
+nya_derive_array(f128);
 
 nya_derive_array(b8ptr);
 nya_derive_array(b16ptr);
@@ -53,6 +54,7 @@ nya_derive_array(s64ptr);
 nya_derive_array(f16ptr);
 nya_derive_array(f32ptr);
 nya_derive_array(f64ptr);
+nya_derive_array(f128ptr);
 
 #if defined(__has_feature) && __has_attribute(ext_vector_type)
 nya_derive_array(f16x2);

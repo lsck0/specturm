@@ -8,22 +8,23 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-typedef uint8_t  b8;
-typedef uint16_t b16;
-typedef uint32_t b32;
-typedef uint64_t b64;
-typedef void     u0;
-typedef uint8_t  u8;
-typedef uint16_t u16;
-typedef uint32_t u32;
-typedef uint64_t u64;
-typedef int8_t   s8;
-typedef int16_t  s16;
-typedef int32_t  s32;
-typedef int64_t  s64;
-typedef _Float16 f16;
-typedef float    f32;
-typedef double   f64;
+typedef uint8_t     b8;
+typedef uint16_t    b16;
+typedef uint32_t    b32;
+typedef uint64_t    b64;
+typedef void        u0;
+typedef uint8_t     u8;
+typedef uint16_t    u16;
+typedef uint32_t    u32;
+typedef uint64_t    u64;
+typedef int8_t      s8;
+typedef int16_t     s16;
+typedef int32_t     s32;
+typedef int64_t     s64;
+typedef _Float16    f16;
+typedef float       f32;
+typedef double      f64;
+typedef long double f128;
 
 // those are to derive arrays/maps/sets for pointer types
 typedef b8*   b8ptr;
@@ -43,6 +44,7 @@ typedef s64*  s64ptr;
 typedef f16*  f16ptr;
 typedef f32*  f32ptr;
 typedef f64*  f64ptr;
+typedef f128* f128ptr;
 
 #define true  ((b8)1)
 #define false ((b8)0)
@@ -62,6 +64,7 @@ static_assert(sizeof(s64) == 8);
 static_assert(sizeof(f16) == 2);
 static_assert(sizeof(f32) == 4);
 static_assert(sizeof(f64) == 8);
+static_assert(sizeof(f128) == 16);
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -87,12 +90,14 @@ static_assert(sizeof(f64) == 8);
 #define S64_MIN (-9223372036854775807LL) // TRUE_S64_MIN + 1 since TRUE_S64_MIN is not representable by literal in C
 #define S64_MAX (9223372036854775807LL)
 
-#define F16_MIN (-65504.0f)
-#define F16_MAX (65504.0f)
-#define F32_MIN (-__FLT_MAX__)
-#define F32_MAX (__FLT_MAX__)
-#define F64_MIN (-__DBL_MAX__)
-#define F64_MAX (__DBL_MAX__)
+#define F16_MIN  (-65504.0f)
+#define F16_MAX  (65504.0f)
+#define F32_MIN  (-__FLT_MAX__)
+#define F32_MAX  (__FLT_MAX__)
+#define F64_MIN  (-__DBL_MAX__)
+#define F64_MAX  (__DBL_MAX__)
+#define F128_MIN (-__LDBL_MAX__)
+#define F128_MAX (__LDBL_MAX__)
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -166,6 +171,12 @@ static_assert(sizeof(f64) == 8);
     (f64)(val);                                                                                                        \
   })
 
+#define nya_cast_to_f128(val)                                                                                          \
+  ({                                                                                                                   \
+    nya_assert((val) >= F128_MIN && (val) <= F128_MAX, "Cannot cast to f128.");                                        \
+    (f128)(val);                                                                                                       \
+  })
+
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  * FORMATTING
@@ -173,18 +184,19 @@ static_assert(sizeof(f64) == 8);
  */
 
 // use like: nya_debug("number: "FMTu64, number);
-#define FMTb8  "%" PRIu8
-#define FMTb16 "%" PRIu16
-#define FMTb32 "%" PRIu32
-#define FMTb64 "%" PRIu64
-#define FMTu8  "%" PRIu8
-#define FMTu16 "%" PRIu16
-#define FMTu32 "%" PRIu32
-#define FMTu64 "%" PRIu64
-#define FMTs8  "%" PRId8
-#define FMTs16 "%" PRId16
-#define FMTs32 "%" PRId32
-#define FMTs64 "%" PRId64
-#define FMTf16 "%e"
-#define FMTf32 "%f"
-#define FMTf64 "%lf"
+#define FMTb8   "%" PRIu8
+#define FMTb16  "%" PRIu16
+#define FMTb32  "%" PRIu32
+#define FMTb64  "%" PRIu64
+#define FMTu8   "%" PRIu8
+#define FMTu16  "%" PRIu16
+#define FMTu32  "%" PRIu32
+#define FMTu64  "%" PRIu64
+#define FMTs8   "%" PRId8
+#define FMTs16  "%" PRId16
+#define FMTs32  "%" PRId32
+#define FMTs64  "%" PRId64
+#define FMTf16  "%e"
+#define FMTf32  "%f"
+#define FMTf64  "%lf"
+#define FMTf128 "%Le"
