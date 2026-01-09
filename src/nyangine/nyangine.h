@@ -20,6 +20,7 @@
 #include "nyangine/base/base_file.h"
 #include "nyangine/base/base_guard.h"
 #include "nyangine/base/base_ints.h"
+#include "nyangine/base/base_lexer.h"
 #include "nyangine/base/base_logging.h"
 #include "nyangine/base/base_math.h"
 #include "nyangine/base/base_memory.h"

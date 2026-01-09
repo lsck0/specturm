@@ -11,6 +11,7 @@
 #include "nyangine/base/base_arena.c"
 #include "nyangine/base/base_build.c"
 #include "nyangine/base/base_file.c"
+#include "nyangine/base/base_lexer.c"
 #include "nyangine/base/base_logging.c"
 #include "nyangine/base/base_math.c"
 #include "nyangine/base/base_perf.c"
