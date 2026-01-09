@@ -6,6 +6,8 @@
 #define nya_likely(expr)   __builtin_expect(!!(expr), 1)
 #define nya_unlikely(expr) __builtin_expect(!!(expr), 0)
 
+#define nya_assert_type_match(a, b) static_assert(__builtin_types_compatible_p(typeof(a), typeof(b)), "Incompatible types.")
+
 /**
  * Usage:
  * nya_assert(condition)
@@ -18,7 +20,11 @@
 #define nya_unreachable()   nya_assert(0, "Unreachable"); __builtin_unreachable();
 #define nya_unused(...)     ((void)(0, __VA_ARGS__))
 
-#define nya_assert_type_match(a, b) static_assert(__builtin_types_compatible_p(typeof(a), typeof(b)), "Incompatible types.")
+#define nya_assert_panic(code) {                                            \
+    nya_panic_prevent_next();                                               \
+    code;                                                                   \
+    nya_assert(nya_panic_prevent_happened(), "Expected to catch a panic."); \
+  }
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────

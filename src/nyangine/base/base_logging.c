@@ -6,7 +6,10 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_INTERNAL NYA_LogLevel _nya_log_level_current = NYA_LOG_LEVEL_INFO;
+NYA_INTERNAL NYA_LogLevel  _nya_log_level_current  = NYA_LOG_LEVEL_INFO;
+NYA_INTERNAL NYA_PanicHook _nya_panic_hook         = nullptr;
+NYA_INTERNAL b8            _nya_panic_prevent_next = false;
+NYA_INTERNAL b8            _nya_panic_prevented    = false;
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -20,6 +23,20 @@ NYA_LogLevel nya_log_level_get(void) {
 
 void nya_log_level_set(NYA_LogLevel level) {
   _nya_log_level_current = level;
+}
+
+void nya_panic_hook_set(NYA_PanicHook hook) {
+  _nya_panic_hook = hook;
+}
+void nya_panic_prevent_next(void) {
+  _nya_panic_prevent_next = true;
+}
+
+b8 nya_panic_prevent_happened(void) {
+  b8 prevented         = _nya_panic_prevented;
+  _nya_panic_prevented = false;
+
+  return prevented;
 }
 
 /*
@@ -38,7 +55,11 @@ void _nya_log_message(NYA_LogLevel level, const char* function, const char* file
       [NYA_LOG_LEVEL_ERROR] = "ERROR",
       [NYA_LOG_LEVEL_PANIC] = "PANIC",
   };
-  printf("[%s] %s (%s:%u): ", log_level_strings[level], function, file, line);
+  if (nya_unlikely(level == NYA_LOG_LEVEL_PANIC) && _nya_panic_prevent_next) {
+    printf("[PREVENTED PANIC] %s (%s:%u): ", function, file, line);
+  } else {
+    printf("[%s] %s (%s:%u): ", log_level_strings[level], function, file, line);
+  }
 
   va_list args;
   va_start(args, format);
@@ -48,6 +69,21 @@ void _nya_log_message(NYA_LogLevel level, const char* function, const char* file
   printf("\n");
 
   if (nya_unlikely(level == NYA_LOG_LEVEL_PANIC)) {
+    if (_nya_panic_prevent_next) {
+      _nya_panic_prevent_next = false;
+      _nya_panic_prevented    = true;
+      return;
+    }
+
+    if (_nya_panic_hook) {
+      va_list args;
+      va_start(args, format);
+      b8 prevent_crash = _nya_panic_hook(function, file, line, format, args);
+      va_end(args);
+
+      if (prevent_crash) return;
+    }
+
     if (NYA_IS_DEBUG) __builtin_trap();
     abort();
   }

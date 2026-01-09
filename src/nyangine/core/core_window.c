@@ -77,6 +77,7 @@ NYA_Window* nya_window_get(NYA_App* app, void* window_id) {
   }
 
   nya_panic("Cannot get window: window with id %p not found", window_id);
+  nya_unreachable();
 }
 
 NYA_Layer* nya_window_layer_get(NYA_App* app, void* window_id, void* layer_id) {
@@ -90,6 +91,7 @@ NYA_Layer* nya_window_layer_get(NYA_App* app, void* window_id, void* layer_id) {
   }
 
   nya_panic("Cannot get layer: layer with id %p not found", layer_id);
+  nya_unreachable();
 }
 
 void nya_window_layer_enable(NYA_App* app, void* window_id, void* layer_id) {
