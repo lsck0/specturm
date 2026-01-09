@@ -137,7 +137,7 @@ NYA_RNG nya_rng_new_with_options(NYA_RNGOptions options) {
   NYA_RNG rng     = {0};
   u64     seed[4] = {0};
 
-  if (options.seed == NULL || options.seed[0] == '\0') {
+  if (options.seed == nullptr || options.seed[0] == '\0') {
     // generate seed values from timestamp
     u64 now = nya_clock_get_timestamp_ms();
     seed[0] = now;

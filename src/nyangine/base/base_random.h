@@ -18,7 +18,7 @@ typedef struct NYA_RNGDistribution NYA_RNGDistribution;
 #define _NYA_RNG_BUFFER_SIZE     1024
 #define _NYA_RNG_INIT_ROUNDS     16
 #define _NYA_RNG_MAX_SEED_LENGTH 64
-#define _NYA_RNG_DEFAULT_OPTIONS .seed = NULL
+#define _NYA_RNG_DEFAULT_OPTIONS .seed = nullptr
 
 struct NYA_RNGOptions {
   /// upto 64 char hex string, NULL => random seed

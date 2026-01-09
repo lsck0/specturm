@@ -56,7 +56,6 @@ Diagnostics:
         cert-int09-c,
         concurrency-mt-unsafe,
         misc-no-recursion,
-        modernize-use-nullptr,
         performance-no-int-to-ptr,
         readability-avoid-nested-conditional-operator,
         readability-braces-around-statements,
