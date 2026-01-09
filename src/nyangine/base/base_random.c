@@ -28,6 +28,14 @@ NYA_INTERNAL const u64 PHI[16] = {
     0xFEC507705E4AE6E5,
 };
 
+NYA_INTERNAL void _nya_rng_fill_buffer(NYA_RNG* rng);
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * PRIVATE API IMPLEMENTATION
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
 NYA_INTERNAL void _nya_rng_fill_buffer(NYA_RNG* rng) {
   __m256i o0 = rng->output[0];
   __m256i o1 = rng->output[1];
@@ -126,30 +134,56 @@ NYA_INTERNAL void _nya_rng_fill_buffer(NYA_RNG* rng) {
  */
 
 NYA_RNG nya_rng_new_with_options(NYA_RNGOptions options) {
-  NYA_RNG rng = {0};
+  NYA_RNG rng     = {0};
+  u64     seed[4] = {0};
 
-  // handle empty seed
-  if (options.seed[0] == 0 && options.seed[1] == 0 && options.seed[2] == 0 && options.seed[3] == 0) {
-    u64 now         = nya_clock_get_timestamp_ms();
-    options.seed[0] = now;
-    options.seed[2] = now ^ 0x123456789ABCDEF0;
-    options.seed[3] = now ^ 0x0FEDCBA987654321;
-    options.seed[1] = now ^ 0xBEEFBEEFBEEFBEEF;
+  if (options.seed == NULL || options.seed[0] == '\0') {
+    // generate seed values from timestamp
+    u64 now = nya_clock_get_timestamp_ms();
+    seed[0] = now;
+    seed[1] = now ^ 0xBEEFBEEFBEEFBEEF;
+    seed[2] = now ^ 0x123456789ABCDEF0;
+    seed[3] = now ^ 0x0FEDCBA987654321;
+  } else {
+    // validate and decode hex string to seed values, left-padding with '0' if shorter than 64 chars
+    u64 cursor = 0;
+    while (options.seed[cursor] != '\0' && cursor <= 64) {
+      char ch = options.seed[cursor];
+      if (!((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'F'))) {
+        nya_panic("Invalid seed: must be an uppercase hex string, got '%c' at position " FMTu64, ch, cursor);
+      }
+      cursor++;
+    }
+    if (cursor > 64) nya_panic("Invalid seed: must be at most 64 characters, got " FMTu64, cursor);
+    u64 padding = 64 - cursor;
+
+    for (u64 s = 0; s < 4; s++) {
+      seed[s] = 0;
+      for (u64 i = 0; i < 16; i++) {
+        u64 idx = s * 16 + i;
+        u64 v   = 0;
+        if (idx >= padding) {
+          char ch = options.seed[idx - padding];
+          v       = (ch >= '0' && ch <= '9') ? (u64)(ch - '0') : (u64)(ch - 'A' + 10);
+        }
+        seed[s] = (seed[s] << 4) | v;
+      }
+    }
   }
 
-  rng.seed[0] = options.seed[0];
-  rng.seed[1] = options.seed[1];
-  rng.seed[2] = options.seed[2];
-  rng.seed[3] = options.seed[3];
+  // encode seed as hex string
+  const char hex[] = "0123456789ABCDEF";
+  for (u64 s = 0; s < 4; s++) {
+    for (u64 i = 0; i < 16; i++) rng.seed[s * 16 + i] = hex[(seed[s] >> (60 - i * 4)) & 0xF];
+  }
+  rng.seed[64] = '\0';
 
   // Diffuse first two seed elements in s0, then the last two. Same for s1.
   // We must keep half of the state unchanged so users cannot set a bad state.
-  rng.state[0] = _mm256_set_epi64x((s64)PHI[3], (s64)(PHI[2] ^ rng.seed[1]), (s64)PHI[1], (s64)(PHI[0] ^ rng.seed[0]));
-  rng.state[1] = _mm256_set_epi64x((s64)PHI[7], (s64)(PHI[6] ^ rng.seed[3]), (s64)PHI[5], (s64)(PHI[4] ^ rng.seed[2]));
-  rng.state[2] =
-      _mm256_set_epi64x((s64)PHI[11], (s64)(PHI[10] ^ rng.seed[3]), (s64)PHI[9], (s64)(PHI[8] ^ rng.seed[2]));
-  rng.state[3] =
-      _mm256_set_epi64x((s64)PHI[15], (s64)(PHI[14] ^ rng.seed[1]), (s64)PHI[13], (s64)(PHI[12] ^ rng.seed[0]));
+  rng.state[0] = _mm256_set_epi64x((s64)PHI[3], (s64)(PHI[2] ^ seed[1]), (s64)PHI[1], (s64)(PHI[0] ^ seed[0]));
+  rng.state[1] = _mm256_set_epi64x((s64)PHI[7], (s64)(PHI[6] ^ seed[3]), (s64)PHI[5], (s64)(PHI[4] ^ seed[2]));
+  rng.state[2] = _mm256_set_epi64x((s64)PHI[11], (s64)(PHI[10] ^ seed[3]), (s64)PHI[9], (s64)(PHI[8] ^ seed[2]));
+  rng.state[3] = _mm256_set_epi64x((s64)PHI[15], (s64)(PHI[14] ^ seed[1]), (s64)PHI[13], (s64)(PHI[12] ^ seed[0]));
 
   for (u64 round = 0; round < _NYA_RNG_INIT_ROUNDS; round++) {
     _nya_rng_fill_buffer(&rng);
@@ -231,12 +265,11 @@ f64 nya_rng_sample_f64(NYA_RNG* rng, NYA_RNGDistribution distribution) {
       f64 max = distribution.uniform.max;
       nya_assert(min <= max);
 
-      f64 range = max - min + 1;
+      u64 r;
+      nya_rng_gen_bytes(rng, (u8*)&r, sizeof(u64));
+      f64 u = (f64)r / (f64)U64_MAX;
 
-      f64 result;
-      nya_rng_gen_bytes(rng, (u8*)&result, sizeof(f64));
-
-      return min + fmod(result, range);
+      return min + u * (max - min);
     } break;
 
     // using Box-Muller transform

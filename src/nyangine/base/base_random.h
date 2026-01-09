@@ -1,4 +1,4 @@
-//! This is a wrapper around https://espadrine.github.io/blog/posts/shishua-the-fastest-prng-in-the-world.html.
+//! This is a wrapper around https://espadrine.github.io/blog/posts/shishua-the-fastest-prng-in-the-world.html
 #pragma once
 
 #include "nyangine/base/base.h"
@@ -17,15 +17,16 @@ typedef struct NYA_RNGDistribution NYA_RNGDistribution;
 
 #define _NYA_RNG_BUFFER_SIZE     1024
 #define _NYA_RNG_INIT_ROUNDS     16
-#define _NYA_RNG_DEFAULT_OPTIONS .seed = {0, 0, 0, 0}
+#define _NYA_RNG_MAX_SEED_LENGTH 64
+#define _NYA_RNG_DEFAULT_OPTIONS .seed = NULL
 
-// TODO: take the seed in a different format, like a string A-Za-z-0-9 and convert it to u64[4] internally
 struct NYA_RNGOptions {
-  u64 seed[4]; // seed == 0 => take random seed
+  /// upto 64 char hex string, NULL => random seed
+  const char* seed;
 };
 
 struct NYA_RNG {
-  u64 seed[4];
+  char seed[_NYA_RNG_MAX_SEED_LENGTH + 1];
 
   __m256i state[4];
   __m256i output[4];
