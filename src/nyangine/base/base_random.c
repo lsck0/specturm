@@ -218,43 +218,63 @@ void nya_rng_gen_bytes(NYA_RNG* rng, u8 buffer[], u64 size) {
 }
 
 u8 nya_rng_sample_u8(NYA_RNG* rng, NYA_RNGDistribution distribution) {
-  return nya_cast_to_u8(roundl(nya_rng_sample_f64(rng, distribution)));
+  f64 raw    = round(nya_rng_sample_f64(rng, distribution));
+  u8  result = (u8)nya_clamp(raw, (f64)U8_MIN, (f64)U8_MAX);
+  return result;
 }
 
 u16 nya_rng_sample_u16(NYA_RNG* rng, NYA_RNGDistribution distribution) {
-  return nya_cast_to_u16(roundl(nya_rng_sample_f64(rng, distribution)));
+  f64 raw    = round(nya_rng_sample_f64(rng, distribution));
+  u16 result = (u16)nya_clamp(raw, (f64)U16_MIN, (f64)U16_MAX);
+  return result;
 }
 
 u32 nya_rng_sample_u32(NYA_RNG* rng, NYA_RNGDistribution distribution) {
-  return nya_cast_to_u32(roundl(nya_rng_sample_f64(rng, distribution)));
+  f64 raw    = round(nya_rng_sample_f64(rng, distribution));
+  u32 result = (u32)nya_clamp(raw, (f64)U32_MIN, (f64)U32_MAX);
+  return result;
 }
 
 u64 nya_rng_sample_u64(NYA_RNG* rng, NYA_RNGDistribution distribution) {
-  return nya_cast_to_u64(roundl(nya_rng_sample_f64(rng, distribution)));
+  f64 raw    = round(nya_rng_sample_f64(rng, distribution));
+  u64 result = (u64)nya_clamp(raw, (f64)U64_MIN, (f64)U64_MAX);
+  return result;
 }
 
 s8 nya_rng_sample_s8(NYA_RNG* rng, NYA_RNGDistribution distribution) {
-  return nya_cast_to_s8(roundl(nya_rng_sample_f64(rng, distribution)));
+  f64 raw    = round(nya_rng_sample_f64(rng, distribution));
+  s8  result = (s8)nya_clamp(raw, (f64)S8_MIN, (f64)S8_MAX);
+  return result;
 }
 
 s16 nya_rng_sample_s16(NYA_RNG* rng, NYA_RNGDistribution distribution) {
-  return nya_cast_to_s16(roundl(nya_rng_sample_f64(rng, distribution)));
+  f64 raw    = round(nya_rng_sample_f64(rng, distribution));
+  s16 result = (s16)nya_clamp(raw, (f64)S16_MIN, (f64)S16_MAX);
+  return result;
 }
 
 s32 nya_rng_sample_s32(NYA_RNG* rng, NYA_RNGDistribution distribution) {
-  return nya_cast_to_s32(roundl(nya_rng_sample_f64(rng, distribution)));
+  f64 raw    = round(nya_rng_sample_f64(rng, distribution));
+  s32 result = (s32)nya_clamp(raw, (f64)S32_MIN, (f64)S32_MAX);
+  return result;
 }
 
 s64 nya_rng_sample_s64(NYA_RNG* rng, NYA_RNGDistribution distribution) {
-  return nya_cast_to_s64(roundl(nya_rng_sample_f64(rng, distribution)));
+  f64 raw    = round(nya_rng_sample_f64(rng, distribution));
+  s64 result = (s64)nya_clamp(raw, (f64)S64_MIN, (f64)S64_MAX);
+  return result;
 }
 
 f16 nya_rng_sample_f16(NYA_RNG* rng, NYA_RNGDistribution distribution) {
-  return nya_cast_to_f16(nya_rng_sample_f64(rng, distribution));
+  f64 raw    = nya_rng_sample_f64(rng, distribution);
+  f16 result = (f16)nya_clamp(raw, (f64)F16_MIN, (f64)F16_MAX);
+  return result;
 }
 
 f32 nya_rng_sample_f32(NYA_RNG* rng, NYA_RNGDistribution distribution) {
-  return nya_cast_to_f32(nya_rng_sample_f64(rng, distribution));
+  f64 raw    = nya_rng_sample_f64(rng, distribution);
+  f32 result = (f32)nya_clamp(raw, (f64)F32_MIN, (f64)F32_MAX);
+  return result;
 }
 
 f64 nya_rng_sample_f64(NYA_RNG* rng, NYA_RNGDistribution distribution) {
