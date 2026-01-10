@@ -1,7 +1,7 @@
 #include "SDL3/SDL_gpu.h"
 
 #include "nyangine/base/base_assert.h"
-#include "nyangine/base/base_ints.h"
+#include "nyangine/base/base_types.h"
 #include "nyangine/core/core_app.h"
 
 /*

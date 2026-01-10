@@ -2,9 +2,9 @@
 
 #include "nyangine/base/base_arena.h"
 #include "nyangine/base/base_assert.h"
-#include "nyangine/base/base_ints.h"
-#include "nyangine/base/base_math.h"
 #include "nyangine/base/base_memory.h"
+#include "nyangine/base/base_types.h"
+#include "nyangine/math/math.h"
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -24,33 +24,39 @@ nya_derive_array(b8);
 nya_derive_array(b16);
 nya_derive_array(b32);
 nya_derive_array(b64);
+nya_derive_array(b128);
 nya_derive_array(u8);
 nya_derive_array(u16);
 nya_derive_array(u32);
 nya_derive_array(u64);
+nya_derive_array(u128);
 nya_derive_array(s8);
 nya_derive_array(s16);
 nya_derive_array(s32);
 nya_derive_array(s64);
+nya_derive_array(s128);
 nya_derive_array(f16);
 nya_derive_array(f32);
 nya_derive_array(f64);
 nya_derive_array(f128);
 
+nya_derive_array(voidptr);
 nya_derive_array(b8ptr);
 nya_derive_array(b16ptr);
 nya_derive_array(b32ptr);
 nya_derive_array(b64ptr);
-nya_derive_array(voidptr);
+nya_derive_array(b128ptr);
 nya_derive_array(u0ptr);
 nya_derive_array(u8ptr);
 nya_derive_array(u16ptr);
 nya_derive_array(u32ptr);
 nya_derive_array(u64ptr);
+nya_derive_array(u128ptr);
 nya_derive_array(s8ptr);
 nya_derive_array(s16ptr);
 nya_derive_array(s32ptr);
 nya_derive_array(s64ptr);
+nya_derive_array(s128ptr);
 nya_derive_array(f16ptr);
 nya_derive_array(f32ptr);
 nya_derive_array(f64ptr);
@@ -66,6 +72,9 @@ nya_derive_array(f32x4);
 nya_derive_array(f64x2);
 nya_derive_array(f64x3);
 nya_derive_array(f64x4);
+nya_derive_array(f128x2);
+nya_derive_array(f128x3);
+nya_derive_array(f128x4);
 #endif // defined(__has_feature) && __has_attribute(ext_vector_type)
 
 #if defined(__has_feature) && __has_attribute(ext_vector_type) && __has_attribute(matrix_type)
@@ -78,6 +87,9 @@ nya_derive_array(f32_4x4);
 nya_derive_array(f64_2x2);
 nya_derive_array(f64_3x3);
 nya_derive_array(f64_4x4);
+nya_derive_array(f128_2x2);
+nya_derive_array(f128_3x3);
+nya_derive_array(f128_4x4);
 #endif // defined(__has_feature) && __has_attribute(ext_vector_type) && __has_attribute(matrix_type)
 
 /*

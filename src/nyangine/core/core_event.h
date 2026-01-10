@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nyangine/base/base_ints.h"
+#include "nyangine/base/base_types.h"
 
 typedef struct NYA_Event     NYA_Event;
 typedef struct NYA_EventHook NYA_EventHook;

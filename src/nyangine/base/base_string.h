@@ -2,7 +2,7 @@
 
 #include "nyangine/base/base_arena.h"
 #include "nyangine/base/base_array.h"
-#include "nyangine/base/base_ints.h"
+#include "nyangine/base/base_types.h"
 
 /**
  * use like: nya_debug("string: "NYA_FMT_STRING"\n", NYA_FMT_STRING_ARG(str))

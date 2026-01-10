@@ -4,67 +4,166 @@
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- * TYPES
+ * TYPEDEFS
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
+
+typedef void* voidptr;
 
 typedef uint8_t     b8;
 typedef uint16_t    b16;
 typedef uint32_t    b32;
 typedef uint64_t    b64;
+typedef __uint128_t b128;
 typedef void        u0;
 typedef uint8_t     u8;
 typedef uint16_t    u16;
 typedef uint32_t    u32;
 typedef uint64_t    u64;
+typedef __uint128_t u128;
 typedef int8_t      s8;
 typedef int16_t     s16;
 typedef int32_t     s32;
 typedef int64_t     s64;
+typedef __int128_t  s128;
 typedef _Float16    f16;
 typedef float       f32;
 typedef double      f64;
 typedef long double f128;
 
-// those are to derive arrays/maps/sets for pointer types
 typedef b8*   b8ptr;
 typedef b16*  b16ptr;
 typedef b32*  b32ptr;
 typedef b64*  b64ptr;
-typedef void* voidptr;
+typedef b128* b128ptr;
 typedef u0*   u0ptr;
 typedef u8*   u8ptr;
 typedef u16*  u16ptr;
 typedef u32*  u32ptr;
 typedef u64*  u64ptr;
+typedef u128* u128ptr;
 typedef s8*   s8ptr;
 typedef s16*  s16ptr;
 typedef s32*  s32ptr;
 typedef s64*  s64ptr;
+typedef s128* s128ptr;
 typedef f16*  f16ptr;
 typedef f32*  f32ptr;
 typedef f64*  f64ptr;
 typedef f128* f128ptr;
 
-#define true  ((b8)1)
-#define false ((b8)0)
+typedef wchar_t wchar;
 
-static_assert(sizeof(b8) == 1);
-static_assert(sizeof(b16) == 2);
-static_assert(sizeof(b32) == 4);
-static_assert(sizeof(b64) == 8);
-static_assert(sizeof(u8) == 1);
-static_assert(sizeof(u16) == 2);
-static_assert(sizeof(u32) == 4);
-static_assert(sizeof(u64) == 8);
-static_assert(sizeof(s8) == 1);
-static_assert(sizeof(s16) == 2);
-static_assert(sizeof(s32) == 4);
-static_assert(sizeof(s64) == 8);
-static_assert(sizeof(f16) == 2);
-static_assert(sizeof(f32) == 4);
-static_assert(sizeof(f64) == 8);
-static_assert(sizeof(f128) == 16);
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * TYPE ENUM AND VALUE UNION
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+typedef enum {
+  NYA_TYPE_NULL,
+
+  NYA_TYPE_VOID,
+  NYA_TYPE_VOID_POINTER,
+
+  NYA_TYPE_B8,
+  NYA_TYPE_B16,
+  NYA_TYPE_B32,
+  NYA_TYPE_B64,
+  NYA_TYPE_B128,
+  NYA_TYPE_U8,
+  NYA_TYPE_U16,
+  NYA_TYPE_U32,
+  NYA_TYPE_U64,
+  NYA_TYPE_U128,
+  NYA_TYPE_S8,
+  NYA_TYPE_S16,
+  NYA_TYPE_S32,
+  NYA_TYPE_S64,
+  NYA_TYPE_S128,
+  NYA_TYPE_F16,
+  NYA_TYPE_F32,
+  NYA_TYPE_F64,
+  NYA_TYPE_F128,
+
+  NYA_TYPE_B8_POINTER,
+  NYA_TYPE_B16_POINTER,
+  NYA_TYPE_B32_POINTER,
+  NYA_TYPE_B64_POINTER,
+  NYA_TYPE_B128_POINTER,
+  NYA_TYPE_U8_POINTER,
+  NYA_TYPE_U16_POINTER,
+  NYA_TYPE_U32_POINTER,
+  NYA_TYPE_U64_POINTER,
+  NYA_TYPE_U128_POINTER,
+  NYA_TYPE_S8_POINTER,
+  NYA_TYPE_S16_POINTER,
+  NYA_TYPE_S32_POINTER,
+  NYA_TYPE_S64_POINTER,
+  NYA_TYPE_S128_POINTER,
+  NYA_TYPE_F16_POINTER,
+  NYA_TYPE_F32_POINTER,
+  NYA_TYPE_F64_POINTER,
+  NYA_TYPE_F128_POINTER,
+
+  NYA_TYPE_CHAR,
+  NYA_TYPE_WCHAR,
+  NYA_TYPE_CSTRING,
+  NYA_TYPE_WCSTRING,
+
+  NYA_TYPE_COUNT,
+} NYA_Type;
+
+typedef struct {
+  NYA_Type type;
+
+  union {
+    b8   as_b8;
+    b16  as_b16;
+    b32  as_b32;
+    b64  as_b64;
+    b128 as_b128;
+    u8   as_u8;
+    u16  as_u16;
+    u32  as_u32;
+    u64  as_u64;
+    u128 as_u128;
+    s8   as_s8;
+    s16  as_s16;
+    s32  as_s32;
+    s64  as_s64;
+    s128 as_s128;
+    f16  as_f16;
+    f32  as_f32;
+    f64  as_f64;
+    f128 as_f128;
+
+    b8ptr   as_b8ptr;
+    b16ptr  as_b16ptr;
+    b32ptr  as_b32ptr;
+    b64ptr  as_b64ptr;
+    b128ptr as_b128ptr;
+    u8ptr   as_u8ptr;
+    u16ptr  as_u16ptr;
+    u32ptr  as_u32ptr;
+    u64ptr  as_u64ptr;
+    u128ptr as_u128ptr;
+    s8ptr   as_s8ptr;
+    s16ptr  as_s16ptr;
+    s32ptr  as_s32ptr;
+    s64ptr  as_s64ptr;
+    s128ptr as_s128ptr;
+    f16ptr  as_f16ptr;
+    f32ptr  as_f32ptr;
+    f64ptr  as_f64ptr;
+    f128ptr as_f128ptr;
+
+    char   as_char;
+    wchar  as_wchar;
+    char*  as_cstring;
+    wchar* as_wcstring;
+  };
+} NYA_Value;
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -72,23 +171,27 @@ static_assert(sizeof(f128) == 16);
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-#define U8_MIN  (0U)
-#define U8_MAX  (255U)
-#define U16_MIN (0U)
-#define U16_MAX (65535U)
-#define U32_MIN (0UL)
-#define U32_MAX (4294967295UL)
-#define U64_MIN (0ULL)
-#define U64_MAX (18446744073709551615ULL)
+#define U8_MIN   ((u8)0)
+#define U8_MAX   ((u8) ~(u8)0)
+#define U16_MIN  ((u16)0)
+#define U16_MAX  ((u16) ~(u16)0)
+#define U32_MIN  ((u32)0)
+#define U32_MAX  ((u32) ~(u32)0)
+#define U64_MIN  ((u64)0)
+#define U64_MAX  ((u64) ~(u64)0)
+#define U128_MIN ((u128)0)
+#define U128_MAX ((u128) ~(u128)0)
 
-#define S8_MIN  (-128)
-#define S8_MAX  (127)
-#define S16_MIN (-32768)
-#define S16_MAX (32767)
-#define S32_MIN (-2147483648L)
-#define S32_MAX (2147483647L)
-#define S64_MIN (-9223372036854775807LL) // TRUE_S64_MIN + 1 since TRUE_S64_MIN is not representable by literal in C
-#define S64_MAX (9223372036854775807LL)
+#define S8_MAX   ((s8)(U8_MAX >> 1))
+#define S8_MIN   ((s8)(-S8_MAX - 1))
+#define S16_MAX  ((s16)(U16_MAX >> 1))
+#define S16_MIN  ((s16)(-S16_MAX - 1))
+#define S32_MAX  ((s32)(U32_MAX >> 1))
+#define S32_MIN  ((s32)(-S32_MAX - 1))
+#define S64_MAX  ((s64)(U64_MAX >> 1))
+#define S64_MIN  ((s64)(-S64_MAX - 1))
+#define S128_MAX ((s128)(U128_MAX >> 1))
+#define S128_MIN ((s128)(-S128_MAX - 1))
 
 #define F16_MIN  (-65504.0f)
 #define F16_MAX  (65504.0f)
@@ -98,6 +201,30 @@ static_assert(sizeof(f128) == 16);
 #define F64_MAX  (__DBL_MAX__)
 #define F128_MIN (-__LDBL_MAX__)
 #define F128_MAX (__LDBL_MAX__)
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * FORMATTING
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+// use like: nya_debug("number: "FMTu64, number);
+#define FMTb8   "%" PRIu8
+#define FMTb16  "%" PRIu16
+#define FMTb32  "%" PRIu32
+#define FMTb64  "%" PRIu64
+#define FMTu8   "%" PRIu8
+#define FMTu16  "%" PRIu16
+#define FMTu32  "%" PRIu32
+#define FMTu64  "%" PRIu64
+#define FMTs8   "%" PRId8
+#define FMTs16  "%" PRId16
+#define FMTs32  "%" PRId32
+#define FMTs64  "%" PRId64
+#define FMTf16  "%e"
+#define FMTf32  "%f"
+#define FMTf64  "%lf"
+#define FMTf128 "%Le"
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -129,6 +256,12 @@ static_assert(sizeof(f128) == 16);
     (u64)(val);                                                                                                        \
   })
 
+#define nya_cast_to_u128(val)                                                                                          \
+  ({                                                                                                                   \
+    nya_assert((val) >= U128_MIN && (val) <= U128_MAX, "Cannot cast to u128.");                                        \
+    (u128)(val);                                                                                                       \
+  })
+
 #define nya_cast_to_s8(val)                                                                                            \
   ({                                                                                                                   \
     nya_assert((val) >= S8_MIN && (val) <= S8_MAX, "Cannot cast to s8.");                                              \
@@ -151,6 +284,12 @@ static_assert(sizeof(f128) == 16);
   ({                                                                                                                   \
     nya_assert((val) >= S64_MIN && (val) <= S64_MAX, "Cannot cast to s64.");                                           \
     (s64)(val);                                                                                                        \
+  })
+
+#define nya_cast_to_s128(val)                                                                                          \
+  ({                                                                                                                   \
+    nya_assert((val) >= S128_MIN && (val) <= S128_MAX, "Cannot cast to s128.");                                        \
+    (s128)(val);                                                                                                       \
   })
 
 #define nya_cast_to_f16(val)                                                                                           \
@@ -176,27 +315,3 @@ static_assert(sizeof(f128) == 16);
     nya_assert((val) >= F128_MIN && (val) <= F128_MAX, "Cannot cast to f128.");                                        \
     (f128)(val);                                                                                                       \
   })
-
-/*
- * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- * FORMATTING
- * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- */
-
-// use like: nya_debug("number: "FMTu64, number);
-#define FMTb8   "%" PRIu8
-#define FMTb16  "%" PRIu16
-#define FMTb32  "%" PRIu32
-#define FMTb64  "%" PRIu64
-#define FMTu8   "%" PRIu8
-#define FMTu16  "%" PRIu16
-#define FMTu32  "%" PRIu32
-#define FMTu64  "%" PRIu64
-#define FMTs8   "%" PRId8
-#define FMTs16  "%" PRId16
-#define FMTs32  "%" PRId32
-#define FMTs64  "%" PRId64
-#define FMTf16  "%e"
-#define FMTf32  "%f"
-#define FMTf64  "%lf"
-#define FMTf128 "%Le"

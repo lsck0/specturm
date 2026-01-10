@@ -218,3 +218,5 @@ static_assert(ASAN_PADDING >= 0);
  */
 
 #define OUT
+#define true  ((b8)1)
+#define false ((b8)0)

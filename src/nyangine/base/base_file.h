@@ -1,8 +1,8 @@
 #pragma once
 
 #include "nyangine/base/base_arena.h"
-#include "nyangine/base/base_ints.h"
 #include "nyangine/base/base_string.h"
+#include "nyangine/base/base_types.h"
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────

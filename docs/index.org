@@ -7,10 +7,10 @@
 - [X] implement test system
 - [ ] arg parsing (+ lexer)
 - [ ] write tests for arena, string, array, ...
+- [ ] hashmap / hashset implementation
 - [ ] full code hot reloading in debug
 - [ ] input and event system
 - [ ] 2d render primitives: shapes (reference raylib), texts, images
-- [ ] hashmap / hashset implementation
 - [ ] ui system: widgets, layout, styling
 - [ ] resource management
 - [ ] word simulation
