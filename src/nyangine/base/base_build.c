@@ -150,7 +150,7 @@ b8 _nya_build_always(NYA_BuildRule* build_rule) {
   if (ok) {
     printf("[OK] Took " FMTu64 " ms.\n\n", build_rule->command.execution_time_ms);
   } else {
-    printf("[FAILED] Exit code: %d\n", (build_rule->command.exit_code - 255) % 255);
+    printf("[FAILED] Exit code: %d\n", build_rule->command.exit_code);
     printf("------- STDOUT -------\n" NYA_FMT_STRING "\n", NYA_FMT_STRING_ARG(build_rule->command.stdout_content));
     printf("------- STDERR -------\n" NYA_FMT_STRING "\n", NYA_FMT_STRING_ARG(build_rule->command.stderr_content));
   }
