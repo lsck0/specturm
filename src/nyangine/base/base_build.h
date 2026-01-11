@@ -23,7 +23,7 @@ typedef enum {
 struct NYA_BuildRule {
   NYA_ConstCString    name;
   NYA_BuildRulePolicy policy;
-  b8                  is_metarule; /** metarules dont have commands, only dependencies and hook. */
+  b8                  is_metarule; /** metarules dont have commands, only dependencies and hooks. */
 
   NYA_ConstCString input_file;
   NYA_ConstCString output_file;
