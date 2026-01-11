@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nyangine/base/base.h"
+#include "nyangine/base/base_attributes.h"
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -61,7 +62,7 @@ typedef wchar_t wchar;
  */
 
 typedef enum {
-  NYA_TYPE_NULL,
+  NYA_TYPE_NULL = 0,
 
   NYA_TYPE_VOID,
   NYA_TYPE_VOID_POINTER,
@@ -108,11 +109,71 @@ typedef enum {
 
   NYA_TYPE_CHAR,
   NYA_TYPE_WCHAR,
-  NYA_TYPE_CSTRING,
-  NYA_TYPE_WCSTRING,
+  NYA_TYPE_STRING,
+  NYA_TYPE_WSTRING,
+
+  NYA_TYPE_BOOL,
+  NYA_TYPE_INTEGER,
+  NYA_TYPE_FLOAT,
 
   NYA_TYPE_COUNT,
 } NYA_Type;
+
+__attr_unused static const char* NYA_TYPE_NAME_MAP[] = {
+    [NYA_TYPE_NULL] = "null",
+
+    [NYA_TYPE_VOID]         = "void",
+    [NYA_TYPE_VOID_POINTER] = "void*",
+
+    [NYA_TYPE_B8]   = "b8",
+    [NYA_TYPE_B16]  = "b16",
+    [NYA_TYPE_B32]  = "b32",
+    [NYA_TYPE_B64]  = "b64",
+    [NYA_TYPE_B128] = "b128",
+    [NYA_TYPE_U8]   = "u8",
+    [NYA_TYPE_U16]  = "u16",
+    [NYA_TYPE_U32]  = "u32",
+    [NYA_TYPE_U64]  = "u64",
+    [NYA_TYPE_U128] = "u128",
+    [NYA_TYPE_S8]   = "s8",
+    [NYA_TYPE_S16]  = "s16",
+    [NYA_TYPE_S32]  = "s32",
+    [NYA_TYPE_S64]  = "s64",
+    [NYA_TYPE_S128] = "s128",
+    [NYA_TYPE_F16]  = "f16",
+    [NYA_TYPE_F32]  = "f32",
+    [NYA_TYPE_F64]  = "f64",
+    [NYA_TYPE_F128] = "f128",
+
+    [NYA_TYPE_B8_POINTER]   = "b8*",
+    [NYA_TYPE_B16_POINTER]  = "b16*",
+    [NYA_TYPE_B32_POINTER]  = "b32*",
+    [NYA_TYPE_B64_POINTER]  = "b64*",
+    [NYA_TYPE_B128_POINTER] = "b128*",
+    [NYA_TYPE_U8_POINTER]   = "u8*",
+    [NYA_TYPE_U16_POINTER]  = "u16*",
+    [NYA_TYPE_U32_POINTER]  = "u32*",
+    [NYA_TYPE_U64_POINTER]  = "u64*",
+    [NYA_TYPE_U128_POINTER] = "u128*",
+    [NYA_TYPE_S8_POINTER]   = "s8*",
+    [NYA_TYPE_S16_POINTER]  = "s16*",
+    [NYA_TYPE_S32_POINTER]  = "s32*",
+    [NYA_TYPE_S64_POINTER]  = "s64*",
+    [NYA_TYPE_S128_POINTER] = "s128*",
+    [NYA_TYPE_F16_POINTER]  = "f16*",
+    [NYA_TYPE_F32_POINTER]  = "f32*",
+    [NYA_TYPE_F64_POINTER]  = "f64*",
+    [NYA_TYPE_F128_POINTER] = "f128*",
+
+    [NYA_TYPE_CHAR]    = "char",
+    [NYA_TYPE_WCHAR]   = "wchar",
+    [NYA_TYPE_STRING]  = "string",
+    [NYA_TYPE_WSTRING] = "wstring",
+
+    [NYA_TYPE_BOOL]    = "bool",
+    [NYA_TYPE_INTEGER] = "integer",
+    [NYA_TYPE_FLOAT]   = "float",
+};
 
 typedef struct {
   NYA_Type type;
@@ -160,8 +221,12 @@ typedef struct {
 
     char   as_char;
     wchar  as_wchar;
-    char*  as_cstring;
-    wchar* as_wcstring;
+    char*  as_string;
+    wchar* as_wstring;
+
+    b8  as_bool;
+    s64 as_integer;
+    f64 as_float;
   };
 } NYA_Value;
 
