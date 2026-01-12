@@ -8,10 +8,13 @@
  */
 
 #define PROJECT_NAME "gnyame"
-#define PROJECT_PATH "./src/main.c"
 #define VERSION      "0.0.0"
 
-#define DEBUG_BINARY          PROJECT_NAME "." VERSION ".debug"
+#define BINARY_SOURCE_PATH "./src/main.c"
+#define DLL_SOURCE_PATH    "./src/gnyame/gnyame.c"
+
+#define DEBUG_BINARY          PROJECT_NAME ".debug"
+#define DEBUG_DLL             PROJECT_NAME ".debug.so"
 #define WINDOWS_X86_64_BINARY PROJECT_NAME "." VERSION ".windows-x86_64.exe"
 #define LINUX_X86_64_BINARY   PROJECT_NAME "." VERSION ".linux-x86_64"
 
@@ -23,7 +26,8 @@
 #define LINKER_FLAGS  "-lm", "-pthread", "-lSDL3"
 #define NPROCS        "16"
 
-#define FLAGS_DEBUG   "-O0", "-DIS_DEBUG=true", "-fno-omit-frame-pointer", "-fno-optimize-sibling-calls", "-fno-sanitize-recover=all", "-fsanitize=address,leak,undefined,signed-integer-overflow,unsigned-integer-overflow,shift,float-cast-overflow,float-divide-by-zero,pointer-overflow"
+#define FLAGS_DEBUG   "-O0", "-rdynamic", "-ldl", "-DIS_DEBUG=true", "-fno-omit-frame-pointer", "-fno-optimize-sibling-calls", "-fno-sanitize-recover=all", "-fsanitize=address,leak,undefined,signed-integer-overflow,unsigned-integer-overflow,shift,float-cast-overflow,float-divide-by-zero,pointer-overflow"
+#define FLAGS_DLL     "-fPIC", "-shared"
 #define FLAGS_RELEASE "-O3", "-D_FORTIFY_SOURCE=2", "-fno-omit-frame-pointer", "-fstack-protector-strong"
 
 #define FLAGS_WINDOWS_X86_64 "--target=x86_64-w64-mingw32", "-Wl,-subsystem,windows", "-static", "-L./vendor/sdl/build-window-x86_64/", "-lcomdlg32", "-ldxguid", "-lgdi32", "-limm32", "-lkernel32", "-lole32", "-loleaut32", "-lsetupapi", "-luser32", "-luuid", "-lversion", "-lwinmm"
@@ -204,24 +208,14 @@ NYA_BuildRule build_windows_icon = {
  * ─────────────────────────────────────────────────────────
  */
 
-NYA_BuildRule build_docs = {
-    .name    = "build_docs",
-    .policy  = NYA_BUILD_ALWAYS,
-
-    .command = {
-        .program   = "doxygen",
-        .arguments = { "./docs/doxygen.config" },
-    },
-};
-
-NYA_BuildRule build_project_debug = {
-    .name   = "build_project_debug",
+NYA_BuildRule build_project_debug_executable = {
+    .name   = "build_project_debug_executable",
     .policy = NYA_BUILD_ALWAYS,
 
     .command = {
         .program   = CC,
         .arguments = {
-            PROJECT_PATH,
+            BINARY_SOURCE_PATH,
             "-o", DEBUG_BINARY,
             CFLAGS,
             WARNINGS,
@@ -236,6 +230,35 @@ NYA_BuildRule build_project_debug = {
     .dependencies    = { &build_linux_x64_64_sdl },
 };
 
+NYA_BuildRule build_project_debug_dll = {
+    .name   = "build_project_debug_dll",
+    .policy = NYA_BUILD_ALWAYS,
+
+    .command = {
+        .program   = CC,
+        .arguments = {
+            DLL_SOURCE_PATH,
+            "-o", DEBUG_DLL,
+            CFLAGS,
+            WARNINGS,
+            INCLUDE_PATHS,
+            LINKER_FLAGS,
+            FLAGS_DEBUG,
+            FLAGS_DLL,
+            FLAGS_LINUX_X86_64,
+        },
+    },
+
+    .pre_build_hooks = { &add_version_flag_and_git_hash },
+    .dependencies    = { &build_linux_x64_64_sdl },
+};
+
+NYA_BuildRule build_project_debug = {
+    .name   = "build_project_debug",
+    .is_metarule  = true,
+    .dependencies    = { &build_project_debug_executable, &build_project_debug_dll, },
+};
+
 NYA_BuildRule build_project_linux_x86_64 = {
     .name   = "build_project_linux_x86_64",
     .policy = NYA_BUILD_ALWAYS,
@@ -243,7 +266,7 @@ NYA_BuildRule build_project_linux_x86_64 = {
     .command = {
         .program   = CC,
         .arguments = {
-            PROJECT_PATH,
+            BINARY_SOURCE_PATH,
             "-o", LINUX_X86_64_BINARY,
             CFLAGS,
             WARNINGS,
@@ -265,7 +288,7 @@ NYA_BuildRule build_project_windows_x86_64 = {
     .command = {
         .program   = CC,
         .arguments = {
-            PROJECT_PATH,
+            BINARY_SOURCE_PATH,
             "-o", WINDOWS_X86_64_BINARY,
             CFLAGS,
             WARNINGS,
@@ -279,6 +302,16 @@ NYA_BuildRule build_project_windows_x86_64 = {
 
     .pre_build_hooks = { &add_version_flag_and_git_hash },
     .dependencies    = { &build_windows_x86_64_sdl, &build_windows_icon },
+};
+
+NYA_BuildRule build_docs = {
+    .name    = "build_docs",
+    .policy  = NYA_BUILD_ALWAYS,
+
+    .command = {
+        .program   = "doxygen",
+        .arguments = { "./docs/doxygen.config" },
+    },
 };
 
 /*
@@ -312,6 +345,17 @@ NYA_BuildRule run_debug = {
     .dependencies = { &build_project_debug },
 
     .post_build_hooks = { &convert_perf_data_to_plain },
+};
+
+NYA_BuildRule run_release = {
+    .name   = "run_release",
+    .policy = NYA_BUILD_ALWAYS,
+
+    .command = {
+        .program = LINUX_X86_64_BINARY,
+    },
+
+    .dependencies = { &build_project_linux_x86_64 },
 };
 
 NYA_BuildRule run_tests = {
@@ -508,6 +552,7 @@ NYA_INTERNAL void test_runner(NYA_BuildRule* rule) {
  * CLI PARSER
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
+// clang-format off
 
 NYA_ArgParameter skip_self_rebuild_flag = {
     .kind        = NYA_ARG_PARAMETER_KIND_FLAG,
@@ -523,7 +568,81 @@ NYA_ArgParameter help_flag = {
     .description = "Show this message.",
 };
 
-// clang-format off
+NYA_ArgCommand run = {
+    .name = "run",
+    .description = "Run things.",
+    .subcommands = {
+        &(NYA_ArgCommand){
+            .name        = "debug",
+            .description = "Run the debug executable.",
+            .build_rule  = &run_debug,
+        },
+        &(NYA_ArgCommand){
+            .name        = "release",
+            .description = "Run the release executable.",
+            .build_rule  = &run_release,
+        },
+        &(NYA_ArgCommand){
+            .name        = "tests",
+            .description = "Run all the tests.",
+            .build_rule  = &run_tests,
+        },
+}};
+
+NYA_ArgCommand build = {
+    .name        = "build",
+    .description = "Build things.",
+    .subcommands = {
+        &(NYA_ArgCommand){
+            .name        = "debug",
+            .description = "Build the debug executable and dll.",
+            .build_rule  = &build_project_debug,
+        },
+        &(NYA_ArgCommand){
+            .name        = "debug-exe",
+            .description = "Build the debug executable.",
+            .build_rule  = &build_project_debug_executable,
+        },
+        &(NYA_ArgCommand){
+            .name        = "debug-dll",
+            .description = "Build the debug dll.",
+            .build_rule  = &build_project_debug_dll,
+        },
+        &(NYA_ArgCommand){
+            .name        = "release",
+            .description = "Build all release executables.",
+            .build_rule  = &build_project,
+        },
+        &(NYA_ArgCommand){
+            .name        = "linux",
+            .description = "Build the linux release executable.",
+            .build_rule  = &build_project_linux_x86_64,
+        },
+        &(NYA_ArgCommand){
+            .name        = "windows",
+            .description = "Build the windows release executable.",
+            .build_rule  = &build_project_windows_x86_64,
+        },
+    },
+};
+
+NYA_ArgCommand perf = {
+    .name        = "perf",
+    .description = "Open Profiler with last profiling data.",
+    .build_rule  = &open_perf_report,
+};
+
+NYA_ArgCommand docs = {
+    .name        = "docs",
+    .description = "Open doxygen generated documentation.",
+    .build_rule  = &open_docs,
+};
+NYA_ArgCommand stats = {
+    .name        = "stats",
+    .description = "Show code statistics.",
+    .build_rule  = &show_stats,
+};
+
 NYA_ArgParser parser = {
     .name    = "specturm build system",
     .version = VERSION,
@@ -535,46 +654,16 @@ NYA_ArgParser parser = {
             &help_flag,
         },
         .subcommands = {
-            &(NYA_ArgCommand){
-                .name        = "run:debug",
-                .description = "Build and run the debug version with perf profiling.",
-                .build_rule  = &run_debug,
-            },
-            &(NYA_ArgCommand){
-                .name        = "run:tests",
-                .description = "Build and run all tests.",
-                .build_rule  = &run_tests,
-            },
-            &(NYA_ArgCommand){
-                .name        = "open:perf",
-                .description = "Open the perf profiling report in speedscope and hotspot.",
-                .build_rule  = &open_perf_report,
-            },
-            &(NYA_ArgCommand){
-                .name        = "open:docs",
-                .description = "Build and open the documentation.",
-                .build_rule  = &open_docs,
-            },
-            &(NYA_ArgCommand){
-                .name        = "open:stats",
-                .description = "Show code statistics.",
-                .build_rule  = &show_stats,
-            },
-            &(NYA_ArgCommand){
-                .name        = "build:debug",
-                .description = "Build the debug version of the project.",
-                .build_rule  = &build_project_debug,
-            },
-            &(NYA_ArgCommand){
-                .name        = "build:release",
-                .description = "Build the release version of the project.",
-                .build_rule  = &build_project,
-            },
+            &run,
+            &build,
+            &perf,
+            &docs,
+            &stats
         },
     },
 };
-// clang-format on
 
+// clang-format on
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  * ENTRY POINT
@@ -592,7 +681,10 @@ s32 main(s32 argc, NYA_CString* argv) {
     return EXIT_SUCCESS;
   }
 
-  nya_args_run_command(command);
+  if (!nya_args_run_command(command)) {
+    nya_args_print_usage(&parser, command);
+    return EXIT_FAILURE;
+  }
 
   return EXIT_SUCCESS;
 }

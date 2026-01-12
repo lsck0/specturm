@@ -1,8 +1,5 @@
 #include "gnyame/gnyame.h"
 
-#include "nyangine/nyangine.c"
-#include "nyangine/nyangine.h"
-
 void on_create(void);
 void on_destroy(void);
 void on_update(NYA_Window* window, f32 delta_time);

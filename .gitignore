@@ -4,6 +4,7 @@ docs/doxygen/
 
 build
 *.debug
+*.debug.so
 *.windows-x86_64.exe
 *.linux-x86_64
 perf*
