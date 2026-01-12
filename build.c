@@ -52,7 +52,7 @@ NYA_Command build_rebuild_command = {
         WARNINGS,
         INCLUDE_PATHS,
         LINKER_FLAGS,
-        FLAGS_DEBUG,
+        FLAGS_RELEASE,
     },
 };
 
@@ -505,48 +505,94 @@ NYA_INTERNAL void test_runner(NYA_BuildRule* rule) {
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * CLI PARSER
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+NYA_ArgParameter skip_self_rebuild_flag = {
+    .kind        = NYA_ARG_PARAMETER_KIND_FLAG,
+    .value.type  = NYA_TYPE_BOOL,
+    .name        = "no-rebuild",
+    .description = "Don't rebuild the build system before executing the command.",
+};
+
+NYA_ArgParameter help_flag = {
+    .kind        = NYA_ARG_PARAMETER_KIND_FLAG,
+    .value.type  = NYA_TYPE_BOOL,
+    .name        = "help",
+    .description = "Show this message.",
+};
+
+// clang-format off
+NYA_ArgParser parser = {
+    .name    = "specturm build system",
+    .version = VERSION,
+
+    .root_command = &(NYA_ArgCommand){
+        .is_root    = true,
+        .parameters = {
+            &skip_self_rebuild_flag,
+            &help_flag,
+        },
+        .subcommands = {
+            &(NYA_ArgCommand){
+                .name        = "run:debug",
+                .description = "Build and run the debug version with perf profiling.",
+                .build_rule  = &run_debug,
+            },
+            &(NYA_ArgCommand){
+                .name        = "run:tests",
+                .description = "Build and run all tests.",
+                .build_rule  = &run_tests,
+            },
+            &(NYA_ArgCommand){
+                .name        = "open:perf",
+                .description = "Open the perf profiling report in speedscope and hotspot.",
+                .build_rule  = &open_perf_report,
+            },
+            &(NYA_ArgCommand){
+                .name        = "open:docs",
+                .description = "Build and open the documentation.",
+                .build_rule  = &open_docs,
+            },
+            &(NYA_ArgCommand){
+                .name        = "open:stats",
+                .description = "Show code statistics.",
+                .build_rule  = &show_stats,
+            },
+            &(NYA_ArgCommand){
+                .name        = "build:debug",
+                .description = "Build the debug version of the project.",
+                .build_rule  = &build_project_debug,
+            },
+            &(NYA_ArgCommand){
+                .name        = "build:release",
+                .description = "Build the release version of the project.",
+                .build_rule  = &build_project,
+            },
+        },
+    },
+};
+// clang-format on
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  * ENTRY POINT
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_INTERNAL void usage_and_exit(NYA_CString program_name) {
-  printf("Usage: %s [task]\n", program_name);
-  printf("Tasks:\n");
-  printf("  run:debug\n");
-  printf("  run:tests\n");
-  printf("  open:perf\n");
-  printf("  open:docs\n");
-  printf("  open:stats\n");
-  printf("  build:debug\n");
-  printf("  build:release\n");
-
-  exit(EXIT_FAILURE);
-}
-
 s32 main(s32 argc, NYA_CString* argv) {
-  // TODO: add a way to skip this for faster rebuilds during development
-  nya_rebuild_yourself(&argc, argv, build_rebuild_command);
+  parser.executable_name  = argv[0];
+  NYA_ArgCommand* command = nya_args_parse_argv(&parser, argc, argv);
 
-  if (argc != 2) usage_and_exit(argv[0]);
+  if (!skip_self_rebuild_flag.value.as_bool) nya_rebuild_yourself(&argc, argv, build_rebuild_command);
 
-  NYA_CString task = argv[1];
-  if (nya_string_equals(task, "run:debug")) {
-    nya_build(&run_debug);
-  } else if (nya_string_equals(task, "run:tests")) {
-    nya_build(&run_tests);
-  } else if (nya_string_equals(task, "open:perf")) {
-    nya_build(&open_perf_report);
-  } else if (nya_string_equals(task, "open:docs")) {
-    nya_build(&open_docs);
-  } else if (nya_string_equals(task, "open:stats")) {
-    nya_build(&show_stats);
-  } else if (nya_string_equals(task, "build:debug")) {
-    nya_build(&build_project_debug);
-  } else if (nya_string_equals(task, "build:release")) {
-    nya_build(&build_project);
-  } else {
-    usage_and_exit(argv[0]);
+  if (help_flag.value.as_bool) {
+    nya_args_print_usage(&parser, command);
+    return EXIT_SUCCESS;
   }
+
+  nya_args_run_command(command);
 
   return EXIT_SUCCESS;
 }

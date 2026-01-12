@@ -5,7 +5,7 @@
     - [X] command running
     - [X] build tools: self rebuild with custom command, per file caching, maybe rules based
 - [X] implement test system
-- [ ] arg parsing (+ lexer)
+- [X] arg parsing (+ lexer)
 - [ ] write tests for arena, string, array, ...
 - [ ] hashmap / hashset implementation
 - [ ] full code hot reloading in debug

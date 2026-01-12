@@ -10,21 +10,21 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-#define NYA_ARG_MAX_COMMANDS 64
-#define NYA_ARG_MAX_OPTIONS  64
+#define NYA_ARG_MAX_COMMANDS   64
+#define NYA_ARG_MAX_PARAMETERS 128
 
-typedef struct NYA_ArgParser  NYA_ArgParser;
-typedef struct NYA_ArgCommand NYA_ArgCommand;
-typedef struct NYA_ArgOption  NYA_ArgOption;
+typedef struct NYA_ArgParser    NYA_ArgParser;
+typedef struct NYA_ArgCommand   NYA_ArgCommand;
+typedef struct NYA_ArgParameter NYA_ArgParameter;
 
 typedef enum {
-  NYA_ARG_OPTION_KIND_FLAG,
-  NYA_ARG_OPTION_KIND_POSITIONAL,
-} NYA_ArgOptionKind;
+  NYA_ARG_PARAMETER_KIND_FLAG,
+  NYA_ARG_PARAMETER_KIND_POSITIONAL,
+} NYA_ArgParameterKind;
 
-struct NYA_ArgOption {
-  NYA_ArgOptionKind kind;
-  b8                variadic;
+struct NYA_ArgParameter {
+  NYA_ArgParameterKind kind;
+  b8                   variadic;
 
   NYA_ConstCString name;
   NYA_ConstCString description;
@@ -32,7 +32,14 @@ struct NYA_ArgOption {
 
   /** will be filled after parsing */
 
+  b8 was_matched;
+
+  /** used for single parameters */
   NYA_Value value;
+
+  /** used for variadic parameters */
+  u32       values_count;
+  NYA_Value values[NYA_ARG_MAX_PARAMETERS];
 };
 
 struct NYA_ArgCommand {
@@ -41,8 +48,10 @@ struct NYA_ArgCommand {
   NYA_ConstCString name;
   NYA_ConstCString description;
 
-  NYA_ArgCommand* subcommands[NYA_ARG_MAX_COMMANDS];
-  NYA_ArgOption*  options[NYA_ARG_MAX_OPTIONS];
+  NYA_ArgCommand*   subcommands[NYA_ARG_MAX_COMMANDS];
+  NYA_ArgParameter* parameters[NYA_ARG_MAX_PARAMETERS];
+
+  /** either handler or build_rule must be set */
 
   void (*handler)(NYA_ArgCommand* command);
   NYA_BuildRule* build_rule;
@@ -64,5 +73,6 @@ struct NYA_ArgParser {
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_API NYA_EXTERN void nya_args_parse(NYA_ArgParser* parser, s32 argc, NYA_CString* argv);
-NYA_API NYA_EXTERN void nya_args_print_usage(NYA_ArgParser* parser, NYA_ArgCommand* command_override);
+NYA_API NYA_EXTERN NYA_ArgCommand* nya_args_parse_argv(NYA_ArgParser* parser, s32 argc, NYA_CString* argv);
+NYA_API NYA_EXTERN void            nya_args_run_command(NYA_ArgCommand* command);
+NYA_API NYA_EXTERN void            nya_args_print_usage(NYA_ArgParser* parser, NYA_ArgCommand* command_override);

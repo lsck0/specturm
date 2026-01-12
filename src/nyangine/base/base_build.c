@@ -52,7 +52,7 @@ b8 nya_build(NYA_BuildRule* build_rule) {
 }
 
 void nya_rebuild_yourself(s32* argc, NYA_CString* argv, NYA_Command cmd) {
-  NYA_CString marker = "ALREADY_REBUILT_YOURSELF"; // appended to argv
+  NYA_CString marker = "--no-rebuild"; // appended to argv
 
   // check if we've already rebuilt ourselves
   if (nya_string_equals(argv[*argc - 1], marker)) {
