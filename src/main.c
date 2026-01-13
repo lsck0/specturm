@@ -29,11 +29,20 @@ s32 main(s32 argc, char** argv) {
 #if NYA_IS_DEBUG
 #include <dlfcn.h>
 #include <pthread.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
-#include "gnyame/gnyame.h"
-
 #define DLL_PATH "./gnyame.debug.so"
+
+typedef void(gnyame_setup_fn)(s32 argc, char** argv);
+typedef void(gnyame_run_fn)(void);
+typedef void(gnyame_shutdown_fn)(void);
+typedef NYA_App(gnyame_get_appstate_fn)(void);
+typedef void(gnyame_set_appstate_fn)(NYA_App app);
+typedef void(gnyame_stop_game_loop_fn)(void);
+
+u64 gnyame_dll_last_modified;
+b8  gnyame_dll_reload_requested = false;
 
 void*                     gnyame_dll;
 gnyame_setup_fn*          gnyame_setup;
@@ -43,11 +52,8 @@ gnyame_get_appstate_fn*   gnyame_get_appstate;
 gnyame_set_appstate_fn*   gnyame_set_appstate;
 gnyame_stop_game_loop_fn* gnyame_stop_game_loop;
 
-u64 gnyame_dll_last_modified;
-b8  gnyame_dll_reload_requested = false;
-
 b8    dll_load(void);
-void  dll_unload(void);
+b8    dll_unload(void);
 void* dll_watch_thread_func(void* arg);
 
 s32 main(s32 argc, char** argv) {
@@ -56,7 +62,7 @@ s32 main(s32 argc, char** argv) {
   pthread_t thread;
   b8        ok = pthread_create(&thread, nullptr, dll_watch_thread_func, nullptr) == 0;
   if (!ok) {
-    (void)fprintf(stderr, "Failed to create DLL watch thread\n");
+    (void)fprintf(stderr, "Failed to create DLL watch thread.\n");
     return EXIT_FAILURE;
   }
 
@@ -68,18 +74,27 @@ before_run:
     NYA_App app_state               = gnyame_get_appstate();
     app_state.should_quit_game_loop = false;
 
-    dll_unload();
+    ok = dll_unload();
+    if (!ok) {
+      (void)fprintf(stderr, "Failed to unload DLL before reload.\n");
+      return EXIT_FAILURE;
+    }
+
+    // give the compiler time to finish writing the new DLL
+    struct timespec ts = {0};
+    ts.tv_nsec         = 150UL * 1000UL * 1000UL; // 150 ms
+    nanosleep(&ts, nullptr);
 
     ok = dll_load();
     if (!ok) {
-      (void)fprintf(stderr, "Failed to reload DLL after change\n");
+      (void)fprintf(stderr, "Failed to reload DLL after change.\n");
       return EXIT_FAILURE;
     }
 
     gnyame_set_appstate(app_state);
 
     gnyame_dll_reload_requested = false;
-    (void)fprintf(stdout, "Reloaded %s successfully\n", DLL_PATH);
+    (void)fprintf(stdout, "Reloaded %s successfully.\n", DLL_PATH);
 
     goto before_run;
   }
@@ -92,15 +107,9 @@ before_run:
 }
 
 b8 dll_load(void) {
-  b8 ok = nya_filesystem_file_last_modified(DLL_PATH, &gnyame_dll_last_modified);
-  if (!ok) {
-    (void)fprintf(stderr, "Failed to get last modified time for %s\n", DLL_PATH);
-    return false;
-  }
-
   gnyame_dll = dlopen(DLL_PATH, RTLD_NOW | RTLD_GLOBAL);
   if (!gnyame_dll) {
-    (void)fprintf(stderr, "Failed to load %s: %s\n", DLL_PATH, dlerror());
+    (void)fprintf(stderr, "Failed to load %s: %s.\n", DLL_PATH, dlerror());
     return false;
   }
 
@@ -112,7 +121,14 @@ b8 dll_load(void) {
   gnyame_stop_game_loop = (gnyame_stop_game_loop_fn*)dlsym(gnyame_dll, "gnyame_stop_game_loop");
   if (!gnyame_setup || !gnyame_run || !gnyame_shutdown || !gnyame_get_appstate || !gnyame_set_appstate ||
       !gnyame_stop_game_loop) {
-    (void)fprintf(stderr, "Failed to load symbols from gnyame.debug.so: %s\n", dlerror());
+    (void)fprintf(stderr, "Failed to load symbols from %s: %s.\n", DLL_PATH, dlerror());
+    dlclose(gnyame_dll);
+    return false;
+  }
+
+  b8 ok = nya_filesystem_file_last_modified(DLL_PATH, &gnyame_dll_last_modified);
+  if (!ok) {
+    (void)fprintf(stderr, "Failed to get last modified time for %s.\n", DLL_PATH);
     dlclose(gnyame_dll);
     return false;
   }
@@ -120,9 +136,13 @@ b8 dll_load(void) {
   return true;
 }
 
-void dll_unload(void) {
+b8 dll_unload(void) {
   if (gnyame_dll) {
-    dlclose(gnyame_dll);
+    b8 ok = dlclose(gnyame_dll) == 0;
+    if (!ok) {
+      (void)fprintf(stderr, "Failed to unload %s: %s.\n", DLL_PATH, dlerror());
+      return false;
+    }
 
     gnyame_dll            = nullptr;
     gnyame_setup          = nullptr;
@@ -132,6 +152,8 @@ void dll_unload(void) {
     gnyame_set_appstate   = nullptr;
     gnyame_stop_game_loop = nullptr;
   }
+
+  return true;
 }
 
 void* dll_watch_thread_func(void* arg) {
@@ -140,20 +162,17 @@ void* dll_watch_thread_func(void* arg) {
   while (true) {
     u64 last_modified;
     b8  ok = nya_filesystem_file_last_modified(DLL_PATH, &last_modified);
-    if (!ok) {
-      (void)fprintf(stderr, "Failed to get last modified time for %s\n", DLL_PATH);
-      abort();
-    }
+    if (!ok) continue;
 
-    if (last_modified != gnyame_dll_last_modified) {
-      (void)fprintf(stdout, "Detected change in %s, reloading...\n", DLL_PATH);
+    if (last_modified != gnyame_dll_last_modified && !gnyame_dll_reload_requested) {
+      (void)fprintf(stdout, "Detected change in %s, reloading soon...\n", DLL_PATH);
 
       gnyame_dll_reload_requested = true;
       gnyame_stop_game_loop();
     }
 
     struct timespec ts = {0};
-    ts.tv_nsec         = 100UL * 1000UL * 1000UL; // 100 ms
+    ts.tv_nsec         = 50UL * 1000UL * 1000UL; // 50 ms
     nanosleep(&ts, nullptr);
   }
 

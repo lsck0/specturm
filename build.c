@@ -26,18 +26,18 @@
 #define LINKER_FLAGS  "-lm", "-pthread", "-lSDL3"
 #define NPROCS        "16"
 
-#define FLAGS_DEBUG   "-O0", "-rdynamic", "-ldl", "-DIS_DEBUG=true", "-fno-omit-frame-pointer", "-fno-optimize-sibling-calls", "-fno-sanitize-recover=all", "-fsanitize=address,leak,undefined,signed-integer-overflow,unsigned-integer-overflow,shift,float-cast-overflow,float-divide-by-zero,pointer-overflow"
-#define FLAGS_DLL     "-fPIC", "-shared"
-#define FLAGS_RELEASE "-O3", "-D_FORTIFY_SOURCE=2", "-fno-omit-frame-pointer", "-fstack-protector-strong"
+#define FLAGS_SANITIZE  "-fno-omit-frame-pointer", "-fno-optimize-sibling-calls", "-fno-sanitize-recover=all", "-fsanitize=address,leak,undefined,signed-integer-overflow,unsigned-integer-overflow,shift,float-cast-overflow,float-divide-by-zero,pointer-overflow"
+#define FLAGS_DEBUG     "-O0", "-DIS_DEBUG=true", "-rdynamic"
+#define FLAGS_DLL       "-fPIC", "-shared"
+#define FLAGS_RELEASE   "-O3", "-D_FORTIFY_SOURCE=2", "-fno-omit-frame-pointer", "-fstack-protector-strong"
 
 #define FLAGS_WINDOWS_X86_64 "--target=x86_64-w64-mingw32", "-Wl,-subsystem,windows", "-static", "-L./vendor/sdl/build-window-x86_64/", "-lcomdlg32", "-ldxguid", "-lgdi32", "-limm32", "-lkernel32", "-lole32", "-loleaut32", "-lsetupapi", "-luser32", "-luuid", "-lversion", "-lwinmm"
 #define FLAGS_LINUX_X86_64   "-L./vendor/sdl/build-linux-x86_64/"
 // clang-format on
 
-NYA_INTERNAL void add_version_flag_and_git_hash(NYA_BuildRule* rule);
-NYA_INTERNAL void convert_perf_data_to_plain(NYA_BuildRule* rule);
-NYA_INTERNAL void remove_output_file(NYA_BuildRule* rule);
-NYA_INTERNAL void test_runner(NYA_BuildRule* rule);
+NYA_INTERNAL void hook_add_version_flag_and_git_hash(NYA_BuildRule* rule);
+NYA_INTERNAL void hook_convert_perf_data_to_plain(NYA_BuildRule* rule);
+NYA_INTERNAL void hook_remove_output_file(NYA_BuildRule* rule);
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -221,12 +221,13 @@ NYA_BuildRule build_project_debug_executable = {
             WARNINGS,
             INCLUDE_PATHS,
             LINKER_FLAGS,
+            FLAGS_SANITIZE,
             FLAGS_DEBUG,
             FLAGS_LINUX_X86_64,
         },
     },
 
-    .pre_build_hooks = { &add_version_flag_and_git_hash },
+    .pre_build_hooks = { &hook_add_version_flag_and_git_hash },
     .dependencies    = { &build_linux_x64_64_sdl },
 };
 
@@ -243,13 +244,14 @@ NYA_BuildRule build_project_debug_dll = {
             WARNINGS,
             INCLUDE_PATHS,
             LINKER_FLAGS,
+            FLAGS_SANITIZE,
             FLAGS_DEBUG,
             FLAGS_DLL,
             FLAGS_LINUX_X86_64,
         },
     },
 
-    .pre_build_hooks = { &add_version_flag_and_git_hash },
+    .pre_build_hooks = { &hook_add_version_flag_and_git_hash },
     .dependencies    = { &build_linux_x64_64_sdl },
 };
 
@@ -277,7 +279,7 @@ NYA_BuildRule build_project_linux_x86_64 = {
         },
     },
 
-    .pre_build_hooks = { &add_version_flag_and_git_hash },
+    .pre_build_hooks = { &hook_add_version_flag_and_git_hash },
     .dependencies    = { &build_linux_x64_64_sdl },
 };
 
@@ -300,8 +302,17 @@ NYA_BuildRule build_project_windows_x86_64 = {
         },
     },
 
-    .pre_build_hooks = { &add_version_flag_and_git_hash },
+    .pre_build_hooks = { &hook_add_version_flag_and_git_hash },
     .dependencies    = { &build_windows_x86_64_sdl, &build_windows_icon },
+};
+
+NYA_BuildRule build_project = {
+    .name         = "build_project",
+    .is_metarule  = true,
+    .dependencies = {
+        &build_project_linux_x86_64,
+        &build_project_windows_x86_64,
+    },
 };
 
 NYA_BuildRule build_docs = {
@@ -316,7 +327,7 @@ NYA_BuildRule build_docs = {
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- * TARGETS
+ * OTHER TARGETS
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
@@ -344,7 +355,7 @@ NYA_BuildRule run_debug = {
 
     .dependencies = { &build_project_debug },
 
-    .post_build_hooks = { &convert_perf_data_to_plain },
+    .post_build_hooks = { &hook_convert_perf_data_to_plain },
 };
 
 NYA_BuildRule run_release = {
@@ -356,21 +367,6 @@ NYA_BuildRule run_release = {
     },
 
     .dependencies = { &build_project_linux_x86_64 },
-};
-
-NYA_BuildRule run_tests = {
-    .name   = "run_tests",
-    .is_metarule  = true,
-    .pre_build_hooks = { &test_runner },
-};
-
-NYA_BuildRule build_project = {
-    .name         = "build_project",
-    .is_metarule  = true,
-    .dependencies = {
-        &build_project_linux_x86_64,
-        &build_project_windows_x86_64,
-    },
 };
 
 NYA_BuildRule open_perf_report = {
@@ -427,7 +423,7 @@ NYA_BuildRule show_stats = {
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_INTERNAL void add_version_flag_and_git_hash(NYA_BuildRule* rule) {
+NYA_INTERNAL void hook_add_version_flag_and_git_hash(NYA_BuildRule* rule) {
   nya_assert(rule);
 
   static b8          initialized = false;
@@ -459,7 +455,7 @@ skip_initialization:
   rule->command.arguments[length + 1] = VERSION_FLAG;
 }
 
-NYA_INTERNAL void convert_perf_data_to_plain(NYA_BuildRule* rule) {
+NYA_INTERNAL void hook_convert_perf_data_to_plain(NYA_BuildRule* rule) {
   nya_assert(rule);
 
   NYA_Command command = {
@@ -473,15 +469,21 @@ NYA_INTERNAL void convert_perf_data_to_plain(NYA_BuildRule* rule) {
   nya_file_write("./perf.data.txt", &command.stdout_content);
 }
 
-NYA_INTERNAL void remove_output_file(NYA_BuildRule* rule) {
+NYA_INTERNAL void hook_remove_output_file(NYA_BuildRule* rule) {
   nya_assert(rule);
   nya_assert(rule->output_file);
 
   nya_filesystem_file_delete(rule->output_file);
 }
 
-NYA_INTERNAL void test_runner(NYA_BuildRule* rule) {
-  nya_assert(rule);
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * TEST RUNNER
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
+  nya_assert(command);
 
   NYA_Command find_tests_command = {
       .arena     = &nya_global_arena,
@@ -514,12 +516,13 @@ NYA_INTERNAL void test_runner(NYA_BuildRule* rule) {
                 WARNINGS,
                 INCLUDE_PATHS,
                 LINKER_FLAGS,
+                FLAGS_SANITIZE,
                 FLAGS_DEBUG,
                 FLAGS_LINUX_X86_64,
             },
         },
 
-        .pre_build_hooks = { &add_version_flag_and_git_hash },
+        .pre_build_hooks = { &hook_add_version_flag_and_git_hash },
     };
 
     NYA_String    run_test_name = nya_string_sprintf(&nya_global_arena, "run_test:%s", test_binary);
@@ -539,7 +542,7 @@ NYA_INTERNAL void test_runner(NYA_BuildRule* rule) {
         },
 
         .dependencies      = { &build_test },
-        .post_build_hooks  = { &remove_output_file },
+        .post_build_hooks  = { &hook_remove_output_file },
     };
     // clang-format on
 
@@ -585,7 +588,7 @@ NYA_ArgCommand run = {
         &(NYA_ArgCommand){
             .name        = "tests",
             .description = "Run all the tests.",
-            .build_rule  = &run_tests,
+            .handler     = &test_runner,
         },
 }};
 

@@ -1,14 +1,8 @@
 * PLAN
 
-- [X] move the build system to nya_build
-    - [X] fs utilities
-    - [X] command running
-    - [X] build tools: self rebuild with custom command, per file caching, maybe rules based
-- [X] implement test system
-- [X] arg parsing (+ lexer)
-- [X] full code hot reloading in debug
-- [ ] write tests for arena, string, array, ...
+- [ ] write tests for arena, string, array, ... and code review the base layer
 - [ ] hashmap / hashset implementation
+- [ ] implement arena allocation tracking
 - [ ] input and event system
 - [ ] 2d render primitives: shapes (reference raylib), texts, images
 - [ ] ui system: widgets, layout, styling
