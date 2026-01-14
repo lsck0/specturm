@@ -39,6 +39,7 @@ NYA_Arena _nya_arena_nodebug_new_with_options(NYA_ArenaOptions options) {
   nya_assert(options.region_size >= nya_kibyte_to_byte(4), "Minimum region size is 4 KiB.");
   nya_assert(options.alignment >= 8, "Minimum alignment is 8 bytes.");
   nya_assert(options.region_size % options.alignment == 0, "Region size must be divisible by alignment.");
+  nya_assert(options.alignment % 2 == 0, "Alignment must be a power of two.");
   nya_assert(ASAN_PADDING % options.alignment == 0, "ASAN padding must be divisible by alignment.");
 
   return (NYA_Arena){

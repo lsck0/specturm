@@ -15,15 +15,15 @@ NYA_INTERNAL NYA_App NYA_APP_INSTANCE;
 void gnyame_setup(s32 argc, char** argv) {
   nya_unused(argc, argv);
 
-  NYA_App app = nya_app_new((NYA_AppConfig){
+  NYA_APP_INSTANCE = nya_app_new((NYA_AppConfig){
       .time_step_ms     = 15,
       .frame_rate_limit = 120,
       .vsync_enabled    = false,
   });
 
-  nya_window_new(&app, "gnyame", 1280, 720, NYA_WINDOW_RESIZABLE, "main_window");
+  nya_window_new(&NYA_APP_INSTANCE, "gnyame", 1280, 720, NYA_WINDOW_RESIZABLE, "main_window");
   nya_window_layer_push(
-      &app,
+      &NYA_APP_INSTANCE,
       "main_window",
       (NYA_Layer){
           .id         = "main_layer",
@@ -35,8 +35,6 @@ void gnyame_setup(s32 argc, char** argv) {
           .on_render  = nullptr,
       }
   );
-
-  NYA_APP_INSTANCE = app;
 }
 
 void gnyame_run(void) {

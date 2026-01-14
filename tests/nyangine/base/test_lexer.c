@@ -2,6 +2,9 @@
 #include "nyangine/nyangine.h"
 
 s32 main(void) {
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: Basic lexer - mixed input
+  // ─────────────────────────────────────────────────────────────────────────────
   NYA_Lexer lexer = nya_lexer_new("a+b\nc \"2134.34 = .234. asdf! __asd__a __ sad__");
   nya_lexer_run(&lexer);
 
@@ -76,51 +79,156 @@ s32 main(void) {
   nya_assert(token14.length == 5);
   nya_assert(nya_memcmp(lexer.source + token14.source_location, "sad__", 5) == 0);
 
-  // nya_array_foreach (&lexer.tokens, token) {
-  //   switch (token->type) {
-  //     case NYA_TOKEN_SYMBOL: {
-  //       printf("SYMBOL '%c' at %u:%u\n", token->symbol, token->line_number, token->char_number);
-  //       break;
-  //     }
-  //
-  //     case NYA_TOKEN_IDENT: {
-  //       printf(
-  //           "IDENT: %.*s at %u:%u\n",
-  //           token->length,
-  //           lexer.source + token->source_location,
-  //           token->line_number,
-  //           token->char_number
-  //       );
-  //       break;
-  //     }
-  //
-  //     case NYA_TOKEN_NUMBER_INTEGER: {
-  //       printf(
-  //           "NUMBER INTEGER: %.*s at %u:%u\n",
-  //           token->length,
-  //           lexer.source + token->source_location,
-  //           token->line_number,
-  //           token->char_number
-  //       );
-  //       break;
-  //     }
-  //
-  //     case NYA_TOKEN_NUMBER_FLOAT: {
-  //       printf(
-  //           "NUMBER FLOAT: %.*s at %u:%u\n",
-  //           token->length,
-  //           lexer.source + token->source_location,
-  //           token->line_number,
-  //           token->char_number
-  //       );
-  //       break;
-  //     }
-  //
-  //     default: printf("UNKNOWN TOKEN TYPE %u at %u:%u\n", token->type, token->line_number, token->char_number);
-  //     break;
-  //   }
-  // }
-
   nya_lexer_destroy(&lexer);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: Empty input
+  // ─────────────────────────────────────────────────────────────────────────────
+  NYA_Lexer empty_lexer = nya_lexer_new("");
+  nya_lexer_run(&empty_lexer);
+  nya_assert(empty_lexer.tokens.length == 0);
+  nya_lexer_destroy(&empty_lexer);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: Whitespace only input
+  // ─────────────────────────────────────────────────────────────────────────────
+  NYA_Lexer ws_lexer = nya_lexer_new("   \t\n\n   ");
+  nya_lexer_run(&ws_lexer);
+  nya_assert(ws_lexer.tokens.length == 0);
+  nya_lexer_destroy(&ws_lexer);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: Integer numbers
+  // ─────────────────────────────────────────────────────────────────────────────
+  NYA_Lexer int_lexer = nya_lexer_new("0 1 42 12345 999999");
+  nya_lexer_run(&int_lexer);
+  nya_assert(int_lexer.tokens.length == 5);
+  for (u32 i = 0; i < int_lexer.tokens.length; ++i) {
+    nya_assert(int_lexer.tokens.items[i].type == NYA_TOKEN_NUMBER_INTEGER);
+  }
+  nya_assert(int_lexer.tokens.items[0].length == 1);
+  nya_assert(nya_memcmp(int_lexer.source + int_lexer.tokens.items[0].source_location, "0", 1) == 0);
+  nya_assert(int_lexer.tokens.items[4].length == 6);
+  nya_assert(nya_memcmp(int_lexer.source + int_lexer.tokens.items[4].source_location, "999999", 6) == 0);
+  nya_lexer_destroy(&int_lexer);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: Float numbers
+  // ─────────────────────────────────────────────────────────────────────────────
+  NYA_Lexer float_lexer = nya_lexer_new("0.0 1.5 3.14159 123.456");
+  nya_lexer_run(&float_lexer);
+  nya_assert(float_lexer.tokens.length == 4);
+  for (u32 i = 0; i < float_lexer.tokens.length; ++i) {
+    nya_assert(float_lexer.tokens.items[i].type == NYA_TOKEN_NUMBER_FLOAT);
+  }
+  nya_assert(float_lexer.tokens.items[2].length == 7);
+  nya_assert(nya_memcmp(float_lexer.source + float_lexer.tokens.items[2].source_location, "3.14159", 7) == 0);
+  nya_lexer_destroy(&float_lexer);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: Identifiers with underscores
+  // ─────────────────────────────────────────────────────────────────────────────
+  NYA_Lexer ident_lexer = nya_lexer_new("foo bar_baz _private __dunder__ camelCase");
+  nya_lexer_run(&ident_lexer);
+  nya_assert(ident_lexer.tokens.length == 5);
+  for (u32 i = 0; i < ident_lexer.tokens.length; ++i) {
+    nya_assert(ident_lexer.tokens.items[i].type == NYA_TOKEN_IDENT);
+  }
+  nya_assert(ident_lexer.tokens.items[0].length == 3);
+  nya_assert(ident_lexer.tokens.items[1].length == 7);
+  nya_assert(ident_lexer.tokens.items[3].length == 10);
+  nya_lexer_destroy(&ident_lexer);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: Various symbols
+  // ─────────────────────────────────────────────────────────────────────────────
+  NYA_Lexer sym_lexer = nya_lexer_new("+ - * / = < > ! @ # $ % ^ & ( ) [ ] { } ; : , ?");
+  nya_lexer_run(&sym_lexer);
+  nya_assert(sym_lexer.tokens.length == 24);
+  for (u32 i = 0; i < sym_lexer.tokens.length; ++i) {
+    nya_assert(sym_lexer.tokens.items[i].type == NYA_TOKEN_SYMBOL);
+  }
+  nya_assert(sym_lexer.tokens.items[0].symbol == '+');
+  nya_assert(sym_lexer.tokens.items[1].symbol == '-');
+  nya_assert(sym_lexer.tokens.items[2].symbol == '*');
+  nya_assert(sym_lexer.tokens.items[3].symbol == '/');
+  nya_lexer_destroy(&sym_lexer);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: Line and character number tracking
+  // ─────────────────────────────────────────────────────────────────────────────
+  NYA_Lexer line_lexer = nya_lexer_new("a\nb\nc");
+  nya_lexer_run(&line_lexer);
+  nya_assert(line_lexer.tokens.length == 3);
+  nya_assert(line_lexer.tokens.items[0].line_number == 1);
+  nya_assert(line_lexer.tokens.items[1].line_number == 2);
+  nya_assert(line_lexer.tokens.items[2].line_number == 3);
+  nya_lexer_destroy(&line_lexer);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: Identifiers with numbers
+  // ─────────────────────────────────────────────────────────────────────────────
+  NYA_Lexer alphanum_lexer = nya_lexer_new("var1 test123 a1b2c3");
+  nya_lexer_run(&alphanum_lexer);
+  nya_assert(alphanum_lexer.tokens.length == 3);
+  for (u32 i = 0; i < alphanum_lexer.tokens.length; ++i) {
+    nya_assert(alphanum_lexer.tokens.items[i].type == NYA_TOKEN_IDENT);
+  }
+  nya_assert(alphanum_lexer.tokens.items[0].length == 4);
+  nya_assert(alphanum_lexer.tokens.items[1].length == 7);
+  nya_lexer_destroy(&alphanum_lexer);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: Mixed expressions
+  // ─────────────────────────────────────────────────────────────────────────────
+  NYA_Lexer expr_lexer = nya_lexer_new("x = 10 + 3.14 * y");
+  nya_lexer_run(&expr_lexer);
+  nya_assert(expr_lexer.tokens.length == 7);
+  nya_assert(expr_lexer.tokens.items[0].type == NYA_TOKEN_IDENT);    // x
+  nya_assert(expr_lexer.tokens.items[1].type == NYA_TOKEN_SYMBOL);   // =
+  nya_assert(expr_lexer.tokens.items[2].type == NYA_TOKEN_NUMBER_INTEGER);  // 10
+  nya_assert(expr_lexer.tokens.items[3].type == NYA_TOKEN_SYMBOL);   // +
+  nya_assert(expr_lexer.tokens.items[4].type == NYA_TOKEN_NUMBER_FLOAT);    // 3.14
+  nya_assert(expr_lexer.tokens.items[5].type == NYA_TOKEN_SYMBOL);   // *
+  nya_assert(expr_lexer.tokens.items[6].type == NYA_TOKEN_IDENT);    // y
+  nya_lexer_destroy(&expr_lexer);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: Consecutive symbols
+  // ─────────────────────────────────────────────────────────────────────────────
+  NYA_Lexer consec_lexer = nya_lexer_new("++--==");
+  nya_lexer_run(&consec_lexer);
+  nya_assert(consec_lexer.tokens.length == 6);
+  nya_assert(consec_lexer.tokens.items[0].symbol == '+');
+  nya_assert(consec_lexer.tokens.items[1].symbol == '+');
+  nya_assert(consec_lexer.tokens.items[2].symbol == '-');
+  nya_assert(consec_lexer.tokens.items[3].symbol == '-');
+  nya_assert(consec_lexer.tokens.items[4].symbol == '=');
+  nya_assert(consec_lexer.tokens.items[5].symbol == '=');
+  nya_lexer_destroy(&consec_lexer);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: Single character input
+  // ─────────────────────────────────────────────────────────────────────────────
+  NYA_Lexer single_char_lexer = nya_lexer_new("x");
+  nya_lexer_run(&single_char_lexer);
+  nya_assert(single_char_lexer.tokens.length == 1);
+  nya_assert(single_char_lexer.tokens.items[0].type == NYA_TOKEN_IDENT);
+  nya_assert(single_char_lexer.tokens.items[0].length == 1);
+  nya_lexer_destroy(&single_char_lexer);
+
+  NYA_Lexer single_digit_lexer = nya_lexer_new("5");
+  nya_lexer_run(&single_digit_lexer);
+  nya_assert(single_digit_lexer.tokens.length == 1);
+  nya_assert(single_digit_lexer.tokens.items[0].type == NYA_TOKEN_NUMBER_INTEGER);
+  nya_lexer_destroy(&single_digit_lexer);
+
+  NYA_Lexer single_sym_lexer = nya_lexer_new("+");
+  nya_lexer_run(&single_sym_lexer);
+  nya_assert(single_sym_lexer.tokens.length == 1);
+  nya_assert(single_sym_lexer.tokens.items[0].type == NYA_TOKEN_SYMBOL);
+  nya_assert(single_sym_lexer.tokens.items[0].symbol == '+');
+  nya_lexer_destroy(&single_sym_lexer);
+
   return 0;
 }
