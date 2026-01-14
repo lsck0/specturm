@@ -416,6 +416,16 @@ NYA_BuildRule show_stats = {
     },
 };
 
+NYA_BuildRule update_submodules = {
+    .name   = "update_submodules",
+    .policy = NYA_BUILD_ALWAYS,
+
+    .command = {
+        .program   = "git",
+        .arguments = {"submodule", "foreach", "git", "pull", "origin", "main"},
+    },
+};
+
 // clang-format on
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -665,10 +675,17 @@ NYA_ArgCommand docs = {
     .description = "Open doxygen generated documentation.",
     .build_rule  = &open_docs,
 };
+
 NYA_ArgCommand stats = {
     .name        = "stats",
     .description = "Show code statistics.",
     .build_rule  = &show_stats,
+};
+
+NYA_ArgCommand update = {
+    .name        = "update",
+    .description = "Update git submodules.",
+    .build_rule  = &update_submodules,
 };
 
 NYA_ArgParser parser = {
@@ -686,7 +703,8 @@ NYA_ArgParser parser = {
             &build,
             &perf,
             &docs,
-            &stats
+            &stats,
+            &update,
         },
     },
 };
