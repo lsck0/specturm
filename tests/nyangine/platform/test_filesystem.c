@@ -5,9 +5,9 @@ s32 main(void) {
   NYA_ConstCString test_file_path       = "test_file.txt";
   NYA_ConstCString test_file_copy_path  = "test_file_copy.txt";
   NYA_ConstCString test_file_moved_path = "test_file_moved.txt";
-  NYA_String       file_content         = nya_string_new(&nya_global_arena);
-  NYA_String       copied_file_content  = nya_string_new(&nya_global_arena);
-  NYA_String       moved_file_content   = nya_string_new(&nya_global_arena);
+  NYA_String       file_content         = nya_string_new(&nya_arena_global);
+  NYA_String       copied_file_content  = nya_string_new(&nya_arena_global);
+  NYA_String       moved_file_content   = nya_string_new(&nya_arena_global);
 
   nya_assert(!nya_filesystem_exists(test_file_path));
   nya_assert(!nya_filesystem_exists(test_file_copy_path));

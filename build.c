@@ -56,6 +56,7 @@ NYA_Command build_rebuild_command = {
         WARNINGS,
         INCLUDE_PATHS,
         LINKER_FLAGS,
+        FLAGS_SANITIZE,
         FLAGS_RELEASE,
     },
 };
@@ -442,18 +443,18 @@ NYA_INTERNAL void hook_add_version_flag_and_git_hash(NYA_BuildRule* rule) {
   if (initialized) goto skip_initialization;
 
   NYA_Command git_hash_command = {
-      .arena     = &nya_global_arena,
+      .arena     = &nya_arena_global,
       .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
       .program   = "git",
       .arguments = {"rev-parse", "HEAD"},
   };
   nya_command_run(&git_hash_command);
   nya_string_trim_whitespace(&git_hash_command.stdout_content);
-  NYA_CString git_hash      = nya_string_to_cstring(&nya_global_arena, &git_hash_command.stdout_content);
-  NYA_String  git_hash_flag = nya_string_sprintf(&nya_global_arena, "-DGIT_COMMIT=\"%s\"", git_hash);
-  NYA_String  version_flag  = nya_string_sprintf(&nya_global_arena, "-DVERSION=\"%s\"", VERSION);
-  GIT_HASH_FLAG             = nya_string_to_cstring(&nya_global_arena, &git_hash_flag);
-  VERSION_FLAG              = nya_string_to_cstring(&nya_global_arena, &version_flag);
+  NYA_CString git_hash      = nya_string_to_cstring(&nya_arena_global, &git_hash_command.stdout_content);
+  NYA_String  git_hash_flag = nya_string_sprintf(&nya_arena_global, "-DGIT_COMMIT=\"%s\"", git_hash);
+  NYA_String  version_flag  = nya_string_sprintf(&nya_arena_global, "-DVERSION=\"%s\"", VERSION);
+  GIT_HASH_FLAG             = nya_string_to_cstring(&nya_arena_global, &git_hash_flag);
+  VERSION_FLAG              = nya_string_to_cstring(&nya_arena_global, &version_flag);
   initialized               = true;
 
 skip_initialization:
@@ -469,7 +470,7 @@ NYA_INTERNAL void hook_convert_perf_data_to_plain(NYA_BuildRule* rule) {
   nya_assert(rule);
 
   NYA_Command command = {
-      .arena     = &nya_global_arena,
+      .arena     = &nya_arena_global,
       .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
       .program   = "perf",
       .arguments = {"script", "-i", "./perf.data"},
@@ -500,16 +501,16 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
   nya_assert(strcmp(test_files->name, "tests") == 0);
 
   NYA_Command find_tests_command = {
-      .arena     = &nya_global_arena,
+      .arena     = &nya_arena_global,
       .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
       .program   = "find",
       .arguments = {"./tests/", "-name", "*.c"},
   };
   nya_command_run(&find_tests_command);
-  NYA_StringArray tests = nya_string_split_lines(&nya_global_arena, &find_tests_command.stdout_content);
+  NYA_StringArray tests = nya_string_split_lines(&nya_arena_global, &find_tests_command.stdout_content);
 
   nya_array_foreach (&tests, test) {
-    NYA_CString test_cstr = nya_string_to_cstring(&nya_global_arena, test);
+    NYA_CString test_cstr = nya_string_to_cstring(&nya_arena_global, test);
 
     // check if we should run this test, by checking if its name contains any of the requested test names
     b8 should_run = test_files->values_count == 0 ? true : false;
@@ -523,12 +524,12 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
     if (!should_run) continue;
 
     nya_string_strip_suffix(test, ".c");
-    NYA_CString test_binary = nya_string_to_cstring(&nya_global_arena, test);
+    NYA_CString test_binary = nya_string_to_cstring(&nya_arena_global, test);
 
     // clang-format off
-    NYA_String    build_test_name = nya_string_sprintf(&nya_global_arena, "build_test:%s", test_binary);
+    NYA_String    build_test_name = nya_string_sprintf(&nya_arena_global, "build_test:%s", test_binary);
     NYA_BuildRule build_test = {
-        .name        = nya_string_to_cstring(&nya_global_arena, &build_test_name),
+        .name        = nya_string_to_cstring(&nya_arena_global, &build_test_name),
         .policy      = NYA_BUILD_ALWAYS,
         .output_file = test_binary,
 
@@ -550,9 +551,9 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
         .pre_build_hooks = { &hook_add_version_flag_and_git_hash },
     };
 
-    NYA_String    run_test_name = nya_string_sprintf(&nya_global_arena, "run_test:%s", test_binary);
+    NYA_String    run_test_name = nya_string_sprintf(&nya_arena_global, "run_test:%s", test_binary);
     NYA_BuildRule run_test = {
-        .name        = nya_string_to_cstring(&nya_global_arena, &run_test_name),
+        .name        = nya_string_to_cstring(&nya_arena_global, &run_test_name),
         .policy      = NYA_BUILD_ALWAYS,
         .output_file = test_binary,
 

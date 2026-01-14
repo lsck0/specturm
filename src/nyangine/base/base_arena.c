@@ -13,14 +13,20 @@ NYA_INTERNAL void  _nya_arena_free_list_add(NYA_ArenaRegion* region, void* ptr, 
 NYA_INTERNAL void  _nya_arena_free_list_defragment(NYA_ArenaFreeList* free_list);
 NYA_INTERNAL void  _nya_arena_free_list_destroy(NYA_ArenaFreeList* free_list);
 
-NYA_Arena nya_global_arena;
+/** The global arena won't be cleared. */
+NYA_Arena nya_arena_global;
+
+/** The temp arena can be cleared at any time. */
+NYA_Arena nya_arena_temp;
 
 __attr_constructor NYA_INTERNAL void _nya_arena_init(void) {
-  nya_global_arena = nya_arena_new();
+  nya_arena_global = nya_arena_new(.name = "global_arena");
+  nya_arena_temp   = nya_arena_new(.name = "temp_arena");
 }
 
 __attr_destructor NYA_INTERNAL void _nya_arena_shutdown(void) {
-  nya_arena_destroy(&nya_global_arena);
+  nya_arena_destroy(&nya_arena_global);
+  nya_arena_destroy(&nya_arena_temp);
 }
 
 /*
@@ -124,7 +130,10 @@ void* _nya_arena_nodebug_realloc(NYA_Arena* arena, void* ptr, u64 old_size, u64 
     // use old memory as the asan padding
     asan_poison_memory_region(old_ptr + new_size - ASAN_PADDING, ASAN_PADDING);
 
-    nya_arena_free(arena, old_ptr + new_size, old_size - new_size - ASAN_PADDING);
+    // only free the excess if it's larger than ASAN_PADDING
+    if (old_size - new_size > ASAN_PADDING) {
+      nya_arena_free(arena, old_ptr + new_size, old_size - new_size - ASAN_PADDING);
+    }
 
     return old_ptr;
   }
@@ -205,7 +214,10 @@ void _nya_arena_nodebug_free_all(NYA_Arena* arena) {
 
     asan_poison_memory_region(region->memory, region->capacity);
 
-    if (region->free_list != nullptr) _nya_arena_free_list_destroy(region->free_list);
+    if (region->free_list != nullptr) {
+      _nya_arena_free_list_destroy(region->free_list);
+      region->free_list = nullptr;
+    }
   }
 }
 
@@ -356,6 +368,27 @@ void* _nya_arena_debug_move(
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * PUBLIC API IMPLEMENTATION
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+u64 nya_arena_memory_usage(NYA_Arena* arena) __attr_no_discard {
+  nya_assert(arena != nullptr);
+
+  u64 total_usage = 0;
+  nya_dll_foreach (arena, region) total_usage += region->used;
+
+  return total_usage;
+}
+
+void nya_arena_print(NYA_Arena* arena) {
+  nya_assert(arena != nullptr);
+
+  nya_unimplemented();
+}
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  * PRIVATE API IMPLEMENTATION
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
@@ -390,9 +423,13 @@ NYA_INTERNAL void* _nya_arena_free_list_find(NYA_ArenaFreeList* free_list, u32 s
       nya_dll_node_unlink(free_list, node);
       nya_free(node);
 
-      free_list->average_free_size = (free_list->average_free_size * (f32)free_list->node_counter - (f32)size) /
-                                     (f32)(free_list->node_counter - 1);
       free_list->node_counter--;
+      if (free_list->node_counter == 0) {
+        free_list->average_free_size = 0.0F;
+      } else {
+        free_list->average_free_size = (free_list->average_free_size * (f32)(free_list->node_counter + 1) - (f32)size) /
+                                       (f32)free_list->node_counter;
+      }
 
       return ptr;
     }
@@ -437,11 +474,17 @@ NYA_INTERNAL void _nya_arena_free_list_add(NYA_ArenaRegion* region, void* ptr, u
       .next = nullptr,
   };
 
-  nya_dll_foreach (region->free_list, free_node) {
-    if (free_node->next && (u8*)free_node->next->ptr < (u8*)new_node->ptr) continue;
+  if (region->free_list->head == nullptr) {
+    region->free_list->head = new_node;
+    region->free_list->tail = new_node;
+  } else {
+    nya_dll_foreach (region->free_list, free_node) {
+      if (free_node->next && (u8*)free_node->next->ptr < (u8*)new_node->ptr) continue;
 
-    // we are now in the situation free_node < new_node < free_node->next by address
-    nya_dll_node_link(region->free_list, free_node, new_node, free_node->next);
+      // we are now in the situation free_node < new_node < free_node->next by address
+      nya_dll_node_link(region->free_list, free_node, new_node, free_node->next);
+      break;
+    }
   }
 
   if (region->free_list->node_counter == 0) {

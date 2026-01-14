@@ -79,7 +79,8 @@ struct NYA_ArenaFreeListNode {
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_API NYA_EXTERN NYA_Arena nya_global_arena;
+NYA_API NYA_EXTERN NYA_Arena nya_arena_global;
+NYA_API NYA_EXTERN NYA_Arena nya_arena_temp;
 
 // clang-format off
 #if (NYA_IS_DEBUG || defined(NYA_ARENA_FORCE_DEBUG)) && !defined(NYA_ARENA_FORCE_NODEBUG)

@@ -9,15 +9,14 @@
 NYA_Lexer nya_lexer_new(NYA_ConstCString source) {
   nya_assert(source != nullptr);
 
-  NYA_Arena arena = nya_arena_new();
   NYA_Lexer lexer = {
-      .arena               = arena,
+      .arena               = nya_arena_new(),
       .source              = source,
       .cursor              = 0,
       .current_line_number = 1,
       .current_char_number = 1,
-      .tokens              = nya_array_new(&arena, NYA_Token),
   };
+  lexer.tokens = nya_array_new(&lexer.arena, NYA_Token);
 
   return lexer;
 }

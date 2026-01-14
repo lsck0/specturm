@@ -187,7 +187,7 @@ NYA_String nya_string_sprintf(NYA_Arena* arena, NYA_ConstCString fmt, ...) __att
   u64 length = vsnprintf(nullptr, 0, fmt, args);
   va_end(args);
 
-  NYA_String result = nya_string_new_with_capacity(arena, length);
+  NYA_String result = nya_string_new_with_capacity(arena, length + 1); // +1 for null terminator
 
   va_start(args, fmt);
   (void)vsnprintf((NYA_CString)result.items, length + 1, fmt, args);
