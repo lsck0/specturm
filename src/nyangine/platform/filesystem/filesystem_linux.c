@@ -3,7 +3,7 @@
 
 #include "nyangine/nyangine.h"
 
-b8 nya_filesystem_file_exists(NYA_ConstCString path) {
+b8 nya_filesystem_exists(NYA_ConstCString path) {
   b8 ok;
 
   struct stat path_stat;
@@ -13,7 +13,7 @@ b8 nya_filesystem_file_exists(NYA_ConstCString path) {
   return S_ISREG(path_stat.st_mode);
 }
 
-b8 nya_filesystem_file_last_modified(NYA_ConstCString path, OUT u64* out_timestamp) {
+b8 nya_filesystem_last_modified(NYA_ConstCString path, OUT u64* out_timestamp) {
   b8 ok;
 
   struct stat path_stat;
@@ -27,7 +27,7 @@ b8 nya_filesystem_file_last_modified(NYA_ConstCString path, OUT u64* out_timesta
   return true;
 }
 
-b8 nya_filesystem_file_move(NYA_ConstCString source, NYA_ConstCString destination) {
+b8 nya_filesystem_move(NYA_ConstCString source, NYA_ConstCString destination) {
   b8 ok;
 
   ok = rename(source, destination);
@@ -36,7 +36,7 @@ b8 nya_filesystem_file_move(NYA_ConstCString source, NYA_ConstCString destinatio
   return true;
 }
 
-b8 nya_filesystem_file_copy(NYA_ConstCString source, NYA_ConstCString destination) {
+b8 nya_filesystem_copy(NYA_ConstCString source, NYA_ConstCString destination) {
   NYA_GUARDED_BY(close) s32 source_fd = open(source, O_RDONLY);
   if (source_fd < 0) return false;
 
@@ -57,7 +57,7 @@ b8 nya_filesystem_file_copy(NYA_ConstCString source, NYA_ConstCString destinatio
   return true;
 }
 
-b8 nya_filesystem_file_delete(NYA_ConstCString path) {
+b8 nya_filesystem_delete(NYA_ConstCString path) {
   b8 ok;
 
   ok = remove(path);

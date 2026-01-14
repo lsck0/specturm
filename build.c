@@ -483,7 +483,7 @@ NYA_INTERNAL void hook_remove_output_file(NYA_BuildRule* rule) {
   nya_assert(rule);
   nya_assert(rule->output_file);
 
-  nya_filesystem_file_delete(rule->output_file);
+  nya_filesystem_delete(rule->output_file);
 }
 
 /*

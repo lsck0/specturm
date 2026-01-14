@@ -24,7 +24,7 @@ b8 nya_build(NYA_BuildRule* build_rule) {
 
     case NYA_BUILD_ONCE:   {
       nya_assert(build_rule->output_file, "NYA_BUILD_ONCE rules must specify an output_file.");
-      if (nya_filesystem_file_exists(build_rule->output_file)) return true;
+      if (nya_filesystem_exists(build_rule->output_file)) return true;
       return _nya_build_always(build_rule);
     }
 
@@ -32,12 +32,12 @@ b8 nya_build(NYA_BuildRule* build_rule) {
       nya_assert(build_rule->input_file, "NYA_BUILD_IF_OUTDATED rules must specify an input_file.");
       nya_assert(build_rule->output_file, "NYA_BUILD_IF_OUTDATED rules must specify an output_file.");
 
-      if (!nya_filesystem_file_exists(build_rule->output_file)) return _nya_build_always(build_rule);
+      if (!nya_filesystem_exists(build_rule->output_file)) return _nya_build_always(build_rule);
 
       u64 input_mod_time  = 0;
       u64 output_mod_time = 0;
-      nya_filesystem_file_last_modified(build_rule->input_file, &input_mod_time);
-      nya_filesystem_file_last_modified(build_rule->output_file, &output_mod_time);
+      nya_filesystem_last_modified(build_rule->input_file, &input_mod_time);
+      nya_filesystem_last_modified(build_rule->output_file, &output_mod_time);
 
       if (input_mod_time > output_mod_time) return _nya_build_always(build_rule);
 
@@ -79,12 +79,12 @@ void nya_rebuild_yourself(s32* argc, NYA_CString* argv, NYA_Command cmd) {
 
   ok = nya_build(&rule);
   if (!ok) {
-    ok = nya_filesystem_file_move(".backup_build_executable", argv[0]);
+    ok = nya_filesystem_move(".backup_build_executable", argv[0]);
     nya_assert(ok, "Failed to restore backup build executable after failed rebuild.");
     exit(1);
   }
 
-  ok = nya_filesystem_file_delete(".backup_build_executable");
+  ok = nya_filesystem_delete(".backup_build_executable");
   nya_assert(ok, "Failed to delete backup build executable after successful rebuild.");
 
   // build new argv with marker
