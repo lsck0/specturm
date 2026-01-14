@@ -114,7 +114,7 @@ nya_derive_array(f128_4x4);
     nya_assert_type_match(carray, (item_type*)0);                                                                      \
     nya_assert_type_match(carray_length, (u64)0);                                                                      \
     item_type##Array arr = nya_array_new_with_capacity(arena_ptr, item_type, carray_length);                           \
-    nya_range_for (idx, 0, carray_length) nya_array_push_back(&arr, (carray)[idx]);                                    \
+    nya_range_for_t (u64, idx, 0, carray_length) nya_array_push_back(&arr, (carray)[idx]);                             \
     arr;                                                                                                               \
   })
 
@@ -163,7 +163,7 @@ nya_derive_array(f128_4x4);
 
 #define _nya_array_access_guard(index, length)                                                                         \
   nya_assert(                                                                                                          \
-      0 < (index) && (index) < (length),                                                                               \
+      0 <= (index) && (index) < (length),                                                                              \
       "Array index " FMTs64 " (length " FMTu64 ") out of bounds.",                                                     \
       (s64)(index),                                                                                                    \
       length                                                                                                           \
@@ -265,7 +265,7 @@ nya_derive_array(f128_4x4);
       nya_memmove(                                                                                                     \
           (arr_ptr)->items + (index),                                                                                  \
           (arr_ptr)->items + (index) + 1,                                                                              \
-          ((arr_ptr)->length * sizeof(*(arr_ptr)->items) - (index) - 1)                                                \
+          ((arr_ptr)->length - (index) - 1) * sizeof(*(arr_ptr)->items)                                                \
       );                                                                                                               \
     }                                                                                                                  \
     (arr_ptr)->length--;                                                                                               \
@@ -346,10 +346,15 @@ nya_derive_array(f128_4x4);
 #define nya_array_sort(arr_ptr, compare_fn)                                                                            \
   ({                                                                                                                   \
     nya_assert_type_match(                                                                                             \
-        compare_fn,                                                                                                    \
+        &(compare_fn),                                                                                                 \
         (s32 (*)(const typeof((arr_ptr)->items[0])*, const typeof((arr_ptr)->items[0])*))0                             \
     );                                                                                                                 \
-    qsort((arr_ptr)->items, (arr_ptr)->length, sizeof(*(arr_ptr)->items), (compare_fn));                               \
+    qsort(                                                                                                             \
+        (arr_ptr)->items,                                                                                              \
+        (arr_ptr)->length,                                                                                             \
+        sizeof(*(arr_ptr)->items),                                                                                     \
+        (int (*)(const void*, const void*))(compare_fn)                                                                \
+    );                                                                                                                 \
   })
 
 #define nya_array_equals(arr1_ptr, arr2_ptr)                                                                           \
@@ -464,11 +469,13 @@ nya_derive_array(f128_4x4);
 
 #define nya_array_for(arr_ptr, index_name) for (u64 index_name = 0; (index_name) < (arr_ptr)->length; (index_name)++)
 
-#define nya_array_for_reverse(arr_ptr, index_name) for (u64 index_name = (arr_ptr)->length; (index_name)-- > 0;)
+#define nya_array_for_reverse(arr_ptr, index_name)                                                                     \
+  for (u64 index_name = (arr_ptr)->length; (index_name) > 0 && ((index_name)-- || 1);)
 
 #define nya_array_foreach(arr_ptr, item_name)                                                                          \
   for (typeof(*(arr_ptr)->items)*(item_name) = (arr_ptr)->items; (item_name) < (arr_ptr)->items + (arr_ptr)->length;   \
        (item_name)++)
 
 #define nya_array_foreach_reverse(arr_ptr, item_name)                                                                  \
-  for (typeof(*(arr_ptr)->items)*(item_name) = (arr_ptr)->items + (arr_ptr)->length; (item_name)-- > (arr_ptr)->items;)
+  for (typeof(*(arr_ptr)->items)*(item_name) = (arr_ptr)->items + (arr_ptr)->length;                                   \
+       (item_name) > (arr_ptr)->items && ((item_name)-- || 1);)

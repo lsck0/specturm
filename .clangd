@@ -61,6 +61,7 @@ Diagnostics:
         readability-braces-around-statements,
         readability-enum-initial-value,
         readability-function-cognitive-complexity,
+        readability-function-size,
         readability-identifier-length,
         readability-implicit-bool-conversion,
         readability-magic-numbers,

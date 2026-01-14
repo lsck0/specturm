@@ -1,6 +1,5 @@
 * PLAN
 
-- [ ] write tests for arena, string, array, ... and code review the base layer
 - [ ] hashmap / hashset implementation
 - [ ] implement arena allocation tracking
 - [ ] input and event system
