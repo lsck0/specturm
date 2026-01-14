@@ -31,8 +31,7 @@
 #define nya_lerp(a, b, t)                                                                                              \
   ({                                                                                                                   \
     nya_assert_type_match(a, b);                                                                                       \
-    nya_assert_type_match(a, t);                                                                                       \
-    nya_assert_type_match(b, t);                                                                                       \
+    nya_assert(0 <= (t) && (t) <= 1);                                                                                  \
     (a) + ((b) - (a)) * (t);                                                                                           \
   })
 
@@ -192,6 +191,17 @@ NYA_API NYA_EXTERN f64_4x4  nya_matrix_new(f64x4 row1, f64x4 row2, f64x4 row3, f
 NYA_API NYA_EXTERN f128_2x2 nya_matrix_new(f128x2 row1, f128x2 row2) __attr_overloaded;
 NYA_API NYA_EXTERN f128_3x3 nya_matrix_new(f128x3 row1, f128x3 row2, f128x3 row3) __attr_overloaded;
 NYA_API NYA_EXTERN f128_4x4 nya_matrix_new(f128x4 row1, f128x4 row2, f128x4 row3, f128x4 row4) __attr_overloaded;
+NYA_API NYA_EXTERN f16_2x2  nya_matrix_new(f16 entries[2][2]) __attr_overloaded;
+NYA_API NYA_EXTERN f16_3x3  nya_matrix_new(f16 entries[3][3]) __attr_overloaded;
+NYA_API NYA_EXTERN f16_4x4  nya_matrix_new(f16 entries[4][4]) __attr_overloaded;
+NYA_API NYA_EXTERN f32_2x2  nya_matrix_new(f32 entries[2][2]) __attr_overloaded;
+NYA_API NYA_EXTERN f32_3x3  nya_matrix_new(f32 entries[3][3]) __attr_overloaded;
+NYA_API NYA_EXTERN f32_4x4  nya_matrix_new(f32 entries[4][4]) __attr_overloaded;
+NYA_API NYA_EXTERN f64_2x2  nya_matrix_new(f64 entries[2][2]) __attr_overloaded;
+NYA_API NYA_EXTERN f64_3x3  nya_matrix_new(f64 entries[3][3]) __attr_overloaded;
+NYA_API NYA_EXTERN f64_4x4  nya_matrix_new(f64 entries[4][4]) __attr_overloaded;
+NYA_API NYA_EXTERN f128_2x2 nya_matrix_new(f128 entries[2][2]) __attr_overloaded;
+NYA_API NYA_EXTERN f128_3x3 nya_matrix_new(f128 entries[3][3]) __attr_overloaded;
 
 NYA_API NYA_EXTERN f16x2  nya_matrix_times_vector(f16_2x2 mat, f16x2 vec) __attr_overloaded;
 NYA_API NYA_EXTERN f16x3  nya_matrix_times_vector(f16_3x3 mat, f16x3 vec) __attr_overloaded;

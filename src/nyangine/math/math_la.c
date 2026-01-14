@@ -212,6 +212,94 @@ f128_4x4 nya_matrix_new(f128x4 row1, f128x4 row2, f128x4 row3, f128x4 row4) __at
   return result;
 }
 
+f16_2x2 nya_matrix_new(f16 entries[2][2]) __attr_overloaded {
+  f16_2x2 result;
+  for (s32 i = 0; i < 2; ++i) {
+    for (s32 j = 0; j < 2; ++j) result[i][j] = entries[i][j];
+  }
+  return result;
+}
+
+f16_3x3 nya_matrix_new(f16 entries[3][3]) __attr_overloaded {
+  f16_3x3 result;
+  for (s32 i = 0; i < 3; ++i) {
+    for (s32 j = 0; j < 3; ++j) result[i][j] = entries[i][j];
+  }
+  return result;
+}
+
+f16_4x4 nya_matrix_new(f16 entries[4][4]) __attr_overloaded {
+  f16_4x4 result;
+  for (s32 i = 0; i < 4; ++i) {
+    for (s32 j = 0; j < 4; ++j) result[i][j] = entries[i][j];
+  }
+  return result;
+}
+
+f32_2x2 nya_matrix_new(f32 entries[2][2]) __attr_overloaded {
+  f32_2x2 result;
+  for (s32 i = 0; i < 2; ++i) {
+    for (s32 j = 0; j < 2; ++j) result[i][j] = entries[i][j];
+  }
+  return result;
+}
+
+f32_3x3 nya_matrix_new(f32 entries[3][3]) __attr_overloaded {
+  f32_3x3 result;
+  for (s32 i = 0; i < 3; ++i) {
+    for (s32 j = 0; j < 3; ++j) result[i][j] = entries[i][j];
+  }
+  return result;
+}
+
+f32_4x4 nya_matrix_new(f32 entries[4][4]) __attr_overloaded {
+  f32_4x4 result;
+  for (s32 i = 0; i < 4; ++i) {
+    for (s32 j = 0; j < 4; ++j) result[i][j] = entries[i][j];
+  }
+  return result;
+}
+
+f64_2x2 nya_matrix_new(f64 entries[2][2]) __attr_overloaded {
+  f64_2x2 result;
+  for (s32 i = 0; i < 2; ++i) {
+    for (s32 j = 0; j < 2; ++j) result[i][j] = entries[i][j];
+  }
+  return result;
+}
+
+f64_3x3 nya_matrix_new(f64 entries[3][3]) __attr_overloaded {
+  f64_3x3 result;
+  for (s32 i = 0; i < 3; ++i) {
+    for (s32 j = 0; j < 3; ++j) result[i][j] = entries[i][j];
+  }
+  return result;
+}
+
+f64_4x4 nya_matrix_new(f64 entries[4][4]) __attr_overloaded {
+  f64_4x4 result;
+  for (s32 i = 0; i < 4; ++i) {
+    for (s32 j = 0; j < 4; ++j) result[i][j] = entries[i][j];
+  }
+  return result;
+}
+
+f128_2x2 nya_matrix_new(f128 entries[2][2]) __attr_overloaded {
+  f128_2x2 result;
+  for (s32 i = 0; i < 2; ++i) {
+    for (s32 j = 0; j < 2; ++j) result[i][j] = entries[i][j];
+  }
+  return result;
+}
+
+f128_3x3 nya_matrix_new(f128 entries[3][3]) __attr_overloaded {
+  f128_3x3 result;
+  for (s32 i = 0; i < 3; ++i) {
+    for (s32 j = 0; j < 3; ++j) result[i][j] = entries[i][j];
+  }
+  return result;
+}
+
 /*
  * ─────────────────────────────────────────────────────────
  * MATRIX VECTOR MULTIPLICATION

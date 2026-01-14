@@ -33,8 +33,9 @@ void nya_panic_prevent_next(void) {
 }
 
 b8 nya_panic_prevent_happened(void) {
-  b8 prevented         = _nya_panic_prevented;
-  _nya_panic_prevented = false;
+  b8 prevented            = _nya_panic_prevented;
+  _nya_panic_prevented    = false;
+  _nya_panic_prevent_next = false;
 
   return prevented;
 }
