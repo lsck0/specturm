@@ -36,7 +36,7 @@ typedef u8 (*NYA_PanicHook)(const char* function, const char* file, u32 line, co
 NYA_API NYA_EXTERN NYA_LogLevel nya_log_level_get(void);
 NYA_API NYA_EXTERN void         nya_log_level_set(NYA_LogLevel level);
 NYA_API NYA_EXTERN void         nya_panic_hook_set(NYA_PanicHook hook);
-NYA_API NYA_EXTERN void         nya_panic_prevent_next(void);
+NYA_API NYA_EXTERN void         nya_panic_prevent_set(jmp_buf* jmp);
 NYA_API NYA_EXTERN b8           nya_panic_prevent_happened(void);
 
 /*

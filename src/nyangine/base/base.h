@@ -15,6 +15,7 @@
 #include <inttypes.h>
 #include <math.h>
 #include <memory.h>
+#include <setjmp.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>

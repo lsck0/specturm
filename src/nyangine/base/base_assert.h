@@ -28,8 +28,9 @@
  * });
  * */
 #define nya_assert_panic(code) {                                            \
-    nya_panic_prevent_next();                                               \
-    code;                                                                   \
+    jmp_buf _nya_panic_jmp;                                                 \
+    nya_panic_prevent_set(&_nya_panic_jmp);                                 \
+    if (setjmp(_nya_panic_jmp) == 0) { code; }                              \
     nya_assert(nya_panic_prevent_happened(), "Expected to catch a panic."); \
   }
 
