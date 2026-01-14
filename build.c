@@ -485,6 +485,10 @@ NYA_INTERNAL void hook_remove_output_file(NYA_BuildRule* rule) {
 NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
   nya_assert(command);
 
+  NYA_ArgParameter* test_files = command->parameters[0];
+  nya_assert(test_files);
+  nya_assert(strcmp(test_files->name, "tests") == 0);
+
   NYA_Command find_tests_command = {
       .arena     = &nya_global_arena,
       .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
@@ -496,6 +500,17 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
 
   nya_array_foreach (&tests, test) {
     NYA_CString test_cstr = nya_string_to_cstring(&nya_global_arena, test);
+
+    // check if we should run this test, by checking if its name contains any of the requested test names
+    b8 should_run = test_files->values_count == 0 ? true : false;
+    for (u32 param_index = 0; param_index < test_files->values_count; param_index++) {
+      NYA_CString requested_test = test_files->values[param_index].as_string;
+      if (nya_string_contains(test, requested_test)) {
+        should_run = true;
+        break;
+      }
+    }
+    if (!should_run) continue;
 
     nya_string_strip_suffix(test, ".c");
     NYA_CString test_binary = nya_string_to_cstring(&nya_global_arena, test);
@@ -546,7 +561,8 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
     };
     // clang-format on
 
-    nya_build(&run_test);
+    b8 ok = nya_build(&run_test);
+    if (!ok) nya_panic("TEST FAILED: %s", test_binary);
   }
 }
 
@@ -556,6 +572,14 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 // clang-format off
+
+NYA_ArgParameter test_files = {
+    .kind        = NYA_ARG_PARAMETER_KIND_POSITIONAL,
+    .variadic    = true,
+    .value.type  = NYA_TYPE_STRING,
+    .name        = "tests",
+    .description = "Which tests to run. If none specified, all tests are run.",
+};
 
 NYA_ArgParameter skip_self_rebuild_flag = {
     .kind        = NYA_ARG_PARAMETER_KIND_FLAG,
@@ -586,9 +610,10 @@ NYA_ArgCommand run = {
             .build_rule  = &run_release,
         },
         &(NYA_ArgCommand){
-            .name        = "tests",
-            .description = "Run all the tests.",
+            .name        = "test",
+            .description = "Run all tests.",
             .handler     = &test_runner,
+            .parameters = { &test_files, },
         },
 }};
 

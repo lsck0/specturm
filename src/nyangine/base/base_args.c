@@ -313,6 +313,21 @@ subcommand_matching:
     }
   }
 
+  // check if --help was passed (skip missing args check if so)
+  b8 help_requested = false;
+  for (u32 path_index = 0; path_index < path_count; path_index++) {
+    NYA_ArgCommand* command_in_path = path[path_index];
+    for (u32 param_index = 0; param_index < NYA_ARG_MAX_PARAMETERS; param_index++) {
+      NYA_ArgParameter* param = command_in_path->parameters[param_index];
+      if (param == nullptr) break;
+      if (param->kind == NYA_ARG_PARAMETER_KIND_FLAG && strcmp(param->name, "help") == 0 && param->was_matched) {
+        help_requested = true;
+        break;
+      }
+    }
+    if (help_requested) break;
+  }
+
   // recap: report missing and fill defaults
   for (u32 param_index = 0; param_index < NYA_ARG_MAX_PARAMETERS; param_index++) {
     NYA_ArgParameter* param = command_to_execute->parameters[param_index];
@@ -324,7 +339,9 @@ subcommand_matching:
       } else if (param->kind == NYA_ARG_PARAMETER_KIND_FLAG && param->value.type == NYA_TYPE_BOOL) {
         // boolean flags default to false
         param->value.as_bool = false;
-      } else {
+      } else if (param->kind == NYA_ARG_PARAMETER_KIND_POSITIONAL && param->variadic) {
+        // variadic positional arguments are optional by default (values_count stays 0)
+      } else if (!help_requested) {
         _nya_args_print_error_and_exit(
             "Missing required parameter '%s' for command '%s'.",
             param->name,
@@ -542,7 +559,10 @@ void _nya_args_validate_command_tree(NYA_ArgCommand* command) {
 
     if (param->kind == NYA_ARG_PARAMETER_KIND_POSITIONAL) {
       nya_assert(command->subcommands[0] == nullptr, "Can either have positional arguments or subcommands, not both.");
-      nya_assert(param->default_value.type == NYA_TYPE_NULL, "Positional argument cannot be optional.");
+      nya_assert(
+          param->variadic || param->default_value.type == NYA_TYPE_NULL,
+          "Only variadic positional arguments can be optional."
+      );
 
       has_positionals = true;
 
@@ -620,6 +640,7 @@ void _nya_args_print_command_path(NYA_ArgParser* parser, NYA_ArgCommand* command
     }
 
     _nya_args_print_command_path(parser, command);
+    if (found) return;
     path_length--;
   }
 
