@@ -2,39 +2,6 @@
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- * BIT UTILITIES
- * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- */
-
-#define nya_bit_set(val, bit)            ((val) |= (1 << (bit)))
-#define nya_bit_unset(val, bit)          ((val) &= ~(1 << (bit)))
-#define nya_bit_check(val, bit)          ((val) & (1 << (bit)))
-#define nya_bit_toggle(val, bit)         ((val) ^= (1 << (bit)))
-#define nya_bitmask_set(val, bitmask)    ((val) |= (bitmask))
-#define nya_bitmask_unset(val, bitmask)  ((val) &= ~(bitmask))
-#define nya_bitmask_check(val, bitmask)  ((val) & (bitmask))
-#define nya_bitmask_toggle(val, bitmask) ((val) ^= (bitmask))
-#define nya_bits_count_u32(val)          (__builtin_popcount(val))
-#define nya_bits_count_u64(val)          (__builtin_popcountll(val))
-#define nya_bits_clz_u32(val)            (__builtin_clz(val))
-#define nya_bits_clz_u64(val)            (__builtin_clzll(val))
-#define nya_bits_ctz_u32(val)            (__builtin_ctz(val))
-#define nya_bits_ctz_u64(val)            (__builtin_ctzll(val))
-
-/*
- * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- * BITFLAG UTILITIES
- * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- */
-
-#define nya_flag_set(flags, flag)    ((flags) |= (flag))
-#define nya_flag_unset(flags, flag)  ((flags) &= ~(flag))
-#define nya_flag_toggle(flags, flag) ((flags) ^= (flag))
-#define nya_flag_check(flags, flag)  ((flags) & (flag))
-#define nya_flag_equals(flags, flag) ((flags) == (flag))
-
-/*
- * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  * NAMED BITS
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
@@ -174,3 +141,41 @@
 #define BITMASK62 (0x3FFFFFFFFFFFFFFFULL)
 #define BITMASK63 (0x7FFFFFFFFFFFFFFFULL)
 #define BITMASK64 (0xFFFFFFFFFFFFFFFFULL)
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * BIT UTILITIES
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+/**
+ * WARNING: ONLY USE THOSE MACROS WITH THE BITX DEFINES ABOVE!
+ * Bits are 1-indexed.
+ */
+
+#define nya_bit_set(val, bit)            ((val) |= (bit))
+#define nya_bit_unset(val, bit)          ((val) &= ~(bit))
+#define nya_bit_check(val, bit)          ((val) & (bit))
+#define nya_bit_toggle(val, bit)         ((val) ^= (bit))
+#define nya_bitmask_set(val, bitmask)    ((val) |= (bitmask))
+#define nya_bitmask_unset(val, bitmask)  ((val) &= ~(bitmask))
+#define nya_bitmask_check(val, bitmask)  ((val) & (bitmask))
+#define nya_bitmask_toggle(val, bitmask) ((val) ^= (bitmask))
+#define nya_bits_count_u32(val)          (__builtin_popcount(val))
+#define nya_bits_count_u64(val)          (__builtin_popcountll(val))
+#define nya_bits_clz_u32(val)            (__builtin_clz(val))
+#define nya_bits_clz_u64(val)            (__builtin_clzll(val))
+#define nya_bits_ctz_u32(val)            (__builtin_ctz(val))
+#define nya_bits_ctz_u64(val)            (__builtin_ctzll(val))
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * BITFLAG UTILITIES
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+#define nya_flag_set(flags, flag)    ((flags) |= (flag))
+#define nya_flag_unset(flags, flag)  ((flags) &= ~(flag))
+#define nya_flag_toggle(flags, flag) ((flags) ^= (flag))
+#define nya_flag_check(flags, flag)  ((flags) & (flag))
+#define nya_flag_equals(flags, flag) ((flags) == (flag))
