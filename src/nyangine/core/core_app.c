@@ -28,13 +28,19 @@ NYA_App nya_app_new(NYA_AppConfig config) {
       .entity_allocator      = nya_arena_new(.name = "entity_allocator", .defragmentation_enabled = false),
       .frame_allocator       = nya_arena_new(.name = "frame_allocator"),
       .gpu_device            = gpu_device,
-      .windows               = nya_array_new(&app.global_allocator, NYA_Window),
+      .windows               = {0},
       .previous_time_ms      = 0,
       .time_behind_ms        = 0,
       .should_quit_game_loop = false,
   };
 
   return app;
+}
+
+void nya_app_init(NYA_App* app) {
+  nya_assert(app);
+  // Initialize windows array after app is at its final address
+  app->windows = nya_array_new(&app->global_allocator, NYA_Window);
 }
 
 void nya_app_destroy(NYA_App* app) {

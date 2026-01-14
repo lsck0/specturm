@@ -20,6 +20,7 @@ void gnyame_setup(s32 argc, char** argv) {
       .frame_rate_limit = 120,
       .vsync_enabled    = false,
   });
+  nya_app_init(&NYA_APP_INSTANCE);
 
   nya_window_new(&NYA_APP_INSTANCE, "gnyame", 1280, 720, NYA_WINDOW_RESIZABLE, "main_window");
   nya_window_layer_push(

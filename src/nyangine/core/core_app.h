@@ -74,6 +74,7 @@ struct NYA_Layer {
  */
 
 NYA_API NYA_EXTERN NYA_App nya_app_new(NYA_AppConfig config);
+NYA_API NYA_EXTERN void    nya_app_init(NYA_App* app);
 NYA_API NYA_EXTERN void    nya_app_destroy(NYA_App* app);
 NYA_API NYA_EXTERN void    nya_app_options_update(NYA_App* app, NYA_AppConfig config);
 NYA_API NYA_EXTERN void    nya_app_run(NYA_App* app);
