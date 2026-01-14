@@ -17,6 +17,8 @@
   }
 
 /**
+ * This is essentially poor mans RAII / defer for C.
+ *
  * EXAMPLE USAGE:
  *
  * NYA_GUARDED_BY(close) s32 source_fd = open(source, O_RDONLY);
