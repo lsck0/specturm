@@ -1,4 +1,3 @@
-// TODO: move to core
 #pragma once
 
 #include "nyangine/base/base_string.h"
