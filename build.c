@@ -364,7 +364,7 @@ NYA_BuildRule run_release = {
     .policy = NYA_BUILD_ALWAYS,
 
     .command = {
-        .program = LINUX_X86_64_BINARY,
+        .program = "./" LINUX_X86_64_BINARY,
     },
 
     .dependencies = { &build_project_linux_x86_64 },

@@ -126,7 +126,7 @@ b8 dll_load(void) {
     return false;
   }
 
-  b8 ok = nya_filesystem_file_last_modified(DLL_PATH, &gnyame_dll_last_modified);
+  b8 ok = nya_filesystem_last_modified(DLL_PATH, &gnyame_dll_last_modified);
   if (!ok) {
     (void)fprintf(stderr, "Failed to get last modified time for %s.\n", DLL_PATH);
     dlclose(gnyame_dll);
@@ -161,7 +161,7 @@ void* dll_watch_thread_func(void* arg) {
 
   while (true) {
     u64 last_modified;
-    b8  ok = nya_filesystem_file_last_modified(DLL_PATH, &last_modified);
+    b8  ok = nya_filesystem_last_modified(DLL_PATH, &last_modified);
     if (!ok) continue;
 
     if (last_modified != gnyame_dll_last_modified && !gnyame_dll_reload_requested) {

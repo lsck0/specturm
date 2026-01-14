@@ -2,25 +2,25 @@
 
 #include "nyangine/nyangine.h"
 
-b8 nya_filesystem_file_exists(NYA_ConstCString path) {
+b8 nya_filesystem_exists(NYA_ConstCString path) {
   DWORD attributes = GetFileAttributesA(path);
   if (attributes == INVALID_FILE_ATTRIBUTES) return false;
   return (attributes & FILE_ATTRIBUTE_DIRECTORY) == 0;
 }
 
-b8 nya_filesystem_file_move(NYA_ConstCString old_path, NYA_ConstCString new_path) {
+b8 nya_filesystem_move(NYA_ConstCString old_path, NYA_ConstCString new_path) {
   return MoveFileA(old_path, new_path) != 0;
 }
 
-b8 nya_filesystem_file_copy(NYA_ConstCString source, NYA_ConstCString destination) {
+b8 nya_filesystem_copy(NYA_ConstCString source, NYA_ConstCString destination) {
   return CopyFileA(source, destination, FALSE) != 0;
 }
 
-b8 nya_filesystem_file_delete(NYA_ConstCString path) {
+b8 nya_filesystem_delete(NYA_ConstCString path) {
   return DeleteFileA(path) != 0;
 }
 
-b8 nya_filesystem_file_last_modified(NYA_ConstCString path, OUT u64* out_timestamp) {
+b8 nya_filesystem_last_modified(NYA_ConstCString path, OUT u64* out_timestamp) {
   WIN32_FILE_ATTRIBUTE_DATA file_info;
   if (!GetFileAttributesExA(path, GetFileExInfoStandard, &file_info)) return false;
 
