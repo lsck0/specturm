@@ -401,7 +401,7 @@ nya_derive_array(f128_4x4);
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-#define nya_array_clone(arr_ptr)                                                                                         \
+#define nya_array_copy(arr_ptr)                                                                                          \
   ({                                                                                                                     \
     typeof(*(arr_ptr)) copy = {                                                                                          \
         .items    = nya_arena_copy((arr_ptr)->arena, (arr_ptr)->items, sizeof(*(arr_ptr)->items) * (arr_ptr)->capacity), \

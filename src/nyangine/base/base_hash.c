@@ -15,7 +15,7 @@ const u64 FNV_PRIME        = 1099511628211ULL;
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-u64 nya_hash_fnv1a(const void* data, u64 size) __attr_overloaded {
+__attr_no_sanitize("unsigned-integer-overflow") u64 nya_hash_fnv1a(const void* data, u64 size) __attr_overloaded {
   const u8* bytes = (const u8*)data;
   u64       hash  = FNV_OFFSET_BASIS;
 
@@ -27,7 +27,7 @@ u64 nya_hash_fnv1a(const void* data, u64 size) __attr_overloaded {
   return hash;
 }
 
-u64 nya_hash_fnv1a(NYA_ConstCString string) __attr_overloaded {
+__attr_no_sanitize("unsigned-integer-overflow") u64 nya_hash_fnv1a(NYA_ConstCString string) __attr_overloaded {
   u64 hash = FNV_OFFSET_BASIS;
 
   for (u64 i = 0; string[i] != '\0'; ++i) {
@@ -38,7 +38,7 @@ u64 nya_hash_fnv1a(NYA_ConstCString string) __attr_overloaded {
   return hash;
 }
 
-u64 nya_hash_fnv1a(NYA_String string) __attr_overloaded {
+__attr_no_sanitize("unsigned-integer-overflow") u64 nya_hash_fnv1a(NYA_String string) __attr_overloaded {
   u64 hash = FNV_OFFSET_BASIS;
 
   for (u64 i = 0; i < string.length; ++i) {

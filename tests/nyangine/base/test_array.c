@@ -479,11 +479,11 @@ s32 main(void) {
   nya_array_destroy(&ext_arr2);
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // TEST: nya_array_clone
+  // TEST: nya_array_copy
   // ─────────────────────────────────────────────────────────────────────────────
   u32Array clone_src = nya_array_new(&arena, u32);
   nya_array_add_many(&clone_src, 10U, 20U, 30U, 40U);
-  u32Array clone_dst = nya_array_clone(&clone_src);
+  u32Array clone_dst = nya_array_copy(&clone_src);
   nya_assert(clone_dst.length == clone_src.length);
   nya_assert(clone_dst.capacity == clone_src.capacity);
   nya_assert(clone_dst.items != clone_src.items);
