@@ -1,3 +1,7 @@
+/**
+ * THIS FILE WAS CLANKER WANKED !!!
+ **/
+
 #include "nyangine/nyangine.c"
 #include "nyangine/nyangine.h"
 
@@ -145,9 +149,7 @@ s32 main(void) {
   NYA_Lexer sym_lexer = nya_lexer_new("+ - * / = < > ! @ # $ % ^ & ( ) [ ] { } ; : , ?");
   nya_lexer_run(&sym_lexer);
   nya_assert(sym_lexer.tokens.length == 24);
-  for (u32 i = 0; i < sym_lexer.tokens.length; ++i) {
-    nya_assert(sym_lexer.tokens.items[i].type == NYA_TOKEN_SYMBOL);
-  }
+  for (u32 i = 0; i < sym_lexer.tokens.length; ++i) { nya_assert(sym_lexer.tokens.items[i].type == NYA_TOKEN_SYMBOL); }
   nya_assert(sym_lexer.tokens.items[0].symbol == '+');
   nya_assert(sym_lexer.tokens.items[1].symbol == '-');
   nya_assert(sym_lexer.tokens.items[2].symbol == '*');
@@ -184,13 +186,13 @@ s32 main(void) {
   NYA_Lexer expr_lexer = nya_lexer_new("x = 10 + 3.14 * y");
   nya_lexer_run(&expr_lexer);
   nya_assert(expr_lexer.tokens.length == 7);
-  nya_assert(expr_lexer.tokens.items[0].type == NYA_TOKEN_IDENT);    // x
-  nya_assert(expr_lexer.tokens.items[1].type == NYA_TOKEN_SYMBOL);   // =
-  nya_assert(expr_lexer.tokens.items[2].type == NYA_TOKEN_NUMBER_INTEGER);  // 10
-  nya_assert(expr_lexer.tokens.items[3].type == NYA_TOKEN_SYMBOL);   // +
-  nya_assert(expr_lexer.tokens.items[4].type == NYA_TOKEN_NUMBER_FLOAT);    // 3.14
-  nya_assert(expr_lexer.tokens.items[5].type == NYA_TOKEN_SYMBOL);   // *
-  nya_assert(expr_lexer.tokens.items[6].type == NYA_TOKEN_IDENT);    // y
+  nya_assert(expr_lexer.tokens.items[0].type == NYA_TOKEN_IDENT);          // x
+  nya_assert(expr_lexer.tokens.items[1].type == NYA_TOKEN_SYMBOL);         // =
+  nya_assert(expr_lexer.tokens.items[2].type == NYA_TOKEN_NUMBER_INTEGER); // 10
+  nya_assert(expr_lexer.tokens.items[3].type == NYA_TOKEN_SYMBOL);         // +
+  nya_assert(expr_lexer.tokens.items[4].type == NYA_TOKEN_NUMBER_FLOAT);   // 3.14
+  nya_assert(expr_lexer.tokens.items[5].type == NYA_TOKEN_SYMBOL);         // *
+  nya_assert(expr_lexer.tokens.items[6].type == NYA_TOKEN_IDENT);          // y
   nya_lexer_destroy(&expr_lexer);
 
   // ─────────────────────────────────────────────────────────────────────────────

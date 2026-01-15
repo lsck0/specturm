@@ -1,3 +1,7 @@
+/**
+ * THIS FILE WAS CLANKER WANKED !!!
+ **/
+
 #include "nyangine/nyangine.c"
 #include "nyangine/nyangine.h"
 
@@ -38,11 +42,11 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   // TEST: nya_clamp
   // ─────────────────────────────────────────────────────────────────────────────
-  nya_assert(nya_clamp(7, 0, 5) == 5);       // above max
-  nya_assert(nya_clamp(-2, 0, 5) == 0);      // below min
-  nya_assert(nya_clamp(3, 0, 5) == 3);       // in range
-  nya_assert(nya_clamp(0, 0, 5) == 0);       // at min
-  nya_assert(nya_clamp(5, 0, 5) == 5);       // at max
+  nya_assert(nya_clamp(7, 0, 5) == 5);  // above max
+  nya_assert(nya_clamp(-2, 0, 5) == 0); // below min
+  nya_assert(nya_clamp(3, 0, 5) == 3);  // in range
+  nya_assert(nya_clamp(0, 0, 5) == 0);  // at min
+  nya_assert(nya_clamp(5, 0, 5) == 5);  // at max
   nya_assert(nya_clamp(100, 10, 20) == 20);
   nya_assert(nya_clamp(5, 10, 20) == 10);
   nya_assert(nya_clamp(15, 10, 20) == 15);

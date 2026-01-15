@@ -1,3 +1,7 @@
+/**
+ * THIS FILE WAS CLANKER WANKED !!!
+ **/
+
 #include "nyangine/nyangine.c"
 #include "nyangine/nyangine.h"
 

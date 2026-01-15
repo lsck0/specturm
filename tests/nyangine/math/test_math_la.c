@@ -1,3 +1,7 @@
+/**
+ * THIS FILE WAS CLANKER WANKED !!!
+ **/
+
 #include "nyangine/nyangine.c"
 #include "nyangine/nyangine.h"
 
@@ -98,7 +102,7 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   // TEST: 2x2 matrix operations
   // ─────────────────────────────────────────────────────────────────────────────
-  f32_2x2 mat2_id = f32_2x2_id;
+  f32_2x2 mat2_id   = f32_2x2_id;
   f32x2   vec2_test = {3.0F, 4.0F};
 
   // Identity matrix should not change the vector
@@ -107,16 +111,16 @@ s32 main(void) {
   nya_assert(vec2_result.y == 4.0F);
 
   // Custom 2x2 matrix
-  f32_2x2 mat2_custom = nya_matrix_new((f32[2][2]){
+  f32_2x2 mat2_custom        = nya_matrix_new((f32[2][2]){
       {2.0F, 0.0F},
       {0.0F, 3.0F},
   });
-  f32x2 vec2_scaled_result = nya_matrix_times_vector(mat2_custom, vec2_test);
-  nya_assert(vec2_scaled_result.x == 6.0F);   // 2 * 3
-  nya_assert(vec2_scaled_result.y == 12.0F);  // 3 * 4
+  f32x2   vec2_scaled_result = nya_matrix_times_vector(mat2_custom, vec2_test);
+  nya_assert(vec2_scaled_result.x == 6.0F);  // 2 * 3
+  nya_assert(vec2_scaled_result.y == 12.0F); // 3 * 4
 
   // Zero matrix
-  f32_2x2 mat2_zero = f32_2x2_zero;
+  f32_2x2 mat2_zero        = f32_2x2_zero;
   f32x2   vec2_zero_result = nya_matrix_times_vector(mat2_zero, vec2_test);
   nya_assert(vec2_zero_result.x == 0.0F);
   nya_assert(vec2_zero_result.y == 0.0F);
@@ -154,7 +158,7 @@ s32 main(void) {
   nya_assert(unit_y_result.x == 0.0F && unit_y_result.y == 1.0F && unit_y_result.z == 0.0F);
 
   // Zero matrix
-  f32_3x3 mat3_zero = f32_3x3_zero;
+  f32_3x3 mat3_zero        = f32_3x3_zero;
   f32x3   vec3_zero_result = nya_matrix_times_vector(mat3_zero, vec_a);
   nya_assert(vec3_zero_result.x == 0.0F);
   nya_assert(vec3_zero_result.y == 0.0F);
@@ -163,7 +167,7 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   // TEST: 4x4 matrix operations
   // ─────────────────────────────────────────────────────────────────────────────
-  f32_4x4 mat4_id = f32_4x4_id;
+  f32_4x4 mat4_id   = f32_4x4_id;
   f32x4   vec4_test = {1.0F, 2.0F, 3.0F, 4.0F};
 
   // Identity matrix should not change the vector
@@ -174,20 +178,20 @@ s32 main(void) {
   nya_assert(vec4_id_result.w == 4.0F);
 
   // Custom 4x4 matrix (scaling)
-  f32_4x4 mat4_scale = nya_matrix_new((f32[4][4]){
+  f32_4x4 mat4_scale  = nya_matrix_new((f32[4][4]){
       {2.0F, 0.0F, 0.0F, 0.0F},
       {0.0F, 3.0F, 0.0F, 0.0F},
       {0.0F, 0.0F, 4.0F, 0.0F},
       {0.0F, 0.0F, 0.0F, 1.0F},
   });
-  f32x4 vec4_scaled = nya_matrix_times_vector(mat4_scale, vec4_test);
-  nya_assert(vec4_scaled.x == 2.0F);   // 2 * 1
-  nya_assert(vec4_scaled.y == 6.0F);   // 3 * 2
-  nya_assert(vec4_scaled.z == 12.0F);  // 4 * 3
-  nya_assert(vec4_scaled.w == 4.0F);   // 1 * 4
+  f32x4   vec4_scaled = nya_matrix_times_vector(mat4_scale, vec4_test);
+  nya_assert(vec4_scaled.x == 2.0F);  // 2 * 1
+  nya_assert(vec4_scaled.y == 6.0F);  // 3 * 2
+  nya_assert(vec4_scaled.z == 12.0F); // 4 * 3
+  nya_assert(vec4_scaled.w == 4.0F);  // 1 * 4
 
   // Zero matrix
-  f32_4x4 mat4_zero = f32_4x4_zero;
+  f32_4x4 mat4_zero        = f32_4x4_zero;
   f32x4   vec4_zero_result = nya_matrix_times_vector(mat4_zero, vec4_test);
   nya_assert(vec4_zero_result.x == 0.0F);
   nya_assert(vec4_zero_result.y == 0.0F);
@@ -197,14 +201,14 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   // TEST: f64 vector and matrix types
   // ─────────────────────────────────────────────────────────────────────────────
-  f64x3 vec64_a = {1.0, 2.0, 3.0};
-  f64x3 vec64_b = {4.0, 5.0, 6.0};
+  f64x3 vec64_a   = {1.0, 2.0, 3.0};
+  f64x3 vec64_b   = {4.0, 5.0, 6.0};
   f64x3 vec64_sum = vec64_a + vec64_b;
   nya_assert(vec64_sum.x == 5.0);
   nya_assert(vec64_sum.y == 7.0);
   nya_assert(vec64_sum.z == 9.0);
 
-  f64_3x3 mat64_id = f64_3x3_id;
+  f64_3x3 mat64_id     = f64_3x3_id;
   f64x3   vec64_result = nya_matrix_times_vector(mat64_id, vec64_a);
   nya_assert(vec64_result.x == 1.0);
   nya_assert(vec64_result.y == 2.0);
@@ -214,7 +218,7 @@ s32 main(void) {
   // TEST: Matrix creation from row vectors
   // ─────────────────────────────────────────────────────────────────────────────
   f32_3x3 mat_from_rows = nya_matrix_new(f32x3_unit_x, f32x3_unit_y, f32x3_unit_z);
-  f32x3   row_test = nya_matrix_times_vector(mat_from_rows, (f32x3){1.0F, 1.0F, 1.0F});
+  f32x3   row_test      = nya_matrix_times_vector(mat_from_rows, (f32x3){1.0F, 1.0F, 1.0F});
   nya_assert(row_test.x == 1.0F);
   nya_assert(row_test.y == 1.0F);
   nya_assert(row_test.z == 1.0F);
@@ -222,8 +226,8 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   // TEST: Vector lerp
   // ─────────────────────────────────────────────────────────────────────────────
-  f32x3 lerp_start = {0.0F, 0.0F, 0.0F};
-  f32x3 lerp_end = {10.0F, 20.0F, 30.0F};
+  f32x3 lerp_start  = {0.0F, 0.0F, 0.0F};
+  f32x3 lerp_end    = {10.0F, 20.0F, 30.0F};
   f32x3 lerp_result = nya_lerp(lerp_start, lerp_end, 0.5F);
   nya_assert(lerp_result.x == 5.0F);
   nya_assert(lerp_result.y == 10.0F);

@@ -1,3 +1,7 @@
+/**
+ * THIS FILE WAS CLANKER WANKED !!!
+ **/
+
 #include "nyangine/nyangine.c"
 #include "nyangine/nyangine.h"
 
@@ -65,7 +69,7 @@ s32 main(void) {
   nya_assert(!nya_filesystem_exists("nonexistent_file_12345.txt"));
 
   NYA_String nonexistent_content = nya_string_new(&nya_arena_global);
-  b8         read_result = nya_file_read("nonexistent_file_12345.txt", &nonexistent_content);
+  b8         read_result         = nya_file_read("nonexistent_file_12345.txt", &nonexistent_content);
   nya_assert(!read_result);
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -127,7 +131,7 @@ s32 main(void) {
   // Timestamp should be recent (within last hour for sanity check)
   u64 now = nya_clock_get_timestamp_ms();
   nya_assert(timestamp <= now);
-  nya_assert((now - timestamp) < 3600000);  // Less than 1 hour old
+  nya_assert((now - timestamp) < 3600000); // Less than 1 hour old
 
   nya_assert(nya_filesystem_delete(timestamp_path));
 
@@ -139,10 +143,8 @@ s32 main(void) {
   // TEST: Large file content
   // ─────────────────────────────────────────────────────────────────────────────
   NYA_ConstCString large_file_path = "test_large_file.txt";
-  NYA_String       large_content = nya_string_new_with_capacity(&nya_arena_global, 40000);
-  for (u32 i = 0; i < 1000; ++i) {
-    nya_string_extend(&large_content, "Line of content with some data. ");
-  }
+  NYA_String       large_content   = nya_string_new_with_capacity(&nya_arena_global, 40000);
+  for (u32 i = 0; i < 1000; ++i) { nya_string_extend(&large_content, "Line of content with some data. "); }
   nya_assert(nya_file_write(large_file_path, nya_string_to_cstring(&nya_arena_global, &large_content)));
 
   NYA_String read_large = nya_string_new(&nya_arena_global);
