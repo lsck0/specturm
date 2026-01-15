@@ -221,15 +221,14 @@ s32 main(void) {
   nya_hset_destroy(&empty_set);
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // TEST: duplicate insertion (set behavior)
+  // TEST: duplicate insertion (set behavior - should deduplicate)
   // ─────────────────────────────────────────────────────────────────────────────
   u32HSet dup_set = nya_hset_new(&arena, u32);
   nya_hset_insert(&dup_set, 42U);
   nya_hset_insert(&dup_set, 42U);
   nya_hset_insert(&dup_set, 42U);
-  // Note: This implementation does not deduplicate, it inserts duplicates
-  // If deduplication is expected, change this assertion
-  nya_assert(dup_set.length == 3);
+  nya_assert(dup_set.length == 1);
+  nya_assert(nya_hset_contains(&dup_set, 42U) == true);
   nya_hset_destroy(&dup_set);
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -241,6 +240,116 @@ s32 main(void) {
   nya_hset_destroy(&destroy_set);
   nya_assert(destroy_set.items == nullptr);
   nya_assert(destroy_set.occupied == nullptr);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: nya_hset_union
+  // ─────────────────────────────────────────────────────────────────────────────
+  u32HSet union_a = nya_hset_new(&arena, u32);
+  u32HSet union_b = nya_hset_new(&arena, u32);
+  nya_hset_insert(&union_a, 1U);
+  nya_hset_insert(&union_a, 2U);
+  nya_hset_insert(&union_a, 3U);
+  nya_hset_insert(&union_b, 3U);
+  nya_hset_insert(&union_b, 4U);
+  nya_hset_insert(&union_b, 5U);
+  nya_hset_union(&union_a, &union_b);
+  nya_assert(union_a.length == 5);
+  nya_assert(nya_hset_contains(&union_a, 1U) == true);
+  nya_assert(nya_hset_contains(&union_a, 2U) == true);
+  nya_assert(nya_hset_contains(&union_a, 3U) == true);
+  nya_assert(nya_hset_contains(&union_a, 4U) == true);
+  nya_assert(nya_hset_contains(&union_a, 5U) == true);
+  nya_hset_destroy(&union_a);
+  nya_hset_destroy(&union_b);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: nya_hset_intersection
+  // ─────────────────────────────────────────────────────────────────────────────
+  u32HSet inter_a = nya_hset_new(&arena, u32);
+  u32HSet inter_b = nya_hset_new(&arena, u32);
+  nya_hset_insert(&inter_a, 1U);
+  nya_hset_insert(&inter_a, 2U);
+  nya_hset_insert(&inter_a, 3U);
+  nya_hset_insert(&inter_a, 4U);
+  nya_hset_insert(&inter_b, 2U);
+  nya_hset_insert(&inter_b, 4U);
+  nya_hset_insert(&inter_b, 6U);
+  nya_hset_intersection(&inter_a, &inter_b);
+  nya_assert(inter_a.length == 2);
+  nya_assert(nya_hset_contains(&inter_a, 1U) == false);
+  nya_assert(nya_hset_contains(&inter_a, 2U) == true);
+  nya_assert(nya_hset_contains(&inter_a, 3U) == false);
+  nya_assert(nya_hset_contains(&inter_a, 4U) == true);
+  nya_hset_destroy(&inter_a);
+  nya_hset_destroy(&inter_b);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: nya_hset_difference
+  // ─────────────────────────────────────────────────────────────────────────────
+  u32HSet diff_a = nya_hset_new(&arena, u32);
+  u32HSet diff_b = nya_hset_new(&arena, u32);
+  nya_hset_insert(&diff_a, 1U);
+  nya_hset_insert(&diff_a, 2U);
+  nya_hset_insert(&diff_a, 3U);
+  nya_hset_insert(&diff_a, 4U);
+  nya_hset_insert(&diff_b, 2U);
+  nya_hset_insert(&diff_b, 4U);
+  nya_hset_difference(&diff_a, &diff_b);
+  nya_assert(diff_a.length == 2);
+  nya_assert(nya_hset_contains(&diff_a, 1U) == true);
+  nya_assert(nya_hset_contains(&diff_a, 2U) == false);
+  nya_assert(nya_hset_contains(&diff_a, 3U) == true);
+  nya_assert(nya_hset_contains(&diff_a, 4U) == false);
+  nya_hset_destroy(&diff_a);
+  nya_hset_destroy(&diff_b);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: nya_hset_symmetric_difference
+  // ─────────────────────────────────────────────────────────────────────────────
+  u32HSet sym_a = nya_hset_new(&arena, u32);
+  u32HSet sym_b = nya_hset_new(&arena, u32);
+  nya_hset_insert(&sym_a, 1U);
+  nya_hset_insert(&sym_a, 2U);
+  nya_hset_insert(&sym_a, 3U);
+  nya_hset_insert(&sym_b, 2U);
+  nya_hset_insert(&sym_b, 3U);
+  nya_hset_insert(&sym_b, 4U);
+  nya_hset_symmetric_difference(&sym_a, &sym_b);
+  nya_assert(sym_a.length == 2);
+  nya_assert(nya_hset_contains(&sym_a, 1U) == true);
+  nya_assert(nya_hset_contains(&sym_a, 2U) == false);
+  nya_assert(nya_hset_contains(&sym_a, 3U) == false);
+  nya_assert(nya_hset_contains(&sym_a, 4U) == true);
+  nya_hset_destroy(&sym_a);
+  nya_hset_destroy(&sym_b);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: set operations with empty sets
+  // ─────────────────────────────────────────────────────────────────────────────
+  u32HSet empty_a = nya_hset_new(&arena, u32);
+  u32HSet empty_b = nya_hset_new(&arena, u32);
+  nya_hset_insert(&empty_a, 1U);
+  nya_hset_insert(&empty_a, 2U);
+  nya_hset_union(&empty_a, &empty_b);
+  nya_assert(empty_a.length == 2);
+  nya_hset_intersection(&empty_a, &empty_b);
+  nya_assert(empty_a.length == 0);
+  nya_hset_destroy(&empty_a);
+  nya_hset_destroy(&empty_b);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: set operations with identical sets
+  // ─────────────────────────────────────────────────────────────────────────────
+  u32HSet ident_a = nya_hset_new(&arena, u32);
+  u32HSet ident_b = nya_hset_new(&arena, u32);
+  nya_hset_insert(&ident_a, 1U);
+  nya_hset_insert(&ident_a, 2U);
+  nya_hset_insert(&ident_b, 1U);
+  nya_hset_insert(&ident_b, 2U);
+  nya_hset_symmetric_difference(&ident_a, &ident_b);
+  nya_assert(ident_a.length == 0);
+  nya_hset_destroy(&ident_a);
+  nya_hset_destroy(&ident_b);
 
   nya_arena_destroy(&arena);
   return 0;

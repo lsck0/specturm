@@ -67,7 +67,7 @@
     nya_assert_type_match(item, (hset_ptr)->items[0]);                                                                 \
     typeof(item) item_var = item;                                                                                      \
     u64          index    = nya_hash_fnv1a(&item_var, sizeof(item_var)) % (hset_ptr)->capacity;                        \
-    while ((hset_ptr)->occupied[index]) { index = (index + 1) % (hset_ptr)->capacity; }                                \
+    while ((hset_ptr)->occupied[index]) index = (index + 1) % (hset_ptr)->capacity;                                    \
     (hset_ptr)->items[index]    = item_var;                                                                            \
     (hset_ptr)->occupied[index] = true;                                                                                \
     (hset_ptr)->length++;                                                                                              \
@@ -130,7 +130,21 @@
     if (((f32)((hset_ptr)->length + 1) / (f32)(hset_ptr)->capacity) > _NYA_HASHSET_LOAD_FACTOR) {                      \
       nya_hset_resize_and_rehash(hset_ptr, (hset_ptr)->capacity * 2);                                                  \
     }                                                                                                                  \
-    nya_hset_insert_unchecked(hset_ptr, item);                                                                         \
+    typeof(item) _insert_item = item;                                                                                  \
+    u64          _insert_idx  = nya_hash_fnv1a(&_insert_item, sizeof(_insert_item)) % (hset_ptr)->capacity;            \
+    bool         _found_dup   = false;                                                                                 \
+    while ((hset_ptr)->occupied[_insert_idx]) {                                                                        \
+      if (nya_memcmp(&(hset_ptr)->items[_insert_idx], &_insert_item, sizeof(_insert_item)) == 0) {                     \
+        _found_dup = true;                                                                                             \
+        break;                                                                                                         \
+      }                                                                                                                \
+      _insert_idx = (_insert_idx + 1) % (hset_ptr)->capacity;                                                          \
+    }                                                                                                                  \
+    if (!_found_dup) {                                                                                                 \
+      (hset_ptr)->items[_insert_idx]    = _insert_item;                                                                \
+      (hset_ptr)->occupied[_insert_idx] = true;                                                                        \
+      (hset_ptr)->length++;                                                                                            \
+    }                                                                                                                  \
   })
 
 #define nya_hset_remove(hset_ptr, item)                                                                                \
@@ -159,6 +173,53 @@
       iterations++;                                                                                                    \
     }                                                                                                                  \
   })
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * SET OPERATION MACROS
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+#define nya_hset_union(dest_hset_ptr, src_hset_ptr)                                                                    \
+  do {                                                                                                                 \
+    for (u64 _union_idx = 0; _union_idx < (src_hset_ptr)->capacity; _union_idx++) {                                    \
+      if ((src_hset_ptr)->occupied[_union_idx]) { nya_hset_insert(dest_hset_ptr, (src_hset_ptr)->items[_union_idx]); } \
+    }                                                                                                                  \
+  } while (0)
+
+#define nya_hset_intersection(dest_hset_ptr, src_hset_ptr)                                                             \
+  do {                                                                                                                 \
+    for (u64 _inter_idx = 0; _inter_idx < (dest_hset_ptr)->capacity; _inter_idx++) {                                   \
+      if ((dest_hset_ptr)->occupied[_inter_idx]) {                                                                     \
+        typeof((dest_hset_ptr)->items[0]) _inter_item = (dest_hset_ptr)->items[_inter_idx];                            \
+        if (!nya_hset_contains(src_hset_ptr, _inter_item)) { nya_hset_remove(dest_hset_ptr, _inter_item); }            \
+      }                                                                                                                \
+    }                                                                                                                  \
+  } while (0)
+
+#define nya_hset_difference(dest_hset_ptr, src_hset_ptr)                                                               \
+  do {                                                                                                                 \
+    for (u64 _diff_idx = 0; _diff_idx < (src_hset_ptr)->capacity; _diff_idx++) {                                       \
+      if ((src_hset_ptr)->occupied[_diff_idx]) {                                                                       \
+        typeof((src_hset_ptr)->items[0]) _diff_item = (src_hset_ptr)->items[_diff_idx];                                \
+        if (nya_hset_contains(dest_hset_ptr, _diff_item)) { nya_hset_remove(dest_hset_ptr, _diff_item); }              \
+      }                                                                                                                \
+    }                                                                                                                  \
+  } while (0)
+
+#define nya_hset_symmetric_difference(dest_hset_ptr, src_hset_ptr)                                                     \
+  do {                                                                                                                 \
+    for (u64 _sym_idx = 0; _sym_idx < (src_hset_ptr)->capacity; _sym_idx++) {                                          \
+      if ((src_hset_ptr)->occupied[_sym_idx]) {                                                                        \
+        typeof((src_hset_ptr)->items[0]) _sym_item = (src_hset_ptr)->items[_sym_idx];                                  \
+        if (nya_hset_contains(dest_hset_ptr, _sym_item)) {                                                             \
+          nya_hset_remove(dest_hset_ptr, _sym_item);                                                                   \
+        } else {                                                                                                       \
+          nya_hset_insert(dest_hset_ptr, _sym_item);                                                                   \
+        }                                                                                                              \
+      }                                                                                                                \
+    }                                                                                                                  \
+  } while (0)
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
