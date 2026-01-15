@@ -56,8 +56,6 @@ NYA_Command build_rebuild_command = {
         WARNINGS,
         INCLUDE_PATHS,
         LINKER_FLAGS,
-        FLAGS_SANITIZE,
-        FLAGS_RELEASE,
     },
 };
 
