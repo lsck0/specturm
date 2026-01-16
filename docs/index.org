@@ -1,17 +1,19 @@
 * PLAN
 
 - [ ] implement arena allocation tracking
+- [ ] rework perf module
+- [ ] uuid generation
 - [ ] input and event system
 - [ ] 2d render primitives: shapes (reference raylib), texts, images
 - [ ] ui system: widgets, layout, styling
-- [ ] resource management
-- [ ] word simulation
-    - [ ] entity sheaf system
-    - [ ] physics engine
-    - [ ] entity renderer
-    - [ ] sound system
+- [ ] resource management (asset pipeline, hot-reloading, async streaming -> job system?)
+- [ ] entity system
+- [ ] rendering system
+- [ ] audio system
+- [ ] physics system
 
 * OTHER TODOs
 
+- [ ] integrate steam sdk
 - [ ] entity ai utils: state machines, behavior trees
 - [ ] basic nn library: tensors, layers, autograd --> NEAT implementation

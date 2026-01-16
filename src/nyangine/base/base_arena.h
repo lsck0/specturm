@@ -1,4 +1,3 @@
-// TODO: implement the allocation tracking
 #pragma once
 
 #include "nyangine/base/base.h"
@@ -18,6 +17,8 @@ typedef struct NYA_ArenaOptions      NYA_ArenaOptions;
 typedef struct NYA_ArenaRegion       NYA_ArenaRegion;
 typedef struct NYA_ArenaFreeList     NYA_ArenaFreeList;
 typedef struct NYA_ArenaFreeListNode NYA_ArenaFreeListNode;
+typedef struct NYA_MemoryAction      NYA_MemoryAction;
+typedef struct NYA_MemoryActionArray NYA_MemoryActionArray;
 
 #define _NYA_ARENA_DEFAULT_OPTIONS                                                                                     \
   .name = nullptr, .alignment = 8, .region_size = nya_gibyte_to_byte(1UL), .defragmentation_enabled = true,            \
@@ -73,6 +74,62 @@ struct NYA_ArenaFreeListNode {
   NYA_ArenaFreeListNode *prev, *next;
 };
 
+typedef enum {
+  NYA_MEMORY_ACTION_ARENA_NEW,
+  NYA_MEMORY_ACTION_ALLOC,
+  NYA_MEMORY_ACTION_REALLOC,
+  NYA_MEMORY_ACTION_FREE,
+  NYA_MEMORY_ACTION_FREE_ALL,
+  NYA_MEMORY_ACTION_GARBAGE_COLLECT,
+  NYA_MEMORY_ACTION_ARENA_DESTROY,
+  NYA_MEMORY_ACTION_COPY,
+  NYA_MEMORY_ACTION_MOVE,
+  NYA_MEMORY_ACTION_COUNT,
+} NYA_MemoryActionType;
+
+struct NYA_MemoryAction {
+  NYA_MemoryActionType type;
+
+  const char* arena_name;
+  const char* file_name;
+  u32         line_number;
+  const char* function_name;
+
+  union {
+    struct {
+      u8* ptr;
+      u64 size;
+    } alloc, free;
+
+    struct {
+      u8* old_ptr;
+      u64 old_size;
+      u8* new_ptr;
+      u64 new_size;
+    } realloc;
+
+    struct {
+      u8* ptr;
+      u64 size;
+      u8* copy_ptr;
+    } copy;
+
+    struct {
+      u8*         ptr;
+      u64         size;
+      const char* target_arena_name;
+      u8*         target_ptr;
+    } move;
+  };
+};
+
+/// not compatiple with base_array.h !
+struct NYA_MemoryActionArray {
+  u64               length;
+  u64               capacity;
+  NYA_MemoryAction* items;
+};
+
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  * FUNCTIONS AND MACROS
@@ -108,8 +165,9 @@ NYA_API NYA_EXTERN NYA_Arena nya_arena_temp;
 #endif // (NYA_IS_DEBUG || defined(NYA_ARENA_FORCE_DEBUG)) && !defined(NYA_ARENA_FORCE_NODEBUG)
 // clang-format on
 
-NYA_API NYA_EXTERN u64  nya_arena_memory_usage(NYA_Arena* arena) __attr_no_discard;
-NYA_API NYA_EXTERN void nya_arena_print(NYA_Arena* arena);
+NYA_API NYA_EXTERN NYA_MemoryActionArray* nya_arena_get_memory_actions(void) __attr_no_discard;
+NYA_API NYA_EXTERN u64                    nya_arena_memory_usage(NYA_Arena* arena) __attr_no_discard;
+NYA_API NYA_EXTERN void                   nya_arena_print(NYA_Arena* arena);
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -118,7 +176,6 @@ NYA_API NYA_EXTERN void nya_arena_print(NYA_Arena* arena);
  */
 
 // clang-format off
-#if (NYA_IS_DEBUG || defined(NYA_ARENA_FORCE_DEBUG)) && !defined(NYA_ARENA_FORCE_NODEBUG)
 NYA_API NYA_EXTERN NYA_Arena  _nya_arena_debug_new_with_options(NYA_ArenaOptions options, const char* function, const char* file, u32 line) __attr_no_discard;
 NYA_API NYA_EXTERN void*      _nya_arena_debug_alloc(NYA_Arena* arena, u64 size, const char* function, const char* file, u32 line) __attr_malloc __attr_no_discard;
 NYA_API NYA_EXTERN void*      _nya_arena_debug_realloc(NYA_Arena* arena, void* ptr, u64 old_size, u64 new_size, const char* function, const char* file, u32 line) __attr_no_discard;
@@ -128,7 +185,7 @@ NYA_API NYA_EXTERN void       _nya_arena_debug_garbage_collect(NYA_Arena* arena,
 NYA_API NYA_EXTERN void       _nya_arena_debug_destroy(NYA_Arena* arena, const char* function, const char* file, u32 line);
 NYA_API NYA_EXTERN void*      _nya_arena_debug_copy(NYA_Arena* dst, void* ptr, u64 size, const char* function, const char* file, u32 line) __attr_no_discard;
 NYA_API NYA_EXTERN void*      _nya_arena_debug_move(NYA_Arena* src, NYA_Arena* dst, void* ptr, u64 size, const char* function, const char* file, u32 line) __attr_no_discard;
-#else
+
 NYA_API NYA_EXTERN NYA_Arena  _nya_arena_nodebug_new_with_options(NYA_ArenaOptions options) __attr_no_discard;
 NYA_API NYA_EXTERN void*      _nya_arena_nodebug_alloc(NYA_Arena* arena, u64 size) __attr_malloc __attr_no_discard;
 NYA_API NYA_EXTERN void*      _nya_arena_nodebug_realloc(NYA_Arena* arena, void* ptr, u64 old_size, u64 new_size) __attr_no_discard;
@@ -138,7 +195,6 @@ NYA_API NYA_EXTERN void       _nya_arena_nodebug_garbage_collect(NYA_Arena* aren
 NYA_API NYA_EXTERN void       _nya_arena_nodebug_destroy(NYA_Arena* arena);
 NYA_API NYA_EXTERN void*      _nya_arena_nodebug_copy(NYA_Arena* dst, void* ptr, u64 size) __attr_no_discard;
 NYA_API NYA_EXTERN void*      _nya_arena_nodebug_move(NYA_Arena* src, NYA_Arena* dst, void* ptr, u64 size) __attr_no_discard;
-#endif // (NYA_IS_DEBUG || defined(NYA_ARENA_FORCE_DEBUG)) && !defined(NYA_ARENA_FORCE_NODEBUG)
 // clang-format on
 
 NYA_DEFINE_CLEANUP_FN(nya_arena_destroy, NYA_Arena, arena, nya_arena_destroy(&arena))

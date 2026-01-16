@@ -2,6 +2,7 @@
  * THIS FILE WAS CLANKER WANKED !!!
  **/
 
+#include "nyangine/base/base_arena.h"
 #include "nyangine/nyangine.c"
 #include "nyangine/nyangine.h"
 
@@ -422,6 +423,67 @@ s32 main(void) {
 
     nya_arena_destroy(&stress);
   }
+
+  // NYA_MemoryActionArray* actions = nya_arena_get_memory_actions();
+  // nya_array_foreach (actions, action) {
+  //   switch (action->type) {
+  //     case NYA_MEMORY_ACTION_ALLOC: {
+  //       printf(
+  //           "Memory Action - ALLOC: Arena='%s', Function='%s', File='%s', Line=%u, Ptr=%p, Size=" FMTu64 "\n",
+  //           action->arena_name,
+  //           action->function_name,
+  //           action->file_name,
+  //           action->line_number,
+  //           action->alloc.ptr,
+  //           action->alloc.size
+  //       );
+  //     } break;
+  //     case NYA_MEMORY_ACTION_REALLOC: {
+  //       printf(
+  //           "Memory Action - REALLOC: Arena='%s', Function='%s', File='%s', Line=%u, OldPtr=%p, OldSize=" FMTu64
+  //           ", NewPtr=%p, NewSize=" FMTu64 " \n",
+  //           action->arena_name,
+  //           action->function_name,
+  //           action->file_name,
+  //           action->line_number,
+  //           action->realloc.old_ptr,
+  //           action->realloc.old_size,
+  //           action->realloc.new_ptr,
+  //           action->realloc.new_size
+  //       );
+  //     } break;
+  //     case NYA_MEMORY_ACTION_FREE: {
+  //       printf(
+  //           "Memory Action - FREE: Arena='%s', Function='%s', File='%s', Line=%u, Ptr=%p, Size=" FMTu64 "\n",
+  //           action->arena_name,
+  //           action->function_name,
+  //           action->file_name,
+  //           action->line_number,
+  //           action->free.ptr,
+  //           action->free.size
+  //       );
+  //     } break;
+  //     case NYA_MEMORY_ACTION_FREE_ALL: {
+  //       printf(
+  //           "Memory Action - FREEALL: Arena='%s', Function='%s', File='%s', Line=%u",
+  //           action->arena_name,
+  //           action->function_name,
+  //           action->file_name,
+  //           action->line_number
+  //       );
+  //     } break;
+  //     case NYA_MEMORY_ACTION_GARBAGE_COLLECT: {
+  //       printf(
+  //           "Memory Action - GARBAGE_COLLECT: Arena='%s', Function='%s', File='%s', Line=%u",
+  //           action->arena_name,
+  //           action->function_name,
+  //           action->file_name,
+  //           action->line_number
+  //       );
+  //     } break;
+  //     default: break;
+  //   }
+  // }
 
   return 0;
 }
