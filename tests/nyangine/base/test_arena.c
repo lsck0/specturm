@@ -481,6 +481,51 @@ s32 main(void) {
   //           action->line_number
   //       );
   //     } break;
+  //     case NYA_MEMORY_ACTION_ARENA_NEW: {
+  //       printf(
+  //           "Memory Action - ARENA_NEW: Arena='%s', Function='%s', File='%s', Line=%u",
+  //           action->arena_name,
+  //           action->function_name,
+  //           action->file_name,
+  //           action->line_number
+  //       );
+  //     } break;
+  //     case NYA_MEMORY_ACTION_ARENA_DESTROY: {
+  //       printf(
+  //           "Memory Action - ARENA_DESTROY: Arena='%s', Function='%s', File='%s', Line=%u",
+  //           action->arena_name,
+  //           action->function_name,
+  //           action->file_name,
+  //           action->line_number
+  //       );
+  //     } break;
+  //     case NYA_MEMORY_ACTION_COPY: {
+  //       printf(
+  //           "Memory Action - COPY: Arena='%s', Function='%s', File='%s', Line=%u, Ptr=%p, Size=" FMTu64
+  //           ", CopyPtr=%p\n",
+  //           action->arena_name,
+  //           action->function_name,
+  //           action->file_name,
+  //           action->line_number,
+  //           action->copy.ptr,
+  //           action->copy.size,
+  //           action->copy.copy_ptr
+  //       );
+  //     } break;
+  //     case NYA_MEMORY_ACTION_MOVE: {
+  //       printf(
+  //           "Memory Action - MOVE: SrcArena='%s', Function='%s', File='%s', Line=%u, Ptr=%p, Size=" FMTu64
+  //           ", DstArena='%s', DstPtr=%p\n",
+  //           action->arena_name,
+  //           action->function_name,
+  //           action->file_name,
+  //           action->line_number,
+  //           action->move.ptr,
+  //           action->move.size,
+  //           action->move.target_arena_name,
+  //           action->move.target_ptr
+  //       );
+  //     } break;
   //     default: break;
   //   }
   // }
