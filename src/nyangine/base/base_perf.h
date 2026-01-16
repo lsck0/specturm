@@ -20,10 +20,16 @@ nya_derive_array(NYA_PerfMeasurement);
 struct NYA_PerfMeasurement {
   NYA_ConstCString name;
   b8               is_running;
-  u64              started[NYA_PERF_MEASUREMENT_SAMPLES];
-  u64              ended[NYA_PERF_MEASUREMENT_SAMPLES];
-  u64              elapsed_ms[NYA_PERF_MEASUREMENT_SAMPLES];
-  u64              current;
+
+  u64 started_ms[NYA_PERF_MEASUREMENT_SAMPLES];
+  u64 ended_ms[NYA_PERF_MEASUREMENT_SAMPLES];
+  u64 elapsed_ms[NYA_PERF_MEASUREMENT_SAMPLES];
+
+  u64 started_cycles[NYA_PERF_MEASUREMENT_SAMPLES];
+  u64 ended_cycles[NYA_PERF_MEASUREMENT_SAMPLES];
+  u64 elapsed_cycles[NYA_PERF_MEASUREMENT_SAMPLES];
+
+  u64 current;
 };
 
 /*

@@ -1,7 +1,5 @@
 * PLAN
 
-- [ ] implement arena allocation tracking
-- [ ] rework perf module
 - [ ] uuid generation
 - [ ] input and event system
 - [ ] 2d render primitives: shapes (reference raylib), texts, images
