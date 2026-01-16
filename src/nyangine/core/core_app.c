@@ -1,9 +1,7 @@
-#include "nyangine/core/core_app.h"
-
 #include "SDL3/SDL_init.h"
 #include "SDL3/SDL_timer.h"
 
-#include "nyangine/base/base_array.h"
+#include "nyangine/nyangine.h"
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -11,7 +9,9 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_App nya_app_new(NYA_AppConfig config) {
+void nya_app_init(NYA_App* app, NYA_AppConfig config) {
+  nya_assert(app);
+
   b8 ok = SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO | SDL_INIT_AUDIO);
   nya_assert(ok, "SDL_Init() failed: %s", SDL_GetError());
 
@@ -22,7 +22,7 @@ NYA_App nya_app_new(NYA_AppConfig config) {
   );
   nya_assert(gpu_device != nullptr, "SDL_CreateGPUDevice() failed: %s", SDL_GetError());
 
-  NYA_App app = {
+  *app = (NYA_App){
       .config                = config,
       .global_allocator      = nya_arena_new(.name = "global_allocator"),
       .entity_allocator      = nya_arena_new(.name = "entity_allocator", .defragmentation_enabled = false),
@@ -34,12 +34,6 @@ NYA_App nya_app_new(NYA_AppConfig config) {
       .should_quit_game_loop = false,
   };
 
-  return app;
-}
-
-void nya_app_init(NYA_App* app) {
-  nya_assert(app);
-  // Initialize windows array after app is at its final address
   app->windows = nya_array_new(&app->global_allocator, NYA_Window);
 }
 
@@ -96,7 +90,6 @@ void nya_app_run(NYA_App* app) {
 
             if (SDL_GetWindowID(sdl_window) == event.window.windowID) {
               nya_window_destroy(app, window_id);
-              nya_array_remove(&app->windows, window_idx);
               if (app->windows.length == 0) app->should_quit_game_loop = true;
               break;
             }
@@ -104,11 +97,25 @@ void nya_app_run(NYA_App* app) {
         }
 
         // propagate sdl event to layers
-        // TODO: event and input system
         nya_array_foreach (&app->windows, window) {
           nya_array_foreach_reverse (&window->layer_stack, layer) {
             if (layer->enabled && layer->on_event != nullptr) {
-              NYA_Event nya_event = {0};
+              NYA_Event nya_event = nya_event_from_sdl_event(&event);
+              layer->on_event(window, &nya_event);
+              if (nya_event.was_handled) break;
+            }
+          }
+        }
+      }
+    }
+
+    // poll our own event system
+    {
+      NYA_Event nya_event;
+      while (nya_event_poll(&nya_event)) {
+        nya_array_foreach (&app->windows, window) {
+          nya_array_foreach_reverse (&window->layer_stack, layer) {
+            if (layer->enabled && layer->on_event != nullptr) {
               layer->on_event(window, &nya_event);
               if (nya_event.was_handled) break;
             }

@@ -11,7 +11,7 @@
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- * TYPE DEFINITIONS
+ * TYPES
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
@@ -21,6 +21,12 @@ typedef struct NYA_App       NYA_App;
 typedef struct NYA_AppConfig NYA_AppConfig;
 nya_derive_array(NYA_Layer);
 nya_derive_array(NYA_Window);
+
+/*
+ * ─────────────────────────────────────────────────────────
+ * APP STRUCT
+ * ─────────────────────────────────────────────────────────
+ */
 
 struct NYA_AppConfig {
   u32 time_step_ms;
@@ -44,6 +50,12 @@ struct NYA_App {
   b8  should_quit_game_loop;
 };
 
+/*
+ * ─────────────────────────────────────────────────────────
+ * WINDOW STRUCT
+ * ─────────────────────────────────────────────────────────
+ */
+
 typedef enum {
   NYA_WINDOW_NONE      = 0,
   NYA_WINDOW_RESIZABLE = SDL_WINDOW_RESIZABLE,
@@ -55,6 +67,12 @@ struct NYA_Window {
 
   NYA_LayerArray layer_stack;
 };
+
+/*
+ * ─────────────────────────────────────────────────────────
+ * LAYER STRUCT
+ * ─────────────────────────────────────────────────────────
+ */
 
 struct NYA_Layer {
   void* id;
@@ -69,29 +87,41 @@ struct NYA_Layer {
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- * APP FUNCTIONS
+ * FUNCTIONS
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_API NYA_EXTERN NYA_App nya_app_new(NYA_AppConfig config);
-NYA_API NYA_EXTERN void    nya_app_init(NYA_App* app);
-NYA_API NYA_EXTERN void    nya_app_destroy(NYA_App* app);
-NYA_API NYA_EXTERN void    nya_app_options_update(NYA_App* app, NYA_AppConfig config);
-NYA_API NYA_EXTERN void    nya_app_run(NYA_App* app);
+/*
+ * ─────────────────────────────────────────────────────────
+ * APP FUNCTIONS
+ * ─────────────────────────────────────────────────────────
+ */
+
+NYA_API NYA_EXTERN void nya_app_init(NYA_App* app, NYA_AppConfig config);
+NYA_API NYA_EXTERN void nya_app_destroy(NYA_App* app);
+NYA_API NYA_EXTERN void nya_app_options_update(NYA_App* app, NYA_AppConfig config);
+NYA_API NYA_EXTERN void nya_app_run(NYA_App* app);
 
 /*
- * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * ─────────────────────────────────────────────────────────
  * WINDOW FUNCTIONS
- * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * ─────────────────────────────────────────────────────────
  */
 
 // clang-format off
 NYA_API NYA_EXTERN void*       nya_window_new(NYA_App* app, const char* title, u32 initial_width, u32 initial_height, NYA_WindowFlags flags, void* id);
 NYA_API NYA_EXTERN void        nya_window_destroy(NYA_App* app, void* window_id);
 NYA_API NYA_EXTERN NYA_Window* nya_window_get(NYA_App* app, void* window_id);
-NYA_API NYA_EXTERN NYA_Layer*  nya_window_layer_get(NYA_App* app, void* window_id, void* layer_id);
-NYA_API NYA_EXTERN void        nya_window_layer_enable(NYA_App* app, void* window_id, void* layer_id);
-NYA_API NYA_EXTERN void        nya_window_layer_disable(NYA_App* app, void* window_id, void* layer_id);
-NYA_API NYA_EXTERN void        nya_window_layer_push(NYA_App* app, void* window_id, NYA_Layer layer);
-NYA_API NYA_EXTERN NYA_Layer   nya_window_layer_pop(NYA_App* app, void* window_id);
 // clang-format on
+
+/*
+ * ─────────────────────────────────────────────────────────
+ * LAYER FUNCTIONS
+ * ─────────────────────────────────────────────────────────
+ */
+
+NYA_API NYA_EXTERN NYA_Layer* nya_layer_get(NYA_App* app, void* window_id, void* layer_id);
+NYA_API NYA_EXTERN void       nya_layer_enable(NYA_App* app, void* window_id, void* layer_id);
+NYA_API NYA_EXTERN void       nya_layer_disable(NYA_App* app, void* window_id, void* layer_id);
+NYA_API NYA_EXTERN void       nya_layer_push(NYA_App* app, void* window_id, NYA_Layer layer);
+NYA_API NYA_EXTERN NYA_Layer  nya_layer_pop(NYA_App* app, void* window_id);

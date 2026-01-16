@@ -15,17 +15,20 @@ NYA_INTERNAL NYA_App NYA_APP_INSTANCE;
 void gnyame_setup(s32 argc, char** argv) {
   nya_unused(argc, argv);
 
-  NYA_APP_INSTANCE = nya_app_new((NYA_AppConfig){
-      .time_step_ms     = 15,
-      .frame_rate_limit = 120,
-      .vsync_enabled    = false,
-  });
-  nya_app_init(&NYA_APP_INSTANCE);
-
-  nya_window_new(&NYA_APP_INSTANCE, "gnyame", 1280, 720, NYA_WINDOW_RESIZABLE, "main_window");
-  nya_window_layer_push(
+  nya_app_init(
       &NYA_APP_INSTANCE,
-      "main_window",
+      (NYA_AppConfig){
+          .time_step_ms     = 15,
+          .frame_rate_limit = 120,
+          .vsync_enabled    = false,
+      }
+  );
+
+  nya_window_new(&NYA_APP_INSTANCE, "gnyame", 1280, 720, NYA_WINDOW_RESIZABLE, "window");
+  nya_window_new(&NYA_APP_INSTANCE, "gnyame2", 1280, 720, NYA_WINDOW_RESIZABLE, "window2");
+  nya_layer_push(
+      &NYA_APP_INSTANCE,
+      "window",
       (NYA_Layer){
           .id         = "main_layer",
           .enabled    = true,

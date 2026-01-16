@@ -1,13 +1,17 @@
 #include "SDL3/SDL_gpu.h"
 
-#include "nyangine/base/base_assert.h"
-#include "nyangine/base/base_types.h"
-#include "nyangine/core/core_app.h"
+#include "nyangine/nyangine.h"
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  * PUBLIC API IMPLEMENTATION
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+/*
+ * ─────────────────────────────────────────────────────────
+ * WINDOW FUNCTIONS
+ * ─────────────────────────────────────────────────────────
  */
 
 void* nya_window_new(
@@ -66,6 +70,14 @@ void nya_window_destroy(NYA_App* app, void* window_id) {
   SDL_WaitForGPUIdle(app->gpu_device);
   SDL_ReleaseWindowFromGPUDevice(app->gpu_device, window->sdl_window);
   SDL_DestroyWindow(window->sdl_window);
+
+  nya_array_for (&app->windows, window_index) {
+    NYA_Window* window = &app->windows.items[window_index];
+    if (window->id == window_id) {
+      nya_array_remove(&app->windows, window_index);
+      return;
+    }
+  }
 }
 
 NYA_Window* nya_window_get(NYA_App* app, void* window_id) {
@@ -76,11 +88,17 @@ NYA_Window* nya_window_get(NYA_App* app, void* window_id) {
     if (window->id == window_id) return window;
   }
 
-  nya_panic("Cannot get window: window with id %p not found", window_id);
+  nya_panic("Cannot get window: window with id %p not found.", window_id);
   nya_unreachable();
 }
 
-NYA_Layer* nya_window_layer_get(NYA_App* app, void* window_id, void* layer_id) {
+/*
+ * ─────────────────────────────────────────────────────────
+ * LAYER FUNCTIONS
+ * ─────────────────────────────────────────────────────────
+ */
+
+NYA_Layer* nya_layer_get(NYA_App* app, void* window_id, void* layer_id) {
   nya_assert(app);
   nya_assert(window_id);
   nya_assert(layer_id);
@@ -90,29 +108,29 @@ NYA_Layer* nya_window_layer_get(NYA_App* app, void* window_id, void* layer_id) {
     if (layer->id == layer_id) return layer;
   }
 
-  nya_panic("Cannot get layer: layer with id %p not found", layer_id);
+  nya_panic("Cannot get layer: layer with id %p not found.", layer_id);
   nya_unreachable();
 }
 
-void nya_window_layer_enable(NYA_App* app, void* window_id, void* layer_id) {
+void nya_layer_enable(NYA_App* app, void* window_id, void* layer_id) {
   nya_assert(app);
   nya_assert(window_id);
   nya_assert(layer_id);
 
-  NYA_Layer* layer = nya_window_layer_get(app, window_id, layer_id);
+  NYA_Layer* layer = nya_layer_get(app, window_id, layer_id);
   layer->enabled   = true;
 }
 
-void nya_window_layer_disable(NYA_App* app, void* window_id, void* layer_id) {
+void nya_layer_disable(NYA_App* app, void* window_id, void* layer_id) {
   nya_assert(app);
   nya_assert(window_id);
   nya_assert(layer_id);
 
-  NYA_Layer* layer = nya_window_layer_get(app, window_id, layer_id);
+  NYA_Layer* layer = nya_layer_get(app, window_id, layer_id);
   layer->enabled   = false;
 }
 
-void nya_window_layer_push(NYA_App* app, void* window_id, NYA_Layer layer) {
+void nya_layer_push(NYA_App* app, void* window_id, NYA_Layer layer) {
   nya_assert(window_id);
 
   NYA_Window* window = nya_window_get(app, window_id);
@@ -122,12 +140,12 @@ void nya_window_layer_push(NYA_App* app, void* window_id, NYA_Layer layer) {
   nya_array_push_back(&window->layer_stack, layer);
 }
 
-NYA_Layer nya_window_layer_pop(NYA_App* app, void* window_id) {
+NYA_Layer nya_layer_pop(NYA_App* app, void* window_id) {
   nya_assert(app);
   nya_assert(window_id);
 
   NYA_Window* window = nya_window_get(app, window_id);
-  nya_assert(window->layer_stack.length > 0, "Cannot pop layer: layer stack is empty");
+  nya_assert(window->layer_stack.length > 0, "Cannot pop layer: layer stack is empty.");
 
   NYA_Layer layer = nya_array_last(&window->layer_stack);
   if (layer.on_destroy != nullptr) layer.on_destroy();

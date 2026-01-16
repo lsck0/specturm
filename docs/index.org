@@ -1,6 +1,8 @@
 * PLAN
 
-- [ ] input and event system
+- [ ] think how systems should be designed
+- [ ] event system
+- [ ] input system
 - [ ] 2d render primitives: shapes (reference raylib), texts, images
 - [ ] ui system: widgets, layout, styling
 - [ ] resource management (asset pipeline, hot-reloading, async streaming -> job system?)
