@@ -62,8 +62,10 @@ AttributeMacros:
   - __attr_malloc
   - __attr_matrix
   - __attr_no_discard
+  - __attr_no_sanitize
   - __attr_noreturn
   - __attr_overloaded
+  - __attr_unused
   - __attr_vector
 ForEachMacros:
   - nya_array_for
