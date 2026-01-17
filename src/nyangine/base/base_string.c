@@ -356,6 +356,31 @@ void nya_string_extend(NYA_String* str, const NYA_String* extension) __attr_over
   str->length = new_length;
 }
 
+void nya_string_extend_front(NYA_String* str, NYA_ConstCString extension) __attr_overloaded {
+  nya_assert(str);
+  nya_assert(extension);
+
+  u64 extension_length = strlen(extension);
+  u64 new_length       = str->length + extension_length;
+
+  nya_array_reserve(str, new_length);
+  nya_memmove(str->items + extension_length, str->items, str->length);
+  nya_memmove(str->items, extension, extension_length);
+  str->length = new_length;
+}
+
+void nya_string_extend_front(NYA_String* str, const NYA_String* extension) __attr_overloaded {
+  nya_assert(str);
+  nya_assert(extension);
+
+  u64 new_length = str->length + extension->length;
+
+  nya_array_reserve(str, new_length);
+  nya_memmove(str->items + extension->length, str->items, str->length);
+  nya_memmove(str->items, extension->items, extension->length);
+  str->length = new_length;
+}
+
 void nya_string_destroy(NYA_String* str) {
   nya_array_destroy(str);
 }

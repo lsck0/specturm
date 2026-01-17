@@ -43,9 +43,11 @@ NYA_API NYA_EXTERN NYA_StringArray nya_string_split_words(NYA_Arena* arena, cons
 NYA_API NYA_EXTERN u64             nya_string_count(const NYA_String* str, NYA_ConstCString substr) __attr_overloaded;
 NYA_API NYA_EXTERN u64             nya_string_count(const NYA_String* str, const NYA_String* substr) __attr_overloaded;
 NYA_API NYA_EXTERN void            nya_string_clear(NYA_String* str);
+NYA_API NYA_EXTERN void            nya_string_destroy(NYA_String *str);
 NYA_API NYA_EXTERN void            nya_string_extend(NYA_String* str, NYA_ConstCString extension) __attr_overloaded;
 NYA_API NYA_EXTERN void            nya_string_extend(NYA_String* str, const NYA_String* extension) __attr_overloaded;
-NYA_API NYA_EXTERN void            nya_string_destroy(NYA_String *str);
+NYA_API NYA_EXTERN void            nya_string_extend_front(NYA_String* str, NYA_ConstCString extension) __attr_overloaded;
+NYA_API NYA_EXTERN void            nya_string_extend_front(NYA_String* str, const NYA_String* extension) __attr_overloaded;
 NYA_API NYA_EXTERN void            nya_string_print(const NYA_String* str);
 NYA_API NYA_EXTERN void            nya_string_println(const NYA_String* str);
 NYA_API NYA_EXTERN void            nya_string_remove(NYA_String* str, NYA_ConstCString substr) __attr_overloaded;

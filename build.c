@@ -1,3 +1,4 @@
+#include "nyangine/base/base_string.h"
 #include "nyangine/nyangine.c"
 #include "nyangine/nyangine.h"
 
@@ -35,6 +36,7 @@
 #define FLAGS_LINUX_X86_64   "-L./vendor/sdl/build-linux-x86_64/", "-L./vendor/steam/redistributable_bin/linux64/", "-Wl,-rpath,$ORIGIN/vendor/steam/redistributable_bin/linux64", "-lsteam_api"
 // clang-format on
 
+NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule);
 NYA_INTERNAL void hook_add_version_flag_and_git_hash(NYA_BuildRule* rule);
 NYA_INTERNAL void hook_convert_perf_data_to_plain(NYA_BuildRule* rule);
 NYA_INTERNAL void hook_remove_output_file(NYA_BuildRule* rule);
@@ -202,6 +204,13 @@ NYA_BuildRule build_windows_icon = {
     },
 };
 
+NYA_BuildRule build_shaders = {
+    .name            = "build_shaders",
+    .is_metarule     = true,
+    .dependencies    = { &build_shadercross_linux_x86_64, },
+    .pre_build_hooks = { &hook_compile_shaders, },
+};
+
 /*
  * ─────────────────────────────────────────────────────────
  * PROJECT BUILD RULES
@@ -252,7 +261,7 @@ NYA_BuildRule build_project_debug_dll = {
     },
 
     .pre_build_hooks = { &hook_add_version_flag_and_git_hash, },
-    .dependencies    = { &build_linux_x64_64_sdl, },
+    .dependencies    = { &build_linux_x64_64_sdl, &build_shaders, },
 };
 
 NYA_BuildRule build_project_debug = {
@@ -439,6 +448,103 @@ NYA_BuildRule update_submodules = {
  * HOOKS
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
+
+NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
+  nya_assert(rule);
+
+  NYA_Command find_source_shaders = {
+      .arena     = &nya_arena_global,
+      .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
+      .program   = "find",
+      .arguments = {"./assets/shaders/source/", "-name", "*.hlsl"},
+  };
+  nya_command_run(&find_source_shaders);
+  NYA_StringArray shaders = nya_string_split_lines(&nya_arena_global, &find_source_shaders.stdout_content);
+
+  nya_array_foreach (&shaders, shader) {
+    NYA_CString source = nya_string_to_cstring(&nya_arena_global, shader);
+    nya_string_strip_prefix(shader, "./assets/shaders/source/");
+    nya_string_strip_suffix(shader, ".hlsl");
+
+    nya_string_extend_front(shader, "./assets/shaders/compiled/DXIL/");
+    nya_string_extend(shader, ".dxil");
+    NYA_CString target_dxil = nya_string_to_cstring(&nya_arena_global, shader);
+    nya_string_strip_prefix(shader, "./assets/shaders/compiled/DXIL/");
+    nya_string_strip_suffix(shader, ".dxil");
+
+    nya_string_extend_front(shader, "./assets/shaders/compiled/MSL/");
+    nya_string_extend(shader, ".mls");
+    NYA_CString target_metal = nya_string_to_cstring(&nya_arena_global, shader);
+    nya_string_strip_suffix(shader, ".mls");
+    nya_string_strip_prefix(shader, "./assets/shaders/compiled/MSL/");
+
+    nya_string_extend_front(shader, "./assets/shaders/compiled/SPIRV/");
+    nya_string_extend(shader, ".spv");
+    NYA_CString target_spirv = nya_string_to_cstring(&nya_arena_global, shader);
+    nya_string_strip_suffix(shader, ".spv");
+    nya_string_strip_prefix(shader, "./assets/shaders/compiled/SPIRV/");
+
+    // clang-format off
+    // compile to DXIL
+    NYA_String    compile_to_dxil_name = nya_string_sprintf(&nya_arena_global, "%s -> %s", source, target_dxil);
+    NYA_BuildRule compile_to_dxil      = {
+        .name        = nya_string_to_cstring(&nya_arena_global, &compile_to_dxil_name),
+        .policy      = NYA_BUILD_IF_OUTDATED,
+        .input_file  = source,
+        .output_file = target_dxil,
+        .command = {
+            .program = "./vendor/sdl-shadercross/build/shadercross",
+            .arguments = {
+                source,
+                "-o", target_dxil,
+                "-s", "hlsl",
+                "-d", "dxil",
+            },
+        },
+    };
+    nya_build(&compile_to_dxil);
+
+    // compile to Metal
+    NYA_String    compile_to_metal_name = nya_string_sprintf(&nya_arena_global, "%s -> %s", source, target_metal);
+    NYA_BuildRule compile_to_metal      = {
+        .name        = nya_string_to_cstring(&nya_arena_global, &compile_to_metal_name),
+        .policy      = NYA_BUILD_IF_OUTDATED,
+        .input_file  = source,
+        .output_file = target_metal,
+        .command = {
+            .program = "./vendor/sdl-shadercross/build/shadercross",
+            .arguments = {
+                source,
+                "-o", target_metal,
+                "-s", "hlsl",
+                "-d", "msl",
+            },
+        },
+    };
+
+    nya_build(&compile_to_metal);
+
+    // compile to SPIR-V
+    NYA_String    compile_to_spirv_name = nya_string_sprintf(&nya_arena_global, "%s -> %s", source, target_spirv);
+    NYA_BuildRule compile_to_spirv      = {
+        .name        = nya_string_to_cstring(&nya_arena_global, &compile_to_spirv_name),
+        .policy      = NYA_BUILD_IF_OUTDATED,
+        .input_file  = source,
+        .output_file = target_spirv,
+        .command = {
+            .program = "./vendor/sdl-shadercross/build/shadercross",
+            .arguments = {
+                source,
+                "-o", target_spirv,
+                "-s", "hlsl",
+                "-d", "spirv",
+            },
+        },
+    };
+    nya_build(&compile_to_spirv);
+    // clang-format off
+  }
+}
 
 NYA_INTERNAL void hook_add_version_flag_and_git_hash(NYA_BuildRule* rule) {
   nya_assert(rule);

@@ -25,7 +25,6 @@ void gnyame_setup(s32 argc, char** argv) {
   );
 
   nya_window_new(&NYA_APP_INSTANCE, "gnyame", 1280, 720, NYA_WINDOW_RESIZABLE, "window");
-  nya_window_new(&NYA_APP_INSTANCE, "gnyame2", 1280, 720, NYA_WINDOW_RESIZABLE, "window2");
   nya_layer_push(
       &NYA_APP_INSTANCE,
       "window",

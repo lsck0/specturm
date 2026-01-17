@@ -357,6 +357,30 @@ s32 main(void) {
   nya_assert(reserve_str.capacity >= 256);
 
   // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: nya_string_extend_front (cstring overload)
+  // ─────────────────────────────────────────────────────────────────────────────
+  NYA_String extend_front_str = nya_string_from(&arena, "world");
+  nya_string_extend_front(&extend_front_str, "hello ");
+  nya_assert(nya_string_equals(&extend_front_str, "hello world") == true);
+
+  NYA_String extend_front_empty = nya_string_new(&arena);
+  nya_string_extend_front(&extend_front_empty, "prefix");
+  nya_assert(nya_string_equals(&extend_front_empty, "prefix") == true);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: nya_string_extend_front (NYA_String overload)
+  // ─────────────────────────────────────────────────────────────────────────────
+  NYA_String extend_front_str2 = nya_string_from(&arena, "bar");
+  NYA_String ext_front         = nya_string_from(&arena, "foo");
+  nya_string_extend_front(&extend_front_str2, &ext_front);
+  nya_assert(nya_string_equals(&extend_front_str2, "foobar") == true);
+
+  NYA_String extend_front_empty2 = nya_string_new(&arena);
+  NYA_String ext_front2          = nya_string_from(&arena, "start");
+  nya_string_extend_front(&extend_front_empty2, &ext_front2);
+  nya_assert(nya_string_equals(&extend_front_empty2, "start") == true);
+
+  // ─────────────────────────────────────────────────────────────────────────────
   // TEST: edge cases - single character
   // ─────────────────────────────────────────────────────────────────────────────
   NYA_String single = nya_string_from(&arena, "x");
