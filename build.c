@@ -1,4 +1,3 @@
-#include "nyangine/base/base_string.h"
 #include "nyangine/nyangine.c"
 #include "nyangine/nyangine.h"
 
@@ -23,7 +22,7 @@
 #define CC            "clang"
 #define CFLAGS        "-std=c23", "-ggdb", "-fenable-matrix", "-mavx", "-mavx2"
 #define WARNINGS      "-pedantic", "-Wall", "-Wextra", "-Wpedantic", "-Wno-gnu", "-Wno-gcc-compat", "-Wno-initializer-overrides", "-Wno-keyword-macro"
-#define INCLUDE_PATHS "-I./src/", "-I./vendor/sdl/include/", "-I./vendor/steam/public/"
+#define INCLUDE_PATHS "-I./src/", "-I./vendor/sdl/include/"
 #define LINKER_FLAGS  "-lm", "-pthread", "-lSDL3"
 #define NPROCS        "16"
 
@@ -32,8 +31,8 @@
 #define FLAGS_DLL       "-fPIC", "-shared"
 #define FLAGS_RELEASE   "-O3", "-D_FORTIFY_SOURCE=2", "-fno-omit-frame-pointer", "-fstack-protector-strong", "-Wl,-rpath,$ORIGIN"
 
-#define FLAGS_WINDOWS_X86_64 "--target=x86_64-w64-mingw32", "-Wl,-subsystem,windows", "-static", "-L./vendor/sdl/build-window-x86_64/", "-L./vendor/steam/redistributable_bin/win64/", "-Wl,-rpath,$ORIGIN/vendor/steam/redistributable_bin/win64", "-lsteam_api64", "-lcomdlg32", "-ldxguid", "-lgdi32", "-limm32", "-lkernel32", "-lole32", "-loleaut32", "-lsetupapi", "-luser32", "-luuid", "-lversion", "-lwinmm"
-#define FLAGS_LINUX_X86_64   "-L./vendor/sdl/build-linux-x86_64/", "-L./vendor/steam/redistributable_bin/linux64/", "-Wl,-rpath,$ORIGIN/vendor/steam/redistributable_bin/linux64", "-lsteam_api"
+#define FLAGS_WINDOWS_X86_64 "--target=x86_64-w64-mingw32", "-Wl,-subsystem,windows", "-static", "-L./vendor/sdl/build-window-x86_64/", "-lcomdlg32", "-ldxguid", "-lgdi32", "-limm32", "-lkernel32", "-lole32", "-loleaut32", "-lsetupapi", "-luser32", "-luuid", "-lversion", "-lwinmm"
+#define FLAGS_LINUX_X86_64   "-L./vendor/sdl/build-linux-x86_64/"
 // clang-format on
 
 NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule);
@@ -59,6 +58,7 @@ NYA_Command build_rebuild_command = {
         WARNINGS,
         INCLUDE_PATHS,
         LINKER_FLAGS,
+        FLAGS_LINUX_X86_64,
     },
 };
 

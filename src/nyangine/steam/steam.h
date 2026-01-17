@@ -1,0 +1,42 @@
+/* THIS IS NOT YET USED.
+ * To properly use the Steamworks SDK, a few flags have to be added in the build system as well as the corresponding
+ * steam_api dll has to be shipped too.
+ *
+ * - Linux Flags:
+ * "-L./vendor/steam/redistributable_bin/linux64/", "-Wl,-rpath,$ORIGIN/vendor/steam/redistributable_bin/linux64",
+ * "-lsteam_api"
+ *
+ * - Windows Flags:
+ * "-L./vendor/steam/redistributable_bin/win64/", "-Wl,-rpath,$ORIGIN/vendor/steam/redistributable_bin/win64",
+ * "-lsteam_api64"
+ */
+
+#pragma once
+
+#include "nyangine/base/base_string.h"
+#include "nyangine/base/base_types.h"
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * TYPES
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+typedef enum {
+  NYA_STEAM_INIT_OK               = 0,
+  NYA_STEAM_INIT_FAILED_GENERIC   = 1,
+  NYA_STEAM_INIT_NO_STEAM_CLIENT  = 2,
+  NYA_STEAM_INIT_VERSION_MISMATCH = 3,
+} NYA_SteamInitResult;
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * FUNCTIONS
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+NYA_API NYA_EXTERN NYA_SteamInitResult nya_steam_init(OUT NYA_CString err_msg);
+NYA_API NYA_EXTERN void                nya_steam_shutdown(void);
+NYA_API NYA_EXTERN b8                  nya_steam_is_running(void);
+NYA_API NYA_EXTERN void                nya_steam_run_callbacks(void);
+NYA_API NYA_EXTERN b8                  nya_steam_restart_app_if_necessary(u32 app_id);
