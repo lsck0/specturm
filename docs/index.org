@@ -13,6 +13,5 @@
 
 * OTHER TODOs
 
-- [ ] integrate steam sdk
 - [ ] entity ai utils: state machines, behavior trees
 - [ ] basic nn library: tensors, layers, autograd --> NEAT implementation

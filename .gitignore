@@ -1,5 +1,6 @@
 assets/icons/icon.res
 assets/shaders/compiled/
+dist/
 docs/doxygen/
 
 build

@@ -22,22 +22,23 @@
 #define CC            "clang"
 #define CFLAGS        "-std=c23", "-ggdb", "-fenable-matrix", "-mavx", "-mavx2"
 #define WARNINGS      "-pedantic", "-Wall", "-Wextra", "-Wpedantic", "-Wno-gnu", "-Wno-gcc-compat", "-Wno-initializer-overrides", "-Wno-keyword-macro"
-#define INCLUDE_PATHS "-I./src/", "-I./vendor/sdl/include/"
+#define INCLUDE_PATHS "-I./src/", "-I./vendor/sdl/include/", "-I./vendor/steam/public/"
 #define LINKER_FLAGS  "-lm", "-pthread", "-lSDL3"
 #define NPROCS        "16"
 
 #define FLAGS_SANITIZE  "-fno-omit-frame-pointer", "-fno-optimize-sibling-calls", "-fno-sanitize-recover=all", "-fsanitize=address,leak,undefined,signed-integer-overflow,unsigned-integer-overflow,shift,float-cast-overflow,float-divide-by-zero,pointer-overflow"
 #define FLAGS_DEBUG     "-O0", "-DIS_DEBUG=true", "-rdynamic"
 #define FLAGS_DLL       "-fPIC", "-shared"
-#define FLAGS_RELEASE   "-O3", "-D_FORTIFY_SOURCE=2", "-fno-omit-frame-pointer", "-fstack-protector-strong"
+#define FLAGS_RELEASE   "-O3", "-D_FORTIFY_SOURCE=2", "-fno-omit-frame-pointer", "-fstack-protector-strong", "-Wl,-rpath,$ORIGIN"
 
-#define FLAGS_WINDOWS_X86_64 "--target=x86_64-w64-mingw32", "-Wl,-subsystem,windows", "-static", "-L./vendor/sdl/build-window-x86_64/", "-lcomdlg32", "-ldxguid", "-lgdi32", "-limm32", "-lkernel32", "-lole32", "-loleaut32", "-lsetupapi", "-luser32", "-luuid", "-lversion", "-lwinmm"
-#define FLAGS_LINUX_X86_64   "-L./vendor/sdl/build-linux-x86_64/"
+#define FLAGS_WINDOWS_X86_64 "--target=x86_64-w64-mingw32", "-Wl,-subsystem,windows", "-static", "-L./vendor/sdl/build-window-x86_64/", "-L./vendor/steam/redistributable_bin/win64/", "-Wl,-rpath,$ORIGIN/vendor/steam/redistributable_bin/win64", "-lsteam_api64", "-lcomdlg32", "-ldxguid", "-lgdi32", "-limm32", "-lkernel32", "-lole32", "-loleaut32", "-lsetupapi", "-luser32", "-luuid", "-lversion", "-lwinmm"
+#define FLAGS_LINUX_X86_64   "-L./vendor/sdl/build-linux-x86_64/", "-L./vendor/steam/redistributable_bin/linux64/", "-Wl,-rpath,$ORIGIN/vendor/steam/redistributable_bin/linux64", "-lsteam_api"
 // clang-format on
 
 NYA_INTERNAL void hook_add_version_flag_and_git_hash(NYA_BuildRule* rule);
 NYA_INTERNAL void hook_convert_perf_data_to_plain(NYA_BuildRule* rule);
 NYA_INTERNAL void hook_remove_output_file(NYA_BuildRule* rule);
+NYA_INTERNAL void hook_bundle_project(NYA_BuildRule* rule);
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -98,7 +99,7 @@ NYA_BuildRule build_linux_x64_64_sdl = {
         },
     },
 
-    .dependencies = { &build_prepare_linux_x86_64_sdl },
+    .dependencies = { &build_prepare_linux_x86_64_sdl, },
 };
 
 NYA_BuildRule build_prepare_windows_x86_64_sdl = {
@@ -143,7 +144,7 @@ NYA_BuildRule build_windows_x86_64_sdl = {
         },
     },
 
-    .dependencies = { &build_prepare_windows_x86_64_sdl },
+    .dependencies = { &build_prepare_windows_x86_64_sdl, },
 };
 
 NYA_BuildRule build_prepare_shadercross_linux_x86_64 = {
@@ -176,7 +177,7 @@ NYA_BuildRule build_shadercross_linux_x86_64 = {
         },
     },
 
-    .dependencies = { &build_prepare_shadercross_linux_x86_64 },
+    .dependencies = { &build_prepare_shadercross_linux_x86_64, },
 };
 
 /*
@@ -226,8 +227,8 @@ NYA_BuildRule build_project_debug_executable = {
         },
     },
 
-    .pre_build_hooks = { &hook_add_version_flag_and_git_hash },
-    .dependencies    = { &build_linux_x64_64_sdl },
+    .pre_build_hooks = { &hook_add_version_flag_and_git_hash, },
+    .dependencies    = { &build_linux_x64_64_sdl, },
 };
 
 NYA_BuildRule build_project_debug_dll = {
@@ -250,8 +251,8 @@ NYA_BuildRule build_project_debug_dll = {
         },
     },
 
-    .pre_build_hooks = { &hook_add_version_flag_and_git_hash },
-    .dependencies    = { &build_linux_x64_64_sdl },
+    .pre_build_hooks = { &hook_add_version_flag_and_git_hash, },
+    .dependencies    = { &build_linux_x64_64_sdl, },
 };
 
 NYA_BuildRule build_project_debug = {
@@ -278,8 +279,8 @@ NYA_BuildRule build_project_linux_x86_64 = {
         },
     },
 
-    .pre_build_hooks = { &hook_add_version_flag_and_git_hash },
-    .dependencies    = { &build_linux_x64_64_sdl },
+    .pre_build_hooks = { &hook_add_version_flag_and_git_hash, },
+    .dependencies    = { &build_linux_x64_64_sdl, },
 };
 
 NYA_BuildRule build_project_windows_x86_64 = {
@@ -301,8 +302,8 @@ NYA_BuildRule build_project_windows_x86_64 = {
         },
     },
 
-    .pre_build_hooks = { &hook_add_version_flag_and_git_hash },
-    .dependencies    = { &build_windows_x86_64_sdl, &build_windows_icon },
+    .pre_build_hooks = { &hook_add_version_flag_and_git_hash, },
+    .dependencies    = { &build_windows_x86_64_sdl, &build_windows_icon, },
 };
 
 NYA_BuildRule build_project = {
@@ -314,13 +315,20 @@ NYA_BuildRule build_project = {
     },
 };
 
+NYA_BuildRule bundle_project = {
+    .name         = "bundle_project",
+    .is_metarule  = true,
+    .dependencies = { &build_project, },
+    .post_build_hooks = { &hook_bundle_project, },
+};
+
 NYA_BuildRule build_docs = {
     .name    = "build_docs",
     .policy  = NYA_BUILD_ALWAYS,
 
     .command = {
         .program   = "doxygen",
-        .arguments = { "./docs/doxygen.config" },
+        .arguments = { "./docs/doxygen.config", },
     },
 };
 
@@ -352,9 +360,9 @@ NYA_BuildRule run_debug = {
         },
     },
 
-    .dependencies = { &build_project_debug },
+    .dependencies = { &build_project_debug, },
 
-    .post_build_hooks = { &hook_convert_perf_data_to_plain },
+    .post_build_hooks = { &hook_convert_perf_data_to_plain, },
 };
 
 NYA_BuildRule run_release = {
@@ -365,7 +373,7 @@ NYA_BuildRule run_release = {
         .program = "./" LINUX_X86_64_BINARY,
     },
 
-    .dependencies = { &build_project_linux_x86_64 },
+    .dependencies = { &build_project_linux_x86_64, },
 };
 
 NYA_BuildRule open_perf_report = {
@@ -378,7 +386,7 @@ NYA_BuildRule open_perf_report = {
 
             .command = {
                 .program   = "speedscope",
-                .arguments = {"./perf.data.txt"},
+                .arguments = { "./perf.data.txt", },
             },
         },
         &(NYA_BuildRule){
@@ -387,7 +395,7 @@ NYA_BuildRule open_perf_report = {
 
             .command = {
                 .program   = "hotspot",
-                .arguments = {"./perf.data"},
+                .arguments = { "./perf.data", },
             },
         },
     },
@@ -399,10 +407,10 @@ NYA_BuildRule open_docs = {
 
     .command = {
         .program   = "xdg-open",
-        .arguments = { "./docs/doxygen/html/index.html" },
+        .arguments = { "./docs/doxygen/html/index.html", },
     },
 
-    .dependencies = { &build_docs },
+    .dependencies = { &build_docs, },
 };
 
 NYA_BuildRule show_stats = {
@@ -411,7 +419,7 @@ NYA_BuildRule show_stats = {
 
     .command = {
         .program   = "tokei",
-        .arguments = { ".", "--exclude", "vendor" },
+        .arguments = { ".", "--exclude", "vendor", },
     },
 };
 
@@ -421,7 +429,7 @@ NYA_BuildRule update_submodules = {
 
     .command = {
         .program   = "git",
-        .arguments = {"submodule", "foreach", "git", "pull", "origin", "main"},
+        .arguments = { "submodule", "foreach", "git", "pull", "origin", "main", },
     },
 };
 
@@ -485,6 +493,55 @@ NYA_INTERNAL void hook_remove_output_file(NYA_BuildRule* rule) {
   nya_filesystem_delete(rule->output_file);
 }
 
+// we just need to move everything into the right place
+NYA_INTERNAL void hook_bundle_project(NYA_BuildRule* rule) {
+  nya_assert(rule);
+
+  NYA_ConstCString dist_path    = "./dist/";
+  NYA_ConstCString linux_path   = "./dist/" PROJECT_NAME "." VERSION ".linux-x86_64/";
+  NYA_ConstCString windows_path = "./dist/" PROJECT_NAME "." VERSION ".windows-x86_64/";
+
+  NYA_Command clean_dist = {
+      .program   = "rm",
+      .arguments = {"-rf", dist_path},
+  };
+  nya_command_run(&clean_dist);
+
+  NYA_Command create_dirs = {
+      .program   = "mkdir",
+      .arguments = {"-p", linux_path, windows_path},
+  };
+  nya_command_run(&create_dirs);
+
+  // LINUX
+
+  NYA_Command copy_linux_binary = {
+      .program   = "cp",
+      .arguments = {LINUX_X86_64_BINARY, linux_path},
+  };
+  nya_command_run(&copy_linux_binary);
+
+  NYA_Command copy_steam_sdk_linux = {
+      .program   = "cp",
+      .arguments = {"./vendor/steam/redistributable_bin/linux64/libsteam_api.so", linux_path},
+  };
+  nya_command_run(&copy_steam_sdk_linux);
+
+  // WINDOWS
+
+  NYA_Command copy_windows_binary = {
+      .program   = "cp",
+      .arguments = {WINDOWS_X86_64_BINARY, windows_path},
+  };
+  nya_command_run(&copy_windows_binary);
+
+  NYA_Command copy_steam_sdk_windows = {
+      .program   = "cp",
+      .arguments = {"./vendor/steam/redistributable_bin/win64/steam_api64.dll", windows_path},
+  };
+  nya_command_run(&copy_steam_sdk_windows);
+}
+
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  * TEST RUNNER
@@ -546,7 +603,7 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
             },
         },
 
-        .pre_build_hooks = { &hook_add_version_flag_and_git_hash },
+        .pre_build_hooks = { &hook_add_version_flag_and_git_hash, },
     };
 
     NYA_String    run_test_name = nya_string_sprintf(&nya_arena_global, "run_test:%s", test_binary);
@@ -565,8 +622,8 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
             },
         },
 
-        .dependencies      = { &build_test },
-        .post_build_hooks  = { &hook_remove_output_file },
+        .dependencies      = { &build_test, },
+        .post_build_hooks  = { &hook_remove_output_file, },
     };
     // clang-format on
 
@@ -663,6 +720,12 @@ NYA_ArgCommand build = {
     },
 };
 
+NYA_ArgCommand bundle = {
+    .name        = "bundle",
+    .description = "Bundle for shipping.",
+    .build_rule  = &bundle_project,
+};
+
 NYA_ArgCommand perf = {
     .name        = "perf",
     .description = "Open Profiler with last profiling data.",
@@ -700,6 +763,7 @@ NYA_ArgParser parser = {
         .subcommands = {
             &run,
             &build,
+            &bundle,
             &perf,
             &docs,
             &stats,
