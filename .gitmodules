@@ -4,3 +4,6 @@
 [submodule "vendor/sdl-shadercross"]
 	path = vendor/sdl-shadercross
 	url = https://github.com/libsdl-org/SDL_shadercross.git
+[submodule "vendor/steam"]
+	path = vendor/steam
+	url = https://github.com/rlabrecque/SteamworksSDK.git
