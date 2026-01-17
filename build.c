@@ -459,6 +459,7 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
       .arguments = {"./assets/shaders/source/", "-name", "*.hlsl"},
   };
   nya_command_run(&find_source_shaders);
+  nya_assert(find_source_shaders.exit_code == 0, "Failed to find source shaders.");
   NYA_StringArray shaders = nya_string_split_lines(&nya_arena_global, &find_source_shaders.stdout_content);
 
   nya_array_foreach (&shaders, shader) {
@@ -485,6 +486,18 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
     nya_string_strip_prefix(shader, "./assets/shaders/compiled/SPIRV/");
 
     // clang-format off
+    NYA_Command create_dirs = {
+        .program   = "mkdir",
+        .arguments = {
+            "-p",
+            "./assets/shaders/compiled/DXIL/",
+            "./assets/shaders/compiled/MSL/",
+            "./assets/shaders/compiled/SPIRV/",
+        },
+    };
+    nya_command_run(&create_dirs);
+    nya_assert(create_dirs.exit_code == 0, "Failed to create shader output directories.");
+
     // compile to DXIL
     NYA_String    compile_to_dxil_name = nya_string_sprintf(&nya_arena_global, "%s -> %s", source, target_dxil);
     NYA_BuildRule compile_to_dxil      = {
@@ -561,6 +574,8 @@ NYA_INTERNAL void hook_add_version_flag_and_git_hash(NYA_BuildRule* rule) {
       .arguments = {"rev-parse", "HEAD"},
   };
   nya_command_run(&git_hash_command);
+  nya_assert(git_hash_command.exit_code == 0, "Failed to get git commit hash.");
+
   nya_string_trim_whitespace(&git_hash_command.stdout_content);
   NYA_CString git_hash      = nya_string_to_cstring(&nya_arena_global, &git_hash_command.stdout_content);
   NYA_String  git_hash_flag = nya_string_sprintf(&nya_arena_global, "-DGIT_COMMIT=\"%s\"", git_hash);
@@ -588,6 +603,7 @@ NYA_INTERNAL void hook_convert_perf_data_to_plain(NYA_BuildRule* rule) {
       .arguments = {"script", "-i", "./perf.data"},
   };
   nya_command_run(&command);
+  nya_assert(command.exit_code == 0, "Failed to convert perf data to plain text.");
 
   nya_file_write("./perf.data.txt", &command.stdout_content);
 }
@@ -612,12 +628,14 @@ NYA_INTERNAL void hook_bundle_project(NYA_BuildRule* rule) {
       .arguments = {"-rf", dist_path},
   };
   nya_command_run(&clean_dist);
+  nya_assert(clean_dist.exit_code == 0, "Failed to clean dist directory.");
 
   NYA_Command create_dirs = {
       .program   = "mkdir",
       .arguments = {"-p", linux_path, windows_path},
   };
   nya_command_run(&create_dirs);
+  nya_assert(create_dirs.exit_code == 0, "Failed to create dist directories.");
 
   // LINUX
 
@@ -626,12 +644,14 @@ NYA_INTERNAL void hook_bundle_project(NYA_BuildRule* rule) {
       .arguments = {LINUX_X86_64_BINARY, linux_path},
   };
   nya_command_run(&copy_linux_binary);
+  nya_assert(copy_linux_binary.exit_code == 0, "Failed to copy linux binary.");
 
   NYA_Command copy_steam_sdk_linux = {
       .program   = "cp",
       .arguments = {"./vendor/steam/redistributable_bin/linux64/libsteam_api.so", linux_path},
   };
   nya_command_run(&copy_steam_sdk_linux);
+  nya_assert(copy_steam_sdk_linux.exit_code == 0, "Failed to copy steam sdk for linux.");
 
   // WINDOWS
 
@@ -640,12 +660,14 @@ NYA_INTERNAL void hook_bundle_project(NYA_BuildRule* rule) {
       .arguments = {WINDOWS_X86_64_BINARY, windows_path},
   };
   nya_command_run(&copy_windows_binary);
+  nya_assert(copy_windows_binary.exit_code == 0, "Failed to copy windows binary.");
 
   NYA_Command copy_steam_sdk_windows = {
       .program   = "cp",
       .arguments = {"./vendor/steam/redistributable_bin/win64/steam_api64.dll", windows_path},
   };
   nya_command_run(&copy_steam_sdk_windows);
+  nya_assert(copy_steam_sdk_windows.exit_code == 0, "Failed to copy steam sdk for windows.");
 }
 
 /*
