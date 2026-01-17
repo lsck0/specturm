@@ -19,6 +19,7 @@
 #define nya_unimplemented() nya_assert(0, "Unimplemented"); __builtin_unreachable();
 #define nya_unreachable()   nya_assert(0, "Unreachable"); __builtin_unreachable();
 #define nya_unused(...)     ((void)(0, __VA_ARGS__))
+
 /**
  * Usage:
  * nya_assert_panic(a_function_call());

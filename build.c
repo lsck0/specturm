@@ -600,7 +600,7 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
                 FLAGS_SANITIZE,
                 FLAGS_DEBUG,
                 FLAGS_LINUX_X86_64,
-          "-Wl,-rpath,$ORIGIN/../../../vendor/steam/redistributable_bin/linux64",
+                "-Wl,-rpath,$ORIGIN/../../../vendor/steam/redistributable_bin/linux64",
             },
         },
 
