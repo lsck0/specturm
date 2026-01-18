@@ -29,27 +29,15 @@ void* nya_window_new(
 
   static u32 id_counter = 0;
 
-  b8 ok;
-
   SDL_Window* sdl_window = SDL_CreateWindow(title, (s32)initial_width, (s32)initial_height, flags);
   nya_assert(sdl_window != nullptr, "SDL_CreateWindow() failed: %s", SDL_GetError());
-
-  ok = SDL_ClaimWindowForGPUDevice(app->gpu_device, sdl_window);
-  nya_assert(ok, "SDL_ClaimWindowForGPUDevice() failed: %s", SDL_GetError());
-
-  ok = SDL_SetGPUSwapchainParameters(
-      app->gpu_device,
-      sdl_window,
-      SDL_GPU_SWAPCHAINCOMPOSITION_SDR,
-      app->config.vsync_enabled ? SDL_GPU_PRESENTMODE_VSYNC : SDL_GPU_PRESENTMODE_MAILBOX
-  );
-  nya_assert(ok, "SDL_SetGPUSwapchainParameters() failed: %s", SDL_GetError());
 
   NYA_Window nya_window = {
       .id          = id != nullptr ? id : (void*)(uintmax_t)(++id_counter),
       .sdl_window  = sdl_window,
       .layer_stack = nya_array_new(&app->global_allocator, NYA_Layer),
   };
+  nya_renderer_init_for_window(app, &nya_window);
 
   nya_array_push_back(&app->windows, nya_window);
 
@@ -67,8 +55,7 @@ void nya_window_destroy(NYA_App* app, void* window_id) {
   }
   nya_array_destroy(&window->layer_stack);
 
-  SDL_WaitForGPUIdle(app->gpu_device);
-  SDL_ReleaseWindowFromGPUDevice(app->gpu_device, window->sdl_window);
+  nya_renderer_shutdown_for_window(app, window);
   SDL_DestroyWindow(window->sdl_window);
 
   nya_array_for (&app->windows, window_index) {

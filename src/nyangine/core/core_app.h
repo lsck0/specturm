@@ -65,6 +65,16 @@ struct NYA_Window {
   void*       id;
   SDL_Window* sdl_window;
 
+  u32 width;
+  u32 height;
+
+  SDL_GPUCommandBuffer* command_buffer;
+  SDL_GPUCopyPass*      copy_pass;
+  SDL_GPURenderPass*    render_pass;
+  SDL_GPUTexture*       swapchain_texture;
+
+  SDL_GPUGraphicsPipeline* simple_pipeline;
+
   NYA_LayerArray layer_stack;
 };
 

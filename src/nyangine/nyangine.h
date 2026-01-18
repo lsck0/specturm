@@ -35,3 +35,4 @@
 #include "nyangine/core/core_event.h"
 #include "nyangine/math/math.h"
 #include "nyangine/platform/platform.h"
+#include "nyangine/renderer/renderer.h"

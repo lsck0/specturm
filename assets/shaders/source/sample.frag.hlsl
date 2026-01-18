@@ -1,7 +1,10 @@
-struct FragInput {
-    float4 pos : SV_POSITION;
+struct VertOutput
+{
+    float4 pos   : SV_POSITION;
+    float4 color : COLOR0;
 };
 
-float4 main(FragInput input) : SV_TARGET {
-    return float4(1.0, 0.0, 0.0, 1.0);
+float4 main(VertOutput input) : SV_TARGET
+{
+    return input.color;
 }

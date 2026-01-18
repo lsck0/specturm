@@ -23,3 +23,4 @@
 #include "nyangine/core/core_event.c"
 #include "nyangine/core/core_window.c"
 #include "nyangine/math/math_la.c"
+#include "nyangine/renderer/renderer.c"

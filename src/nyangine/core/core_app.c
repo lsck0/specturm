@@ -1,3 +1,4 @@
+#include "SDL3/SDL_gpu.h"
 #include "SDL3/SDL_init.h"
 #include "SDL3/SDL_timer.h"
 
@@ -59,7 +60,7 @@ void nya_app_options_update(NYA_App* app, NYA_AppConfig config) {
           app->gpu_device,
           window->sdl_window,
           SDL_GPU_SWAPCHAINCOMPOSITION_SDR,
-          app->config.vsync_enabled ? SDL_GPU_PRESENTMODE_VSYNC : SDL_GPU_PRESENTMODE_MAILBOX
+          config.vsync_enabled ? SDL_GPU_PRESENTMODE_VSYNC : SDL_GPU_PRESENTMODE_MAILBOX
       );
       nya_assert(ok, "SDL_SetGPUSwapchainParameters() failed: %s", SDL_GetError());
     }
@@ -140,39 +141,7 @@ void nya_app_run(NYA_App* app) {
 
     // rendering
     {
-      nya_array_foreach (&app->windows, window) {
-        SDL_GPUDevice* gpu_device = app->gpu_device;
-        SDL_Window*    sdl_window = window->sdl_window;
-
-        SDL_GPUCommandBuffer* command_buffer = SDL_AcquireGPUCommandBuffer(gpu_device);
-
-        SDL_GPUTexture* swapchain_texture;
-        SDL_AcquireGPUSwapchainTexture(command_buffer, sdl_window, &swapchain_texture, nullptr, nullptr);
-
-        if (swapchain_texture != nullptr) {
-          SDL_GPUColorTargetInfo target_info = {
-              .texture     = swapchain_texture,
-              .clear_color = (SDL_FColor){0},
-              .load_op     = SDL_GPU_LOADOP_CLEAR,
-              .store_op    = SDL_GPU_STOREOP_STORE,
-          };
-          SDL_GPURenderPass* render_pass = SDL_BeginGPURenderPass(command_buffer, &target_info, 1, nullptr);
-          nya_assert(render_pass != nullptr, "SDL_BeginGPURenderPass() failed");
-
-          nya_array_foreach (&app->windows, window) {
-            nya_array_foreach (&window->layer_stack, layer) {
-              if (layer->enabled && layer->on_render != nullptr) layer->on_render(window);
-            }
-          }
-
-          // TODO: rendering ...
-          // render(lag / app->config.time_step_ms);
-
-          SDL_EndGPURenderPass(render_pass);
-        }
-
-        SDL_SubmitGPUCommandBuffer(command_buffer);
-      }
+      nya_array_foreach (&app->windows, window) { nya_renderer_draw(app->gpu_device, window); }
     }
 
     // framerate limiting
