@@ -37,20 +37,14 @@ s32 main(s32 argc, char** argv) {
 typedef void(gnyame_setup_fn)(s32 argc, char** argv);
 typedef void(gnyame_run_fn)(void);
 typedef void(gnyame_shutdown_fn)(void);
-typedef NYA_App(gnyame_get_appstate_fn)(void);
-typedef void(gnyame_set_appstate_fn)(NYA_App app);
-typedef void(gnyame_stop_game_loop_fn)(void);
 
-u64 gnyame_dll_last_modified;
-b8  gnyame_dll_reload_requested = false;
-
-void*                     gnyame_dll;
-gnyame_setup_fn*          gnyame_setup;
-gnyame_run_fn*            gnyame_run;
-gnyame_shutdown_fn*       gnyame_shutdown;
-gnyame_get_appstate_fn*   gnyame_get_appstate;
-gnyame_set_appstate_fn*   gnyame_set_appstate;
-gnyame_stop_game_loop_fn* gnyame_stop_game_loop;
+NYA_App*            nya_app;
+void*               gnyame_dll;
+gnyame_setup_fn*    gnyame_setup;
+gnyame_run_fn*      gnyame_run;
+gnyame_shutdown_fn* gnyame_shutdown;
+u64                 gnyame_dll_last_modified;
+b8                  gnyame_dll_reload_requested = false;
 
 b8    dll_load(void);
 b8    dll_unload(void);
@@ -67,13 +61,11 @@ s32 main(s32 argc, char** argv) {
   }
 
   gnyame_setup(argc, argv);
+  nya_app = nya_app_get_instance();
 
 before_run:
   gnyame_run();
   if (gnyame_dll_reload_requested) {
-    NYA_App app_state               = gnyame_get_appstate();
-    app_state.should_quit_game_loop = false;
-
     ok = dll_unload();
     if (!ok) {
       (void)fprintf(stderr, "Failed to unload DLL before reload.\n");
@@ -91,9 +83,8 @@ before_run:
       return EXIT_FAILURE;
     }
 
-    gnyame_set_appstate(app_state);
-
-    gnyame_dll_reload_requested = false;
+    gnyame_dll_reload_requested    = false;
+    nya_app->should_quit_game_loop = false;
     (void)fprintf(stdout, "Reloaded %s successfully.\n", DLL_PATH);
 
     goto before_run;
@@ -113,14 +104,10 @@ b8 dll_load(void) {
     return false;
   }
 
-  gnyame_setup          = (gnyame_setup_fn*)dlsym(gnyame_dll, "gnyame_setup");
-  gnyame_run            = (gnyame_run_fn*)dlsym(gnyame_dll, "gnyame_run");
-  gnyame_shutdown       = (gnyame_shutdown_fn*)dlsym(gnyame_dll, "gnyame_shutdown");
-  gnyame_get_appstate   = (gnyame_get_appstate_fn*)dlsym(gnyame_dll, "gnyame_get_appstate");
-  gnyame_set_appstate   = (gnyame_set_appstate_fn*)dlsym(gnyame_dll, "gnyame_set_appstate");
-  gnyame_stop_game_loop = (gnyame_stop_game_loop_fn*)dlsym(gnyame_dll, "gnyame_stop_game_loop");
-  if (!gnyame_setup || !gnyame_run || !gnyame_shutdown || !gnyame_get_appstate || !gnyame_set_appstate ||
-      !gnyame_stop_game_loop) {
+  gnyame_setup    = (gnyame_setup_fn*)dlsym(gnyame_dll, "gnyame_setup");
+  gnyame_run      = (gnyame_run_fn*)dlsym(gnyame_dll, "gnyame_run");
+  gnyame_shutdown = (gnyame_shutdown_fn*)dlsym(gnyame_dll, "gnyame_shutdown");
+  if (!gnyame_setup || !gnyame_run || !gnyame_shutdown) {
     (void)fprintf(stderr, "Failed to load symbols from %s: %s.\n", DLL_PATH, dlerror());
     dlclose(gnyame_dll);
     return false;
@@ -144,13 +131,10 @@ b8 dll_unload(void) {
       return false;
     }
 
-    gnyame_dll            = nullptr;
-    gnyame_setup          = nullptr;
-    gnyame_run            = nullptr;
-    gnyame_shutdown       = nullptr;
-    gnyame_get_appstate   = nullptr;
-    gnyame_set_appstate   = nullptr;
-    gnyame_stop_game_loop = nullptr;
+    gnyame_dll      = nullptr;
+    gnyame_setup    = nullptr;
+    gnyame_run      = nullptr;
+    gnyame_shutdown = nullptr;
   }
 
   return true;
@@ -167,8 +151,8 @@ void* dll_watch_thread_func(void* arg) {
     if (last_modified != gnyame_dll_last_modified && !gnyame_dll_reload_requested) {
       (void)fprintf(stdout, "Detected change in %s, reloading soon...\n", DLL_PATH);
 
-      gnyame_dll_reload_requested = true;
-      gnyame_stop_game_loop();
+      gnyame_dll_reload_requested    = true;
+      nya_app->should_quit_game_loop = true;
     }
 
     struct timespec ts = {0};

@@ -14,20 +14,14 @@
  * ─────────────────────────────────────────────────────────
  */
 
-void* nya_window_new(
-    NYA_App*        app,
-    const char*     title,
-    u32             initial_width,
-    u32             initial_height,
-    NYA_WindowFlags flags,
-    void*           id
-) {
-  nya_assert(app);
+void* nya_window_new(const char* title, u32 initial_width, u32 initial_height, NYA_WindowFlags flags, void* id) {
   nya_assert(title);
   nya_assert(initial_width > 0);
   nya_assert(initial_height > 0);
 
   static u32 id_counter = 0;
+
+  NYA_App* app = nya_app_get_instance();
 
   SDL_Window* sdl_window = SDL_CreateWindow(title, (s32)initial_width, (s32)initial_height, flags);
   nya_assert(sdl_window != nullptr, "SDL_CreateWindow() failed: %s", SDL_GetError());
@@ -44,11 +38,12 @@ void* nya_window_new(
   return nya_window.id;
 }
 
-void nya_window_destroy(NYA_App* app, void* window_id) {
-  nya_assert(app);
+void nya_window_destroy(void* window_id) {
   nya_assert(window_id);
 
-  NYA_Window* window = nya_window_get(app, window_id);
+  NYA_App* app = nya_app_get_instance();
+
+  NYA_Window* window = nya_window_get(window_id);
 
   nya_array_foreach_reverse (&window->layer_stack, layer) {
     if (layer->on_destroy != nullptr) layer->on_destroy();
@@ -67,9 +62,10 @@ void nya_window_destroy(NYA_App* app, void* window_id) {
   }
 }
 
-NYA_Window* nya_window_get(NYA_App* app, void* window_id) {
-  nya_assert(app);
+NYA_Window* nya_window_get(void* window_id) {
   nya_assert(window_id);
+
+  NYA_App* app = nya_app_get_instance();
 
   nya_array_foreach (&app->windows, window) {
     if (window->id == window_id) return window;
@@ -85,12 +81,11 @@ NYA_Window* nya_window_get(NYA_App* app, void* window_id) {
  * ─────────────────────────────────────────────────────────
  */
 
-NYA_Layer* nya_layer_get(NYA_App* app, void* window_id, void* layer_id) {
-  nya_assert(app);
+NYA_Layer* nya_layer_get(void* window_id, void* layer_id) {
   nya_assert(window_id);
   nya_assert(layer_id);
 
-  NYA_Window* window = nya_window_get(app, window_id);
+  NYA_Window* window = nya_window_get(window_id);
   nya_array_foreach (&window->layer_stack, layer) {
     if (layer->id == layer_id) return layer;
   }
@@ -99,39 +94,36 @@ NYA_Layer* nya_layer_get(NYA_App* app, void* window_id, void* layer_id) {
   nya_unreachable();
 }
 
-void nya_layer_enable(NYA_App* app, void* window_id, void* layer_id) {
-  nya_assert(app);
+void nya_layer_enable(void* window_id, void* layer_id) {
   nya_assert(window_id);
   nya_assert(layer_id);
 
-  NYA_Layer* layer = nya_layer_get(app, window_id, layer_id);
+  NYA_Layer* layer = nya_layer_get(window_id, layer_id);
   layer->enabled   = true;
 }
 
-void nya_layer_disable(NYA_App* app, void* window_id, void* layer_id) {
-  nya_assert(app);
+void nya_layer_disable(void* window_id, void* layer_id) {
   nya_assert(window_id);
   nya_assert(layer_id);
 
-  NYA_Layer* layer = nya_layer_get(app, window_id, layer_id);
+  NYA_Layer* layer = nya_layer_get(window_id, layer_id);
   layer->enabled   = false;
 }
 
-void nya_layer_push(NYA_App* app, void* window_id, NYA_Layer layer) {
+void nya_layer_push(void* window_id, NYA_Layer layer) {
   nya_assert(window_id);
 
-  NYA_Window* window = nya_window_get(app, window_id);
+  NYA_Window* window = nya_window_get(window_id);
 
   if (layer.on_create != nullptr) layer.on_create();
 
   nya_array_push_back(&window->layer_stack, layer);
 }
 
-NYA_Layer nya_layer_pop(NYA_App* app, void* window_id) {
-  nya_assert(app);
+NYA_Layer nya_layer_pop(void* window_id) {
   nya_assert(window_id);
 
-  NYA_Window* window = nya_window_get(app, window_id);
+  NYA_Window* window = nya_window_get(window_id);
   nya_assert(window->layer_stack.length > 0, "Cannot pop layer: layer stack is empty.");
 
   NYA_Layer layer = nya_array_last(&window->layer_stack);

@@ -10,23 +10,17 @@ void on_update(NYA_Window* window, f32 delta_time);
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_INTERNAL NYA_App NYA_APP_INSTANCE;
-
 void gnyame_setup(s32 argc, char** argv) {
   nya_unused(argc, argv);
 
-  nya_app_init(
-      &NYA_APP_INSTANCE,
-      (NYA_AppConfig){
-          .time_step_ms     = 15,
-          .frame_rate_limit = 120,
-          .vsync_enabled    = false,
-      }
-  );
+  nya_app_init((NYA_AppConfig){
+      .time_step_ms     = 15,
+      .frame_rate_limit = 120,
+      .vsync_enabled    = false,
+  });
 
-  nya_window_new(&NYA_APP_INSTANCE, "gnyame", 1280, 720, NYA_WINDOW_RESIZABLE, "window");
+  nya_window_new("gnyame", 1280, 720, NYA_WINDOW_RESIZABLE, "window");
   nya_layer_push(
-      &NYA_APP_INSTANCE,
       "window",
       (NYA_Layer){
           .id         = "main_layer",
@@ -41,32 +35,12 @@ void gnyame_setup(s32 argc, char** argv) {
 }
 
 void gnyame_run(void) {
-  nya_app_run(&NYA_APP_INSTANCE);
+  nya_app_run();
 }
 
 void gnyame_shutdown(void) {
-  nya_app_destroy(&NYA_APP_INSTANCE);
+  nya_app_destroy();
 }
-
-/*
- * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- * HOT RELOADING UTILITIES
- * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- */
-
-#if NYA_IS_DEBUG
-NYA_App gnyame_get_appstate() {
-  return NYA_APP_INSTANCE;
-}
-
-void gnyame_set_appstate(NYA_App app) {
-  NYA_APP_INSTANCE = app;
-}
-
-void gnyame_stop_game_loop(void) {
-  NYA_APP_INSTANCE.should_quit_game_loop = true;
-}
-#endif // NYA_IS_DEBUG
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
