@@ -28,9 +28,9 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-#define nya_hmap_new(arena_ptr, key_type, value_type)                                                                  \
-  nya_hmap_new_with_capacity(arena_ptr, key_type, value_type, _NYA_HASHMAP_DEFAULT_CAPACITY)
-#define nya_hmap_new_with_capacity(arena_ptr, key_type, value_type, initial_capacity)                                  \
+#define nya_hmap_create(arena_ptr, key_type, value_type)                                                               \
+  nya_hmap_create_with_capacity(arena_ptr, key_type, value_type, _NYA_HASHMAP_DEFAULT_CAPACITY)
+#define nya_hmap_create_with_capacity(arena_ptr, key_type, value_type, initial_capacity)                               \
   ({                                                                                                                   \
     key_type##_##value_type##_HMap _hmap = {                                                                           \
         .length   = 0,                                                                                                 \

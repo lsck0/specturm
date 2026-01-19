@@ -27,8 +27,8 @@
  * NYA_GUARDED_BY(close) s32 destination_fd = open(destination, O_WRONLY | O_CREAT | O_TRUNC, 0644);
  * if (destination_fd < 0) return false;
  *
- * NYA_GUARDED_BY(nya_arena_destroy) NYA_Arena arena  = nya_arena_new();
- * NYA_String                                  buffer = nya_string_new(&arena);
+ * NYA_GUARDED_BY(nya_arena_destroy) NYA_Arena arena  = nya_arena_create();
+ * NYA_String                                  buffer = nya_string_create(&arena);
  *
  * b8 ok;
  *

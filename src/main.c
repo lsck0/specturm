@@ -12,9 +12,9 @@
 #include "gnyame/gnyame.h"
 
 s32 main(s32 argc, char** argv) {
-  gnyame_setup(argc, argv);
+  gnyame_init(argc, argv);
   gnyame_run();
-  gnyame_shutdown();
+  gnyame_deinit();
 
   return EXIT_SUCCESS;
 }
@@ -34,15 +34,15 @@ s32 main(s32 argc, char** argv) {
 
 #define DLL_PATH "./gnyame.debug.so"
 
-typedef void(gnyame_setup_fn)(s32 argc, char** argv);
+typedef void(gnyame_init_fn)(s32 argc, char** argv);
 typedef void(gnyame_run_fn)(void);
-typedef void(gnyame_shutdown_fn)(void);
+typedef void(gnyame_deinit_fn)(void);
 
 NYA_App*            nya_app;
 void*               gnyame_dll;
-gnyame_setup_fn*    gnyame_setup;
+gnyame_init_fn*    gnyame_init;
 gnyame_run_fn*      gnyame_run;
-gnyame_shutdown_fn* gnyame_shutdown;
+gnyame_deinit_fn* gnyame_deinit;
 u64                 gnyame_dll_last_modified;
 b8                  gnyame_dll_reload_requested = false;
 
@@ -60,7 +60,7 @@ s32 main(s32 argc, char** argv) {
     return EXIT_FAILURE;
   }
 
-  gnyame_setup(argc, argv);
+  gnyame_init(argc, argv);
   nya_app = nya_app_get_instance();
 
 before_run:
@@ -90,7 +90,7 @@ before_run:
     goto before_run;
   }
 
-  gnyame_shutdown();
+  gnyame_deinit();
 
   dlclose(gnyame_dll);
 
@@ -104,10 +104,10 @@ b8 dll_load(void) {
     return false;
   }
 
-  gnyame_setup    = (gnyame_setup_fn*)dlsym(gnyame_dll, "gnyame_setup");
+  gnyame_init    = (gnyame_init_fn*)dlsym(gnyame_dll, "gnyame_init");
   gnyame_run      = (gnyame_run_fn*)dlsym(gnyame_dll, "gnyame_run");
-  gnyame_shutdown = (gnyame_shutdown_fn*)dlsym(gnyame_dll, "gnyame_shutdown");
-  if (!gnyame_setup || !gnyame_run || !gnyame_shutdown) {
+  gnyame_deinit = (gnyame_deinit_fn*)dlsym(gnyame_dll, "gnyame_deinit");
+  if (!gnyame_init || !gnyame_run || !gnyame_deinit) {
     (void)fprintf(stderr, "Failed to load symbols from %s: %s.\n", DLL_PATH, dlerror());
     dlclose(gnyame_dll);
     return false;
@@ -132,9 +132,9 @@ b8 dll_unload(void) {
     }
 
     gnyame_dll      = nullptr;
-    gnyame_setup    = nullptr;
+    gnyame_init    = nullptr;
     gnyame_run      = nullptr;
-    gnyame_shutdown = nullptr;
+    gnyame_deinit = nullptr;
   }
 
   return true;

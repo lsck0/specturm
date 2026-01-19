@@ -20,6 +20,8 @@ nya_derive_array(NYA_ConstCString);
 // clang-format off
 NYA_API NYA_EXTERN b8              nya_string_contains(const NYA_String* str, NYA_ConstCString substr) __attr_overloaded;
 NYA_API NYA_EXTERN b8              nya_string_contains(const NYA_String* str, const NYA_String* substr) __attr_overloaded;
+NYA_API NYA_EXTERN NYA_String      nya_string_create(NYA_Arena* arena);
+NYA_API NYA_EXTERN NYA_String      nya_string_create_with_capacity(NYA_Arena* arena, u64 capacity);
 NYA_API NYA_EXTERN b8              nya_string_ends_with(const NYA_String* str, NYA_ConstCString suffix);
 NYA_API NYA_EXTERN b8              nya_string_equals(NYA_ConstCString str1, NYA_ConstCString str2) __attr_overloaded;
 NYA_API NYA_EXTERN b8              nya_string_equals(const NYA_String* str1, NYA_ConstCString str2) __attr_overloaded;
@@ -31,8 +33,6 @@ NYA_API NYA_EXTERN NYA_String      nya_string_concat(NYA_Arena* arena, const NYA
 NYA_API NYA_EXTERN NYA_String      nya_string_from(NYA_Arena* arena, NYA_ConstCString cstr) __attr_overloaded;
 NYA_API NYA_EXTERN NYA_String      nya_string_join(NYA_Arena* arena, const NYA_StringArray* arr, NYA_ConstCString separator) __attr_overloaded;
 NYA_API NYA_EXTERN NYA_String      nya_string_join(NYA_Arena* arena, const NYA_StringArray* arr, const NYA_String* separator) __attr_overloaded;
-NYA_API NYA_EXTERN NYA_String      nya_string_new(NYA_Arena* arena);
-NYA_API NYA_EXTERN NYA_String      nya_string_new_with_capacity(NYA_Arena* arena, u64 capacity);
 NYA_API NYA_EXTERN NYA_String      nya_string_sprintf(NYA_Arena* arena, NYA_ConstCString fmt, ...) __attr_fmt_printf(2, 3);
 NYA_API NYA_EXTERN NYA_String      nya_string_substring_excld(NYA_Arena* arena, const NYA_String* str, u64 start, u64 end);
 NYA_API NYA_EXTERN NYA_String      nya_string_substring_incld(NYA_Arena* arena, const NYA_String* str, u64 start, u64 end);

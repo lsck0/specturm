@@ -1,5 +1,6 @@
 #include "SDL3/SDL_gpu.h"
 
+#include "nyangine/core/core_app.h"
 #include "nyangine/nyangine.h"
 
 /*
@@ -10,11 +11,31 @@
 
 /*
  * ─────────────────────────────────────────────────────────
+ * SYSTEM FUNCTIONS
+ * ─────────────────────────────────────────────────────────
+ */
+
+void nya_system_window_init(void) {
+  NYA_App* app = nya_app_get_instance();
+
+  app->window_system.windows = nya_array_create(&app->global_allocator, NYA_Window);
+}
+
+void nya_system_window_deinit(void) {
+  NYA_App* app = nya_app_get_instance();
+
+  SDL_WaitForGPUIdle(app->render_system.gpu_device);
+  nya_array_foreach_reverse (&app->window_system.windows, window) nya_window_destroy(window->id);
+  nya_array_destroy(&app->window_system.windows);
+}
+
+/*
+ * ─────────────────────────────────────────────────────────
  * WINDOW FUNCTIONS
  * ─────────────────────────────────────────────────────────
  */
 
-void* nya_window_new(const char* title, u32 initial_width, u32 initial_height, NYA_WindowFlags flags, void* id) {
+void* nya_window_create(const char* title, u32 initial_width, u32 initial_height, NYA_WindowFlags flags, void* id) {
   nya_assert(title);
   nya_assert(initial_width > 0);
   nya_assert(initial_height > 0);
@@ -29,11 +50,11 @@ void* nya_window_new(const char* title, u32 initial_width, u32 initial_height, N
   NYA_Window nya_window = {
       .id          = id != nullptr ? id : (void*)(uintmax_t)(++id_counter),
       .sdl_window  = sdl_window,
-      .layer_stack = nya_array_new(&app->global_allocator, NYA_Layer),
+      .layer_stack = nya_array_create(&app->global_allocator, NYA_Layer),
   };
-  nya_renderer_init_for_window(app, &nya_window);
+  nya_system_render_for_window_init(&nya_window);
 
-  nya_array_push_back(&app->windows, nya_window);
+  nya_array_push_back(&app->window_system.windows, nya_window);
 
   return nya_window.id;
 }
@@ -50,13 +71,13 @@ void nya_window_destroy(void* window_id) {
   }
   nya_array_destroy(&window->layer_stack);
 
-  nya_renderer_shutdown_for_window(app, window);
+  nya_system_render_for_window_deinit(window);
   SDL_DestroyWindow(window->sdl_window);
 
-  nya_array_for (&app->windows, window_index) {
-    NYA_Window* window = &app->windows.items[window_index];
+  nya_array_for (&app->window_system.windows, window_index) {
+    NYA_Window* window = &app->window_system.windows.items[window_index];
     if (window->id == window_id) {
-      nya_array_remove(&app->windows, window_index);
+      nya_array_remove(&app->window_system.windows, window_index);
       return;
     }
   }
@@ -67,7 +88,7 @@ NYA_Window* nya_window_get(void* window_id) {
 
   NYA_App* app = nya_app_get_instance();
 
-  nya_array_foreach (&app->windows, window) {
+  nya_array_foreach (&app->window_system.windows, window) {
     if (window->id == window_id) return window;
   }
 

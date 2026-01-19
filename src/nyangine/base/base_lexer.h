@@ -55,6 +55,6 @@ struct NYA_Lexer {
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_API NYA_EXTERN NYA_Lexer nya_lexer_new(NYA_ConstCString source);
+NYA_API NYA_EXTERN NYA_Lexer nya_lexer_create(NYA_ConstCString source);
 NYA_API NYA_EXTERN void      nya_lexer_run(NYA_Lexer* lexer);
 NYA_API NYA_EXTERN void      nya_lexer_destroy(NYA_Lexer* lexer);

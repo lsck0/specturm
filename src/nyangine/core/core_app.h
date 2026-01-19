@@ -1,13 +1,14 @@
 #pragma once
 
-#include "SDL3/SDL_gpu.h"
-#include "SDL3/SDL_video.h"
-
 #include "nyangine/base/base_arena.h"
 #include "nyangine/base/base_array.h"
 #include "nyangine/base/base_attributes.h"
 #include "nyangine/base/base_string.h"
+#include "nyangine/core/core_asset.h"
 #include "nyangine/core/core_event.h"
+#include "nyangine/core/core_input.h"
+#include "nyangine/core/core_window.h"
+#include "nyangine/renderer/renderer.h"
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -15,18 +16,8 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-typedef struct NYA_Layer     NYA_Layer;
-typedef struct NYA_Window    NYA_Window;
 typedef struct NYA_App       NYA_App;
 typedef struct NYA_AppConfig NYA_AppConfig;
-nya_derive_array(NYA_Layer);
-nya_derive_array(NYA_Window);
-
-/*
- * ─────────────────────────────────────────────────────────
- * APP STRUCT
- * ─────────────────────────────────────────────────────────
- */
 
 struct NYA_AppConfig {
   u32 time_step_ms;
@@ -44,57 +35,15 @@ struct NYA_App {
   NYA_Arena entity_allocator;
   NYA_Arena frame_allocator;
 
-  SDL_GPUDevice*  gpu_device;
-  NYA_WindowArray windows;
+  NYA_WindowSystem window_system;
+  NYA_EventSystem  event_system;
+  NYA_InputSystem  input_system;
+  NYA_AssetSystem  asset_system;
+  NYA_RenderSystem render_system;
 
   u64 previous_time_ms;
   s64 time_behind_ms;
   b8  should_quit_game_loop;
-};
-
-/*
- * ─────────────────────────────────────────────────────────
- * WINDOW STRUCT
- * ─────────────────────────────────────────────────────────
- */
-
-typedef enum {
-  NYA_WINDOW_NONE      = 0,
-  NYA_WINDOW_RESIZABLE = SDL_WINDOW_RESIZABLE,
-} NYA_WindowFlags;
-
-struct NYA_Window {
-  void*       id;
-  SDL_Window* sdl_window;
-
-  u32 width;
-  u32 height;
-
-  SDL_GPUCommandBuffer* command_buffer;
-  SDL_GPUCopyPass*      copy_pass;
-  SDL_GPURenderPass*    render_pass;
-  SDL_GPUTexture*       swapchain_texture;
-
-  SDL_GPUGraphicsPipeline* simple_pipeline;
-
-  NYA_LayerArray layer_stack;
-};
-
-/*
- * ─────────────────────────────────────────────────────────
- * LAYER STRUCT
- * ─────────────────────────────────────────────────────────
- */
-
-struct NYA_Layer {
-  void* id;
-  b8    enabled;
-
-  void (*on_create)(void);
-  void (*on_destroy)(void);
-  void (*on_update)(NYA_Window* window, f32 delta_time);
-  void (*on_event)(NYA_Window* window, NYA_Event* event);
-  void (*on_render)(NYA_Window* window);
 };
 
 /*
@@ -103,38 +52,8 @@ struct NYA_Layer {
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-/*
- * ─────────────────────────────────────────────────────────
- * APP FUNCTIONS
- * ─────────────────────────────────────────────────────────
- */
-
 NYA_API NYA_EXTERN void     nya_app_init(NYA_AppConfig config);
-NYA_API NYA_EXTERN void     nya_app_destroy(void);
+NYA_API NYA_EXTERN void     nya_app_deinit(void);
 NYA_API NYA_EXTERN NYA_App* nya_app_get_instance(void);
 NYA_API NYA_EXTERN void     nya_app_options_update(NYA_AppConfig config);
 NYA_API NYA_EXTERN void     nya_app_run(void);
-
-/*
- * ─────────────────────────────────────────────────────────
- * WINDOW FUNCTIONS
- * ─────────────────────────────────────────────────────────
- */
-
-// clang-format off
-NYA_API NYA_EXTERN void*       nya_window_new(const char* title, u32 initial_width, u32 initial_height, NYA_WindowFlags flags, void* id);
-NYA_API NYA_EXTERN void        nya_window_destroy(void* window_id);
-NYA_API NYA_EXTERN NYA_Window* nya_window_get(void* window_id);
-// clang-format on
-
-/*
- * ─────────────────────────────────────────────────────────
- * LAYER FUNCTIONS
- * ─────────────────────────────────────────────────────────
- */
-
-NYA_API NYA_EXTERN NYA_Layer* nya_layer_get(void* window_id, void* layer_id);
-NYA_API NYA_EXTERN void       nya_layer_enable(void* window_id, void* layer_id);
-NYA_API NYA_EXTERN void       nya_layer_disable(void* window_id, void* layer_id);
-NYA_API NYA_EXTERN void       nya_layer_push(void* window_id, NYA_Layer layer);
-NYA_API NYA_EXTERN NYA_Layer  nya_layer_pop(void* window_id);

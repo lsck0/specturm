@@ -6,8 +6,8 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-void nya_system_events_init(void) {
+void nya_system_input_init(void) {
 }
 
-void nya_system_events_deinit(void) {
+void nya_system_input_deinit(void) {
 }

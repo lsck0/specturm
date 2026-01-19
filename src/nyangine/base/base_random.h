@@ -87,8 +87,8 @@ static_assert(_NYA_RNG_BUFFER_SIZE % 128 == 0, "RNG buffer size must be a multip
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-#define nya_rng_new(...) nya_rng_new_with_options((NYA_RNGOptions){_NYA_RNG_DEFAULT_OPTIONS, __VA_ARGS__})
-NYA_API NYA_EXTERN NYA_RNG nya_rng_new_with_options(NYA_RNGOptions options) __attr_no_discard;
+#define nya_rng_create(...) nya_rng_create_with_options((NYA_RNGOptions){_NYA_RNG_DEFAULT_OPTIONS, __VA_ARGS__})
+NYA_API NYA_EXTERN NYA_RNG nya_rng_create_with_options(NYA_RNGOptions options) __attr_no_discard;
 
 NYA_API NYA_EXTERN void nya_rng_gen_bytes(NYA_RNG* rng, u8 buffer[], u64 size);
 NYA_API NYA_EXTERN b8   nya_rng_gen_bool(NYA_RNG* rng, f32 true_chance) __attr_no_discard;

@@ -92,8 +92,8 @@ __attr_constructor NYA_INTERNAL void _nya_perf_init(void) {
   // nya_assert(nya_is_zeroed(_nya_perf_arena));
   nya_assert(nya_is_zeroed(_nya_perf_measurements));
 
-  _nya_perf_arena        = nya_arena_new(.name = "Perf Arena");
-  _nya_perf_measurements = nya_array_new(&_nya_perf_arena, NYA_PerfMeasurement);
+  _nya_perf_arena        = nya_arena_create(.name = "Perf Arena");
+  _nya_perf_measurements = nya_array_create(&_nya_perf_arena, NYA_PerfMeasurement);
 
   _nya_perf_start_time_ms = nya_clock_get_timestamp_ms();
   _nya_perf_start_cylces  = __rdtsc();

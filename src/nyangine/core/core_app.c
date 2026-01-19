@@ -29,31 +29,31 @@ void nya_app_init(NYA_AppConfig config) {
   b8 ok = SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO | SDL_INIT_AUDIO);
   nya_assert(ok, "SDL_Init() failed: %s", SDL_GetError());
 
-  SDL_GPUDevice* gpu_device = SDL_CreateGPUDevice(
-      SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_METALLIB | SDL_GPU_SHADERFORMAT_SPIRV,
-      NYA_IS_DEBUG,
-      nullptr
-  );
-  nya_assert(gpu_device != nullptr, "SDL_CreateGPUDevice() failed: %s", SDL_GetError());
-
   *app = (NYA_App){
       .initialized      = true,
       .config           = config,
-      .global_allocator = nya_arena_new(.name = "global_allocator"),
-      .entity_allocator = nya_arena_new(.name = "entity_allocator", .defragmentation_enabled = false),
-      .frame_allocator  = nya_arena_new(.name = "frame_allocator"),
-      .gpu_device       = gpu_device,
+      .global_allocator = nya_arena_create(.name = "global_allocator"),
+      .entity_allocator = nya_arena_create(.name = "entity_allocator", .defragmentation_enabled = false),
+      .frame_allocator  = nya_arena_create(.name = "frame_allocator"),
   };
-  app->windows = nya_array_new(&app->global_allocator, NYA_Window);
+
+  nya_system_render_init();
+  nya_system_window_init();
+  nya_system_events_init();
+  nya_system_input_init();
+  nya_system_asset_init();
+  nya_system_entity_init();
 }
 
-void nya_app_destroy(void) {
+void nya_app_deinit(void) {
   NYA_App* app = nya_app_get_instance();
 
-  SDL_WaitForGPUIdle(app->gpu_device);
-  nya_array_foreach (&app->windows, window) nya_window_destroy(window->id);
-  nya_array_destroy(&app->windows);
-  SDL_DestroyGPUDevice(app->gpu_device);
+  nya_system_entity_deinit();
+  nya_system_asset_deinit();
+  nya_system_input_deinit();
+  nya_system_events_deinit();
+  nya_system_window_deinit();
+  nya_system_render_deinit();
 
   nya_arena_destroy(&app->global_allocator);
   nya_arena_destroy(&app->entity_allocator);
@@ -65,10 +65,11 @@ void nya_app_destroy(void) {
 void nya_app_options_update(NYA_AppConfig config) {
   NYA_App* app = nya_app_get_instance();
 
+  // move into the renderer system?
   if (app->config.vsync_enabled != config.vsync_enabled) {
-    nya_array_foreach (&app->windows, window) {
+    nya_array_foreach (&app->window_system.windows, window) {
       b8 ok = SDL_SetGPUSwapchainParameters(
-          app->gpu_device,
+          app->render_system.gpu_device,
           window->sdl_window,
           SDL_GPU_SWAPCHAINCOMPOSITION_SDR,
           config.vsync_enabled ? SDL_GPU_PRESENTMODE_VSYNC : SDL_GPU_PRESENTMODE_MAILBOX
@@ -96,50 +97,26 @@ void nya_app_run(void) {
         // app and window closing
         if (event.type == SDL_EVENT_QUIT) app->should_quit_game_loop = true;
         if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
-          nya_array_for (&app->windows, window_idx) {
-            void*       window_id  = app->windows.items[window_idx].id;
-            SDL_Window* sdl_window = app->windows.items[window_idx].sdl_window;
+          nya_array_for (&app->window_system.windows, window_idx) {
+            void*       window_id  = app->window_system.windows.items[window_idx].id;
+            SDL_Window* sdl_window = app->window_system.windows.items[window_idx].sdl_window;
 
             if (SDL_GetWindowID(sdl_window) == event.window.windowID) {
               nya_window_destroy(window_id);
-              if (app->windows.length == 0) app->should_quit_game_loop = true;
+              if (app->window_system.windows.length == 0) app->should_quit_game_loop = true;
               break;
             }
           }
         }
 
-        // propagate sdl event to layers
-        nya_array_foreach (&app->windows, window) {
-          nya_array_foreach_reverse (&window->layer_stack, layer) {
-            if (layer->enabled && layer->on_event != nullptr) {
-              NYA_Event nya_event = nya_event_from_sdl_event(&event);
-              layer->on_event(window, &nya_event);
-              if (nya_event.was_handled) break;
-            }
-          }
-        }
-      }
-    }
-
-    // poll our own event system
-    {
-      NYA_Event nya_event;
-      while (nya_event_poll(&nya_event)) {
-        nya_array_foreach (&app->windows, window) {
-          nya_array_foreach_reverse (&window->layer_stack, layer) {
-            if (layer->enabled && layer->on_event != nullptr) {
-              layer->on_event(window, &nya_event);
-              if (nya_event.was_handled) break;
-            }
-          }
-        }
+        // passing event to the event system
       }
     }
 
     // updating
     {
       while (app->time_behind_ms >= app->config.time_step_ms) {
-        nya_array_foreach (&app->windows, window) {
+        nya_array_foreach (&app->window_system.windows, window) {
           nya_array_foreach (&window->layer_stack, layer) {
             if (layer->enabled && layer->on_update != nullptr) {
               layer->on_update(window, (f32)(app->config.time_step_ms) / 1000.0F);
@@ -152,7 +129,13 @@ void nya_app_run(void) {
 
     // rendering
     {
-      nya_array_foreach (&app->windows, window) { nya_renderer_draw(app->gpu_device, window); }
+      nya_array_foreach (&app->window_system.windows, window) {
+        nya_render_begin(window);
+        nya_array_foreach (&window->layer_stack, layer) {
+          if (layer->enabled && layer->on_render != nullptr) layer->on_render(window);
+        }
+        nya_render_end(window);
+      }
     }
 
     // framerate limiting

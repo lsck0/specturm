@@ -27,9 +27,9 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-#define nya_hset_new(arena_ptr, item_type)                                                                             \
-  nya_hset_new_with_capacity(arena_ptr, item_type, _NYA_HASHSET_DEFAULT_CAPACITY)
-#define nya_hset_new_with_capacity(arena_ptr, item_type, initial_capacity)                                             \
+#define nya_hset_create(arena_ptr, item_type)                                                                          \
+  nya_hset_create_with_capacity(arena_ptr, item_type, _NYA_HASHSET_DEFAULT_CAPACITY)
+#define nya_hset_create_with_capacity(arena_ptr, item_type, initial_capacity)                                          \
   ({                                                                                                                   \
     item_type##HSet _hset = {                                                                                          \
         .length   = 0,                                                                                                 \

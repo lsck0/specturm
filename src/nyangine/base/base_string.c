@@ -95,7 +95,7 @@ NYA_String nya_string_clone(NYA_Arena* arena, const NYA_String* str) {
   nya_assert(arena);
   nya_assert(str);
 
-  NYA_String result = nya_string_new_with_capacity(arena, str->length);
+  NYA_String result = nya_string_create_with_capacity(arena, str->length);
   nya_memcpy(result.items, str->items, str->length);
   result.length = str->length;
 
@@ -107,7 +107,7 @@ NYA_String nya_string_concat(NYA_Arena* arena, const NYA_String* str1, const NYA
   nya_assert(str1);
   nya_assert(str2);
 
-  NYA_String result = nya_string_new_with_capacity(arena, str1->length + str2->length);
+  NYA_String result = nya_string_create_with_capacity(arena, str1->length + str2->length);
   nya_memcpy(result.items, str1->items, str1->length);
   nya_memcpy(result.items + str1->length, str2->items, str2->length);
   result.length = str1->length + str2->length;
@@ -120,7 +120,7 @@ NYA_String nya_string_from(NYA_Arena* arena, NYA_ConstCString cstr) __attr_overl
   nya_assert(cstr);
 
   u64        length = strlen(cstr);
-  NYA_String result = nya_string_new_with_capacity(arena, length);
+  NYA_String result = nya_string_create_with_capacity(arena, length);
   nya_memcpy(result.items, cstr, length);
   result.length = length;
 
@@ -138,7 +138,7 @@ NYA_String nya_string_join(NYA_Arena* arena, const NYA_StringArray* arr, NYA_Con
   for (u64 i = 0; i < arr->length; i++) total_length += arr->items[i].length;
   total_length += (arr->length - 1) * separator_length;
 
-  NYA_String result = nya_string_new_with_capacity(arena, total_length);
+  NYA_String result = nya_string_create_with_capacity(arena, total_length);
   for (u64 i = 0; i < arr->length; i++) {
     nya_memmove(result.items + result.length, arr->items[i].items, arr->items[i].length);
     result.length += arr->items[i].length;
@@ -165,16 +165,16 @@ NYA_String nya_string_join(NYA_Arena* arena, const NYA_StringArray* arr, const N
   return nya_string_join(arena, arr, separator_cstr);
 }
 
-NYA_String nya_string_new(NYA_Arena* arena) {
+NYA_String nya_string_create(NYA_Arena* arena) {
   nya_assert(arena);
 
-  return nya_array_new(arena, u8);
+  return nya_array_create(arena, u8);
 }
 
-NYA_String nya_string_new_with_capacity(NYA_Arena* arena, u64 capacity) {
+NYA_String nya_string_create_with_capacity(NYA_Arena* arena, u64 capacity) {
   nya_assert(arena);
 
-  return nya_array_new_with_capacity(arena, u8, capacity);
+  return nya_array_create_with_capacity(arena, u8, capacity);
 }
 
 NYA_String nya_string_sprintf(NYA_Arena* arena, NYA_ConstCString fmt, ...) __attr_fmt_printf(2, 3) {
@@ -187,7 +187,7 @@ NYA_String nya_string_sprintf(NYA_Arena* arena, NYA_ConstCString fmt, ...) __att
   u64 length = vsnprintf(nullptr, 0, fmt, args);
   va_end(args);
 
-  NYA_String result = nya_string_new_with_capacity(arena, length + 1); // +1 for null terminator
+  NYA_String result = nya_string_create_with_capacity(arena, length + 1); // +1 for null terminator
 
   va_start(args, fmt);
   (void)vsnprintf((NYA_CString)result.items, length + 1, fmt, args);
@@ -205,7 +205,7 @@ NYA_String nya_string_substring_excld(NYA_Arena* arena, const NYA_String* str, u
   nya_assert(end <= str->length);
 
   u64        length = end - start;
-  NYA_String substr = nya_string_new_with_capacity(arena, length);
+  NYA_String substr = nya_string_create_with_capacity(arena, length);
   nya_memmove(substr.items, str->items + start, length);
   substr.length = length;
 
@@ -227,7 +227,7 @@ NYA_StringArray nya_string_split(NYA_Arena* arena, const NYA_String* str, NYA_Co
   nya_assert(str);
   nya_assert(separator);
 
-  NYA_StringArray result     = nya_array_new(arena, NYA_String);
+  NYA_StringArray result     = nya_array_create(arena, NYA_String);
   u64             sep_length = strlen(separator);
   u64             start      = 0;
   u64             end        = 0;
@@ -276,8 +276,8 @@ NYA_StringArray nya_string_split_words(NYA_Arena* arena, const NYA_String* str) 
   nya_assert(arena);
   nya_assert(str);
 
-  NYA_StringArray arr    = nya_array_new(arena, NYA_String);
-  NYA_String      buffer = nya_string_new(arena);
+  NYA_StringArray arr    = nya_array_create(arena, NYA_String);
+  NYA_String      buffer = nya_string_create(arena);
 
   nya_array_foreach (str, ch) {
     if (isspace(*ch)) {

@@ -100,9 +100,9 @@ nya_derive_array(f128_4x4);
 
 #define _NYA_ARRAY_DEFAULT_CAPACITY 16
 
-#define nya_array_new(arena_ptr, item_type)                                                                            \
-  nya_array_new_with_capacity(arena_ptr, item_type, _NYA_ARRAY_DEFAULT_CAPACITY)
-#define nya_array_new_with_capacity(arena_ptr, item_type, initial_capacity)                                            \
+#define nya_array_create(arena_ptr, item_type)                                                                         \
+  nya_array_create_with_capacity(arena_ptr, item_type, _NYA_ARRAY_DEFAULT_CAPACITY)
+#define nya_array_create_with_capacity(arena_ptr, item_type, initial_capacity)                                         \
   (item_type##Array) {                                                                                                 \
     .items = nya_arena_alloc(arena_ptr, (initial_capacity) * sizeof(item_type)), .length = 0,                          \
     .capacity = (initial_capacity), .arena = (arena_ptr),                                                              \
@@ -113,7 +113,7 @@ nya_derive_array(f128_4x4);
     nya_assert_type_match(arena_ptr, (NYA_Arena*)0);                                                                   \
     nya_assert_type_match(carray, (item_type*)0);                                                                      \
     nya_assert_type_match(carray_length, (u64)0);                                                                      \
-    item_type##Array arr = nya_array_new_with_capacity(arena_ptr, item_type, carray_length);                           \
+    item_type##Array arr = nya_array_create_with_capacity(arena_ptr, item_type, carray_length);                        \
     nya_range_for_t (u64, idx, 0, carray_length) nya_array_push_back(&arr, (carray)[idx]);                             \
     arr;                                                                                                               \
   })
@@ -122,7 +122,7 @@ nya_derive_array(f128_4x4);
   ({                                                                                                                   \
     nya_assert_type_match(arena_ptr, (NYA_Arena*)0);                                                                   \
     nya_assert_type_match(argv, (const char**)0);                                                                      \
-    NYA_StringArray args = nya_array_new_with_capacity(&arena, string, argc);                                          \
+    NYA_StringArray args = nya_array_create_with_capacity(&arena, string, argc);                                       \
     nya_range_for (idx, 0, argc) nya_array_push_back(&args, nya_string_from(&arena, (argv)[idx]));                     \
     args;                                                                                                              \
   })

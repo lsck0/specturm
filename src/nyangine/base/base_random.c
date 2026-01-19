@@ -133,7 +133,7 @@ NYA_INTERNAL void _nya_rng_fill_buffer(NYA_RNG* rng) {
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_RNG nya_rng_new_with_options(NYA_RNGOptions options) {
+NYA_RNG nya_rng_create_with_options(NYA_RNGOptions options) {
   NYA_RNG rng     = {0};
   u64     seed[4] = {0};
 

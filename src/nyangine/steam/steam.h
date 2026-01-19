@@ -23,10 +23,10 @@
  */
 
 typedef enum {
-  NYA_STEAM_INIT_OK               = 0,
-  NYA_STEAM_INIT_FAILED_GENERIC   = 1,
-  NYA_STEAM_INIT_NO_STEAM_CLIENT  = 2,
-  NYA_STEAM_INIT_VERSION_MISMATCH = 3,
+  nya_system_steam_init_OK               = 0,
+  nya_system_steam_init_FAILED_GENERIC   = 1,
+  nya_system_steam_init_NO_STEAM_CLIENT  = 2,
+  nya_system_steam_init_VERSION_MISMATCH = 3,
 } NYA_SteamInitResult;
 
 /*
@@ -35,8 +35,17 @@ typedef enum {
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_API NYA_EXTERN NYA_SteamInitResult nya_steam_init(OUT NYA_CString err_msg);
-NYA_API NYA_EXTERN void                nya_steam_shutdown(void);
-NYA_API NYA_EXTERN b8                  nya_steam_is_running(void);
-NYA_API NYA_EXTERN void                nya_steam_run_callbacks(void);
-NYA_API NYA_EXTERN b8                  nya_steam_restart_app_if_necessary(u32 app_id);
+/*
+ * ─────────────────────────────────────────────────────────
+ * SYSTEM FUNCTIONS
+ * ─────────────────────────────────────────────────────────
+ */
+
+NYA_API NYA_EXTERN NYA_SteamInitResult nya_system_steam_init(OUT NYA_CString err_msg);
+NYA_API NYA_EXTERN void                nya_system_steam_deinit(void);
+
+/*
+ * ─────────────────────────────────────────────────────────
+ * STEAM FUNCTIONS
+ * ─────────────────────────────────────────────────────────
+ */

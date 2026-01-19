@@ -21,29 +21,29 @@ extern b8                  SteamAPI_RestartAppIfNecessary(u32 unOwnAppID);
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_SteamInitResult nya_steam_init(OUT NYA_CString err_msg) {
+/*
+ * ─────────────────────────────────────────────────────────
+ * SYSTEM FUNCTIONS
+ * ─────────────────────────────────────────────────────────
+ */
+
+NYA_SteamInitResult nya_system_steam_init(OUT NYA_CString err_msg) {
   SteamErrMsg         raw_err = {0};
   ESteamAPIInitResult result  = SteamAPI_InitFlat(&raw_err);
 
-  if (err_msg != nullptr && result != NYA_STEAM_INIT_OK) {
+  if (err_msg != nullptr && result != nya_system_steam_init_OK) {
     for (s32 i = 0; i < 1024 && raw_err[i] != '\0'; i++) err_msg[i] = raw_err[i];
   }
 
   return (NYA_SteamInitResult)result;
 }
 
-void nya_steam_shutdown(void) {
+void nya_system_steam_deinit(void) {
   SteamAPI_Shutdown();
 }
 
-b8 nya_steam_is_running(void) {
-  return SteamAPI_IsSteamRunning();
-}
-
-void nya_steam_run_callbacks(void) {
-  SteamAPI_RunCallbacks();
-}
-
-b8 nya_steam_restart_app_if_necessary(u32 app_id) {
-  return SteamAPI_RestartAppIfNecessary(app_id);
-}
+/*
+ * ─────────────────────────────────────────────────────────
+ * STEAM FUNCTIONS
+ * ─────────────────────────────────────────────────────────
+ */

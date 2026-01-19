@@ -19,8 +19,8 @@ void nya_command_run(NYA_Command* command) {
 
   if (nya_flag_check(command->flags, NYA_COMMAND_FLAG_OUTPUT_CAPTURE)) {
     nya_assert(command->arena != nullptr, "Arena must be provided when capturing output.");
-    command->stdout_content = nya_string_new(command->arena);
-    command->stderr_content = nya_string_new(command->arena);
+    command->stdout_content = nya_string_create(command->arena);
+    command->stderr_content = nya_string_create(command->arena);
   }
 
   pid_t pid = fork();

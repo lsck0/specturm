@@ -12,7 +12,7 @@
  * ─────────────────────────────────────────────────────────
  */
 
-f16_2x2 nya_matrix_new(f16x2 row1, f16x2 row2) __attr_overloaded {
+f16_2x2 nya_matrix_create(f16x2 row1, f16x2 row2) __attr_overloaded {
   f16_2x2 result;
 
   result[0][0] = row1[0];
@@ -23,7 +23,7 @@ f16_2x2 nya_matrix_new(f16x2 row1, f16x2 row2) __attr_overloaded {
   return result;
 }
 
-f16_3x3 nya_matrix_new(f16x3 row1, f16x3 row2, f16x3 row3) __attr_overloaded {
+f16_3x3 nya_matrix_create(f16x3 row1, f16x3 row2, f16x3 row3) __attr_overloaded {
   f16_3x3 result;
 
   result[0][0] = row1[0];
@@ -39,7 +39,7 @@ f16_3x3 nya_matrix_new(f16x3 row1, f16x3 row2, f16x3 row3) __attr_overloaded {
   return result;
 }
 
-f16_4x4 nya_matrix_new(f16x4 row1, f16x4 row2, f16x4 row3, f16x4 row4) __attr_overloaded {
+f16_4x4 nya_matrix_create(f16x4 row1, f16x4 row2, f16x4 row3, f16x4 row4) __attr_overloaded {
   f16_4x4 result;
 
   result[0][0] = row1[0];
@@ -62,7 +62,7 @@ f16_4x4 nya_matrix_new(f16x4 row1, f16x4 row2, f16x4 row3, f16x4 row4) __attr_ov
   return result;
 }
 
-f32_2x2 nya_matrix_new(f32x2 row1, f32x2 row2) __attr_overloaded {
+f32_2x2 nya_matrix_create(f32x2 row1, f32x2 row2) __attr_overloaded {
   f32_2x2 result;
 
   result[0][0] = row1[0];
@@ -73,7 +73,7 @@ f32_2x2 nya_matrix_new(f32x2 row1, f32x2 row2) __attr_overloaded {
   return result;
 }
 
-f32_3x3 nya_matrix_new(f32x3 row1, f32x3 row2, f32x3 row3) __attr_overloaded {
+f32_3x3 nya_matrix_create(f32x3 row1, f32x3 row2, f32x3 row3) __attr_overloaded {
   f32_3x3 result;
 
   result[0][0] = row1[0];
@@ -89,7 +89,7 @@ f32_3x3 nya_matrix_new(f32x3 row1, f32x3 row2, f32x3 row3) __attr_overloaded {
   return result;
 }
 
-f32_4x4 nya_matrix_new(f32x4 row1, f32x4 row2, f32x4 row3, f32x4 row4) __attr_overloaded {
+f32_4x4 nya_matrix_create(f32x4 row1, f32x4 row2, f32x4 row3, f32x4 row4) __attr_overloaded {
   f32_4x4 result;
 
   result[0][0] = row1[0];
@@ -112,7 +112,7 @@ f32_4x4 nya_matrix_new(f32x4 row1, f32x4 row2, f32x4 row3, f32x4 row4) __attr_ov
   return result;
 }
 
-f64_2x2 nya_matrix_new(f64x2 row1, f64x2 row2) __attr_overloaded {
+f64_2x2 nya_matrix_create(f64x2 row1, f64x2 row2) __attr_overloaded {
   f64_2x2 result;
 
   result[0][0] = row1[0];
@@ -123,7 +123,7 @@ f64_2x2 nya_matrix_new(f64x2 row1, f64x2 row2) __attr_overloaded {
   return result;
 }
 
-f64_3x3 nya_matrix_new(f64x3 row1, f64x3 row2, f64x3 row3) __attr_overloaded {
+f64_3x3 nya_matrix_create(f64x3 row1, f64x3 row2, f64x3 row3) __attr_overloaded {
   f64_3x3 result;
 
   result[0][0] = row1[0];
@@ -139,7 +139,7 @@ f64_3x3 nya_matrix_new(f64x3 row1, f64x3 row2, f64x3 row3) __attr_overloaded {
   return result;
 }
 
-f64_4x4 nya_matrix_new(f64x4 row1, f64x4 row2, f64x4 row3, f64x4 row4) __attr_overloaded {
+f64_4x4 nya_matrix_create(f64x4 row1, f64x4 row2, f64x4 row3, f64x4 row4) __attr_overloaded {
   f64_4x4 result;
 
   result[0][0] = row1[0];
@@ -162,7 +162,7 @@ f64_4x4 nya_matrix_new(f64x4 row1, f64x4 row2, f64x4 row3, f64x4 row4) __attr_ov
   return result;
 }
 
-f128_2x2 nya_matrix_new(f128x2 row1, f128x2 row2) __attr_overloaded {
+f128_2x2 nya_matrix_create(f128x2 row1, f128x2 row2) __attr_overloaded {
   f128_2x2 result;
 
   result[0][0] = row1[0];
@@ -173,7 +173,7 @@ f128_2x2 nya_matrix_new(f128x2 row1, f128x2 row2) __attr_overloaded {
   return result;
 }
 
-f128_3x3 nya_matrix_new(f128x3 row1, f128x3 row2, f128x3 row3) __attr_overloaded {
+f128_3x3 nya_matrix_create(f128x3 row1, f128x3 row2, f128x3 row3) __attr_overloaded {
   f128_3x3 result;
 
   result[0][0] = row1[0];
@@ -189,7 +189,7 @@ f128_3x3 nya_matrix_new(f128x3 row1, f128x3 row2, f128x3 row3) __attr_overloaded
   return result;
 }
 
-f128_4x4 nya_matrix_new(f128x4 row1, f128x4 row2, f128x4 row3, f128x4 row4) __attr_overloaded {
+f128_4x4 nya_matrix_create(f128x4 row1, f128x4 row2, f128x4 row3, f128x4 row4) __attr_overloaded {
   f128_4x4 result;
 
   result[0][0] = row1[0];
@@ -212,7 +212,7 @@ f128_4x4 nya_matrix_new(f128x4 row1, f128x4 row2, f128x4 row3, f128x4 row4) __at
   return result;
 }
 
-f16_2x2 nya_matrix_new(f16 entries[2][2]) __attr_overloaded {
+f16_2x2 nya_matrix_create(f16 entries[2][2]) __attr_overloaded {
   f16_2x2 result;
   for (s32 i = 0; i < 2; ++i) {
     for (s32 j = 0; j < 2; ++j) result[i][j] = entries[i][j];
@@ -220,7 +220,7 @@ f16_2x2 nya_matrix_new(f16 entries[2][2]) __attr_overloaded {
   return result;
 }
 
-f16_3x3 nya_matrix_new(f16 entries[3][3]) __attr_overloaded {
+f16_3x3 nya_matrix_create(f16 entries[3][3]) __attr_overloaded {
   f16_3x3 result;
   for (s32 i = 0; i < 3; ++i) {
     for (s32 j = 0; j < 3; ++j) result[i][j] = entries[i][j];
@@ -228,7 +228,7 @@ f16_3x3 nya_matrix_new(f16 entries[3][3]) __attr_overloaded {
   return result;
 }
 
-f16_4x4 nya_matrix_new(f16 entries[4][4]) __attr_overloaded {
+f16_4x4 nya_matrix_create(f16 entries[4][4]) __attr_overloaded {
   f16_4x4 result;
   for (s32 i = 0; i < 4; ++i) {
     for (s32 j = 0; j < 4; ++j) result[i][j] = entries[i][j];
@@ -236,7 +236,7 @@ f16_4x4 nya_matrix_new(f16 entries[4][4]) __attr_overloaded {
   return result;
 }
 
-f32_2x2 nya_matrix_new(f32 entries[2][2]) __attr_overloaded {
+f32_2x2 nya_matrix_create(f32 entries[2][2]) __attr_overloaded {
   f32_2x2 result;
   for (s32 i = 0; i < 2; ++i) {
     for (s32 j = 0; j < 2; ++j) result[i][j] = entries[i][j];
@@ -244,7 +244,7 @@ f32_2x2 nya_matrix_new(f32 entries[2][2]) __attr_overloaded {
   return result;
 }
 
-f32_3x3 nya_matrix_new(f32 entries[3][3]) __attr_overloaded {
+f32_3x3 nya_matrix_create(f32 entries[3][3]) __attr_overloaded {
   f32_3x3 result;
   for (s32 i = 0; i < 3; ++i) {
     for (s32 j = 0; j < 3; ++j) result[i][j] = entries[i][j];
@@ -252,7 +252,7 @@ f32_3x3 nya_matrix_new(f32 entries[3][3]) __attr_overloaded {
   return result;
 }
 
-f32_4x4 nya_matrix_new(f32 entries[4][4]) __attr_overloaded {
+f32_4x4 nya_matrix_create(f32 entries[4][4]) __attr_overloaded {
   f32_4x4 result;
   for (s32 i = 0; i < 4; ++i) {
     for (s32 j = 0; j < 4; ++j) result[i][j] = entries[i][j];
@@ -260,7 +260,7 @@ f32_4x4 nya_matrix_new(f32 entries[4][4]) __attr_overloaded {
   return result;
 }
 
-f64_2x2 nya_matrix_new(f64 entries[2][2]) __attr_overloaded {
+f64_2x2 nya_matrix_create(f64 entries[2][2]) __attr_overloaded {
   f64_2x2 result;
   for (s32 i = 0; i < 2; ++i) {
     for (s32 j = 0; j < 2; ++j) result[i][j] = entries[i][j];
@@ -268,7 +268,7 @@ f64_2x2 nya_matrix_new(f64 entries[2][2]) __attr_overloaded {
   return result;
 }
 
-f64_3x3 nya_matrix_new(f64 entries[3][3]) __attr_overloaded {
+f64_3x3 nya_matrix_create(f64 entries[3][3]) __attr_overloaded {
   f64_3x3 result;
   for (s32 i = 0; i < 3; ++i) {
     for (s32 j = 0; j < 3; ++j) result[i][j] = entries[i][j];
@@ -276,7 +276,7 @@ f64_3x3 nya_matrix_new(f64 entries[3][3]) __attr_overloaded {
   return result;
 }
 
-f64_4x4 nya_matrix_new(f64 entries[4][4]) __attr_overloaded {
+f64_4x4 nya_matrix_create(f64 entries[4][4]) __attr_overloaded {
   f64_4x4 result;
   for (s32 i = 0; i < 4; ++i) {
     for (s32 j = 0; j < 4; ++j) result[i][j] = entries[i][j];
@@ -284,7 +284,7 @@ f64_4x4 nya_matrix_new(f64 entries[4][4]) __attr_overloaded {
   return result;
 }
 
-f128_2x2 nya_matrix_new(f128 entries[2][2]) __attr_overloaded {
+f128_2x2 nya_matrix_create(f128 entries[2][2]) __attr_overloaded {
   f128_2x2 result;
   for (s32 i = 0; i < 2; ++i) {
     for (s32 j = 0; j < 2; ++j) result[i][j] = entries[i][j];
@@ -292,7 +292,7 @@ f128_2x2 nya_matrix_new(f128 entries[2][2]) __attr_overloaded {
   return result;
 }
 
-f128_3x3 nya_matrix_new(f128 entries[3][3]) __attr_overloaded {
+f128_3x3 nya_matrix_create(f128 entries[3][3]) __attr_overloaded {
   f128_3x3 result;
   for (s32 i = 0; i < 3; ++i) {
     for (s32 j = 0; j < 3; ++j) result[i][j] = entries[i][j];

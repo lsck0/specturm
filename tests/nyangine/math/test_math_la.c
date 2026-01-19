@@ -111,7 +111,7 @@ s32 main(void) {
   nya_assert(vec2_result.y == 4.0F);
 
   // Custom 2x2 matrix
-  f32_2x2 mat2_custom        = nya_matrix_new((f32[2][2]){
+  f32_2x2 mat2_custom        = nya_matrix_create((f32[2][2]){
       {2.0F, 0.0F},
       {0.0F, 3.0F},
   });
@@ -129,7 +129,7 @@ s32 main(void) {
   // TEST: 3x3 matrix operations
   // ─────────────────────────────────────────────────────────────────────────────
   f32_3x3 mat_a = f32_3x3_id;
-  f32_3x3 mat_b = nya_matrix_new((f32[3][3]){
+  f32_3x3 mat_b = nya_matrix_create((f32[3][3]){
       {1.0F, 2.0F, 3.0F},
       {4.0F, 5.0F, 6.0F},
       {7.0F, 8.0F, 9.0F},
@@ -178,7 +178,7 @@ s32 main(void) {
   nya_assert(vec4_id_result.w == 4.0F);
 
   // Custom 4x4 matrix (scaling)
-  f32_4x4 mat4_scale  = nya_matrix_new((f32[4][4]){
+  f32_4x4 mat4_scale  = nya_matrix_create((f32[4][4]){
       {2.0F, 0.0F, 0.0F, 0.0F},
       {0.0F, 3.0F, 0.0F, 0.0F},
       {0.0F, 0.0F, 4.0F, 0.0F},
@@ -217,7 +217,7 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   // TEST: Matrix creation from row vectors
   // ─────────────────────────────────────────────────────────────────────────────
-  f32_3x3 mat_from_rows = nya_matrix_new(f32x3_unit_x, f32x3_unit_y, f32x3_unit_z);
+  f32_3x3 mat_from_rows = nya_matrix_create(f32x3_unit_x, f32x3_unit_y, f32x3_unit_z);
   f32x3   row_test      = nya_matrix_times_vector(mat_from_rows, (f32x3){1.0F, 1.0F, 1.0F});
   nya_assert(row_test.x == 1.0F);
   nya_assert(row_test.y == 1.0F);

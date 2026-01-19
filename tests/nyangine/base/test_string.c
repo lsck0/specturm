@@ -6,16 +6,16 @@
 #include "nyangine/nyangine.h"
 
 s32 main(void) {
-  NYA_Arena arena = nya_arena_new(.name = "test_string");
+  NYA_Arena arena = nya_arena_create(.name = "test_string");
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // TEST: nya_string_new / nya_string_new_with_capacity
+  // TEST: nya_string_create / nya_string_create_with_capacity
   // ─────────────────────────────────────────────────────────────────────────────
-  NYA_String empty_str = nya_string_new(&arena);
+  NYA_String empty_str = nya_string_create(&arena);
   nya_assert(empty_str.length == 0);
   nya_assert(empty_str.items != nullptr);
 
-  NYA_String cap_str = nya_string_new_with_capacity(&arena, 128);
+  NYA_String cap_str = nya_string_create_with_capacity(&arena, 128);
   nya_assert(cap_str.length == 0);
   nya_assert(cap_str.capacity == 128);
 
@@ -261,7 +261,7 @@ s32 main(void) {
   nya_string_reverse(&reverse_str);
   nya_assert(nya_string_equals(&reverse_str, "edcba") == true);
 
-  NYA_String reverse_empty = nya_string_new(&arena);
+  NYA_String reverse_empty = nya_string_create(&arena);
   nya_string_reverse(&reverse_empty);
   nya_assert(nya_string_is_empty(&reverse_empty) == true);
 
@@ -352,7 +352,7 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   // TEST: nya_string_reserve
   // ─────────────────────────────────────────────────────────────────────────────
-  NYA_String reserve_str = nya_string_new(&arena);
+  NYA_String reserve_str = nya_string_create(&arena);
   nya_string_reserve(&reserve_str, 256);
   nya_assert(reserve_str.capacity >= 256);
 
@@ -363,7 +363,7 @@ s32 main(void) {
   nya_string_extend_front(&extend_front_str, "hello ");
   nya_assert(nya_string_equals(&extend_front_str, "hello world") == true);
 
-  NYA_String extend_front_empty = nya_string_new(&arena);
+  NYA_String extend_front_empty = nya_string_create(&arena);
   nya_string_extend_front(&extend_front_empty, "prefix");
   nya_assert(nya_string_equals(&extend_front_empty, "prefix") == true);
 
@@ -375,7 +375,7 @@ s32 main(void) {
   nya_string_extend_front(&extend_front_str2, &ext_front);
   nya_assert(nya_string_equals(&extend_front_str2, "foobar") == true);
 
-  NYA_String extend_front_empty2 = nya_string_new(&arena);
+  NYA_String extend_front_empty2 = nya_string_create(&arena);
   NYA_String ext_front2          = nya_string_from(&arena, "start");
   nya_string_extend_front(&extend_front_empty2, &ext_front2);
   nya_assert(nya_string_equals(&extend_front_empty2, "start") == true);

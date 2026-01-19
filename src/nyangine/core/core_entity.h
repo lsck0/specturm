@@ -8,7 +8,22 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-typedef struct NYA_Entity NYA_Entity;
+typedef struct NYA_Entity       NYA_Entity;
+typedef struct NYA_EntitySystem NYA_EntitySystem;
+
+/*
+ * ─────────────────────────────────────────────────────────
+ * SYSTEM STRUCT
+ * ─────────────────────────────────────────────────────────
+ */
+
+struct NYA_EntitySystem {};
+
+/*
+ * ─────────────────────────────────────────────────────────
+ * ENTITY STRUCT
+ * ─────────────────────────────────────────────────────────
+ */
 
 typedef enum NYA_EntityFlag {
   NYA_ENTITY_FLAG_NONE = 0,
@@ -22,11 +37,25 @@ struct NYA_Entity {
   void (*on_update)(f32 delta_time);
   void (*on_event)(NYA_Event* event);
   void (*on_render)(void);
-  NYA_EventHook event_hooks[NYA_EVENT_COUNT];
 };
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  * FUNCTIONS
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+/*
+ * ─────────────────────────────────────────────────────────
+ * SYSTEM FUNCTIONS
+ * ─────────────────────────────────────────────────────────
+ */
+
+NYA_API NYA_EXTERN void nya_system_entity_init(void);
+NYA_API NYA_EXTERN void nya_system_entity_deinit(void);
+
+/*
+ * ─────────────────────────────────────────────────────────
+ * ENTITY FUNCTIONS
+ * ─────────────────────────────────────────────────────────
  */

@@ -25,8 +25,8 @@ NYA_Arena nya_arena_global;
 NYA_Arena nya_arena_temp;
 
 __attr_constructor NYA_INTERNAL void _nya_arena_init(void) {
-  nya_arena_global = nya_arena_new(.name = "global_arena");
-  nya_arena_temp   = nya_arena_new(.name = "temp_arena");
+  nya_arena_global = nya_arena_create(.name = "global_arena");
+  nya_arena_temp   = nya_arena_create(.name = "temp_arena");
 }
 
 __attr_destructor NYA_INTERNAL void _nya_arena_shutdown(void) {
@@ -40,7 +40,7 @@ __attr_destructor NYA_INTERNAL void _nya_arena_shutdown(void) {
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_Arena _nya_arena_nodebug_new_with_options(NYA_ArenaOptions options) {
+NYA_Arena _nya_arena_nodebug_create_with_options(NYA_ArenaOptions options) {
   nya_assert(options.region_size >= nya_kibyte_to_byte(4), "Minimum region size is 4 KiB.");
   nya_assert(options.alignment >= 8, "Minimum alignment is 8 bytes.");
   nya_assert(options.region_size % options.alignment == 0, "Region size must be divisible by alignment.");
@@ -283,7 +283,7 @@ void* _nya_arena_nodebug_move(NYA_Arena* src, NYA_Arena* dst, void* ptr, u64 siz
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_Arena _nya_arena_debug_new_with_options(
+NYA_Arena _nya_arena_debug_create_with_options(
     NYA_ArenaOptions options,
     NYA_ConstCString function,
     NYA_ConstCString file,
@@ -298,7 +298,7 @@ NYA_Arena _nya_arena_debug_new_with_options(
   };
   _nya_arena_action_insert(action);
 
-  return _nya_arena_nodebug_new_with_options(options);
+  return _nya_arena_nodebug_create_with_options(options);
 }
 
 void* _nya_arena_debug_alloc(NYA_Arena* arena, u64 size, NYA_ConstCString function, NYA_ConstCString file, u32 line) {
@@ -461,10 +461,10 @@ void* _nya_arena_debug_move(
       .line_number   = line,
       .function_name = function,
       .move          = {
-                        .ptr      = ptr,
-                        .size     = size,
+                        .ptr               = ptr,
+                        .size              = size,
                         .target_arena_name = dst->options.name,
-                        .target_ptr = move_ptr,
+                        .target_ptr        = move_ptr,
                         },
   };
   _nya_arena_action_insert(action);

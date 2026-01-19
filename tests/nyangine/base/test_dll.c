@@ -18,7 +18,7 @@ typedef struct {
 } TestDLL;
 
 s32 main(void) {
-  NYA_Arena arena = nya_arena_new(.name = "test_dll");
+  NYA_Arena arena = nya_arena_create(.name = "test_dll");
 
   // ─────────────────────────────────────────────────────────────────────────────
   // TEST: nya_dll_node_push_back on empty list

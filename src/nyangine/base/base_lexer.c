@@ -6,17 +6,17 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_Lexer nya_lexer_new(NYA_ConstCString source) {
+NYA_Lexer nya_lexer_create(NYA_ConstCString source) {
   nya_assert(source != nullptr);
 
   NYA_Lexer lexer = {
-      .arena               = nya_arena_new(),
+      .arena               = nya_arena_create(),
       .source              = source,
       .cursor              = 0,
       .current_line_number = 1,
       .current_char_number = 1,
   };
-  lexer.tokens = nya_array_new(&lexer.arena, NYA_Token);
+  lexer.tokens = nya_array_create(&lexer.arena, NYA_Token);
 
   return lexer;
 }
