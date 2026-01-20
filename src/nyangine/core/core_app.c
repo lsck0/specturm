@@ -2,6 +2,7 @@
 #include "SDL3/SDL_init.h"
 #include "SDL3/SDL_timer.h"
 
+#include "nyangine/core/core_event.h"
 #include "nyangine/nyangine.h"
 
 /*
@@ -90,26 +91,34 @@ void nya_app_run(void) {
     app->previous_time_ms  = current_time_ms;
     app->time_behind_ms   += (s64)elapsed_ms;
 
-    // input and event handling
+    // handle events
     {
-      SDL_Event event;
-      while (SDL_PollEvent(&event)) {
-        // app and window closing
-        if (event.type == SDL_EVENT_QUIT) app->should_quit_game_loop = true;
-        if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
-          nya_array_for (&app->window_system.windows, window_idx) {
-            void*       window_id  = app->window_system.windows.items[window_idx].id;
-            SDL_Window* sdl_window = app->window_system.windows.items[window_idx].sdl_window;
+      nya_event_drain_sdl_events();
 
-            if (SDL_GetWindowID(sdl_window) == event.window.windowID) {
-              nya_window_destroy(window_id);
-              if (app->window_system.windows.length == 0) app->should_quit_game_loop = true;
-              break;
-            }
-          }
+      NYA_Event event;
+      while (nya_event_poll(&event)) {
+        if (event.was_handled) continue;
+
+        if (event.type == NYA_EVENT_QUIT) app->should_quit_game_loop = true;
+        if (event.type == NYA_EVENT_WINDOW_CLOSE_REQUESTED) {
+          nya_window_destroy(event.as_window_event.window_id);
+          if (app->window_system.windows.length == 0) app->should_quit_game_loop = true;
+        }
+        if (event.type == NYA_EVENT_WINDOW_RESIZED) {
+          NYA_Window* window = nya_window_get(event.as_window_resized_event.window_id);
+          window->width      = event.as_window_resized_event.width;
+          window->height     = event.as_window_resized_event.height;
         }
 
-        // passing event to the event system
+        nya_array_foreach (&app->window_system.windows, window) {
+          nya_array_foreach_reverse (&window->layer_stack, layer) {
+            if (layer->enabled && layer->on_event != nullptr) {
+              layer->on_event(window, &event);
+              if (event.was_handled) break;
+            }
+          }
+          if (event.was_handled) break;
+        }
       }
     }
 

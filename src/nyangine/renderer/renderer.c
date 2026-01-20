@@ -51,6 +51,8 @@ void nya_system_render_for_window_init(NYA_Window* window) {
       app->config.vsync_enabled ? SDL_GPU_PRESENTMODE_VSYNC : SDL_GPU_PRESENTMODE_MAILBOX
   );
   nya_assert(ok, "SDL_SetGPUSwapchainParameters() failed: %s", SDL_GetError());
+
+  window->render_system = (NYA_RenderSystemWindow){0};
 }
 
 void nya_system_render_for_window_deinit(NYA_Window* window) {
@@ -81,8 +83,8 @@ void nya_render_begin(NYA_Window* window) {
       command_buffer,
       window->sdl_window,
       &swapchain_texture,
-      &window->width,
-      &window->height
+      &window->screen_width,
+      &window->screed_height
   );
   window->render_system.swapchain_texture = swapchain_texture;
   if (swapchain_texture == nullptr) return;

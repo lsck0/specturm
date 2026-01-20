@@ -50,6 +50,8 @@ void* nya_window_create(const char* title, u32 initial_width, u32 initial_height
   NYA_Window nya_window = {
       .id          = id != nullptr ? id : (void*)(uintmax_t)(++id_counter),
       .sdl_window  = sdl_window,
+      .width       = initial_width,
+      .height      = initial_height,
       .layer_stack = nya_array_create(&app->global_allocator, NYA_Layer),
   };
   nya_system_render_for_window_init(&nya_window);

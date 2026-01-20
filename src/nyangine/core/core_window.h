@@ -42,8 +42,14 @@ typedef enum {
 struct NYA_Window {
   void*       id;
   SDL_Window* sdl_window;
-  u32         width;
-  u32         height;
+
+  // controlled by NYA_WINDOW_RESIZE events
+  u32 width;
+  u32 height;
+
+  // this is the swapchain texture size
+  u32 screen_width;
+  u32 screed_height;
 
   NYA_LayerArray layer_stack;
 

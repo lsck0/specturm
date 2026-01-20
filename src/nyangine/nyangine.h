@@ -23,6 +23,7 @@
 #include "nyangine/base/base_hash.h"
 #include "nyangine/base/base_hmap.h"
 #include "nyangine/base/base_hset.h"
+#include "nyangine/base/base_keyboard.h"
 #include "nyangine/base/base_lexer.h"
 #include "nyangine/base/base_logging.h"
 #include "nyangine/base/base_memory.h"

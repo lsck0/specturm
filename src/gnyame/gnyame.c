@@ -3,6 +3,7 @@
 void on_create(void);
 void on_destroy(void);
 void on_update(NYA_Window* window, f32 delta_time);
+void on_event(NYA_Window* window, NYA_Event* event);
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -28,7 +29,7 @@ void gnyame_init(s32 argc, char** argv) {
           .on_create  = on_create,
           .on_destroy = on_destroy,
           .on_update  = on_update,
-          .on_event   = nullptr,
+          .on_event   = on_event,
           .on_render  = nullptr,
       }
   );
@@ -61,4 +62,15 @@ void on_update(NYA_Window* window, f32 delta_time) {
   nya_unused(delta_time);
 
   nya_info("gnyame updating");
+}
+
+void on_event(NYA_Window* window, NYA_Event* event) {
+  nya_unused(window);
+
+  if (event->type == NYA_EVENT_KEY_DOWN && event->as_key_event.key == NYA_KEY_F) {
+    nya_info("Key F pressed");
+    nya_event_dispatch((NYA_Event){
+        .type = NYA_EVENT_QUIT,
+    });
+  }
 }

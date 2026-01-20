@@ -55,6 +55,7 @@ Diagnostics:
         cert-exp42-c,
         cert-int09-c,
         concurrency-mt-unsafe,
+        misc-confusable-identifiers,
         misc-no-recursion,
         modernize-use-nullptr,
         performance-no-int-to-ptr,
