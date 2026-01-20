@@ -28,7 +28,8 @@ s32 main(void) {
     (void)bad_rng;
   });
   nya_assert_panic({
-    NYA_RNG bad_rng = nya_rng_create(.seed = "AAasd786hgfasPOAISDnAAAAAAAAAAAaafsdsdsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+    NYA_RNG bad_rng =
+        nya_rng_create(.seed = "AAasd786hgfasPOAISDnAAAAAAAAAAAaafsdsdsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
     (void)bad_rng;
   });
   nya_assert_panic({

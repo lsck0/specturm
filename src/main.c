@@ -42,8 +42,9 @@ void*             gnyame_dll;
 gnyame_init_fn*   gnyame_init;
 gnyame_run_fn*    gnyame_run;
 gnyame_deinit_fn* gnyame_deinit;
-u64               gnyame_dll_last_modified;
-atomic b8         gnyame_dll_reload_requested = false;
+atomic u64        gnyame_dll_last_modified;
+atomic b8         gnyame_dll_reload_requested         = false;
+atomic b8         gnyame_dll_watch_thread_should_exit = false;
 
 b8    dll_load(void);
 b8    dll_unload(void);
@@ -91,6 +92,9 @@ before_run:
 
   gnyame_deinit();
 
+  gnyame_dll_watch_thread_should_exit = true;
+  pthread_join(thread, nullptr);
+
   dlclose(gnyame_dll);
 
   return EXIT_SUCCESS;
@@ -112,12 +116,14 @@ b8 dll_load(void) {
     return false;
   }
 
-  b8 ok = nya_filesystem_last_modified(DLL_PATH, &gnyame_dll_last_modified);
+  u64 last_mod_tmp;
+  b8  ok = nya_filesystem_last_modified(DLL_PATH, &last_mod_tmp);
   if (!ok) {
     (void)fprintf(stderr, "Failed to get last modified time for %s.\n", DLL_PATH);
     dlclose(gnyame_dll);
     return false;
   }
+  gnyame_dll_last_modified = last_mod_tmp;
 
   return true;
 }
@@ -142,7 +148,7 @@ b8 dll_unload(void) {
 void* dll_watch_thread_func(void* arg) {
   nya_unused(arg);
 
-  while (true) {
+  while (!gnyame_dll_watch_thread_should_exit) {
     u64 last_modified;
     b8  ok = nya_filesystem_last_modified(DLL_PATH, &last_modified);
     if (!ok) continue;

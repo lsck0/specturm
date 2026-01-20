@@ -5,7 +5,7 @@
 #include "SDL3/SDL_mutex.h"
 
 #include "nyangine/base/base_array.h"
-#include "nyangine/base/base_keyboard.h"
+#include "nyangine/base/base_keys.h"
 #include "nyangine/base/base_types.h"
 
 /*
@@ -46,6 +46,8 @@ struct NYA_EventSystem {
 
 typedef enum {
   NYA_EVENT_INVALID = 0,
+
+  NYA_EVENT_NEW_TICK,
 
   NYA_EVENT_KEY_DOWN,
   NYA_EVENT_KEY_UP,
@@ -98,12 +100,14 @@ struct NYA_KeyEvent {
  * MOUSE EVENT STRUCTS
  * ─────────────────────────────────────────────────────────
  */
+typedef u8 NYA_MouseButton;
 
 #define NYA_MOUSE_BUTTON_LEFT   1
 #define NYA_MOUSE_BUTTON_MIDDLE 2
 #define NYA_MOUSE_BUTTON_RIGHT  3
 #define NYA_MOUSE_BUTTON_X1     4
 #define NYA_MOUSE_BUTTON_X2     5
+#define NYA_MOUSE_BUTTON_COUNT  6
 
 typedef enum {
   NYA_MOUSE_BUTTON_FLAG_NONE   = 0,
@@ -120,12 +124,12 @@ typedef enum {
 } NYA_MouseWheelDirection;
 
 struct NYA_MouseButtonEvent {
-  void* window_id;
-  b8    is_down;
-  u8    button;
-  u8    clicks;
-  f32   x;
-  f32   y;
+  void*           window_id;
+  b8              is_down;
+  NYA_MouseButton button;
+  u8              clicks;
+  f32             x;
+  f32             y;
 };
 
 struct NYA_MouseMovedEvent {

@@ -136,6 +136,7 @@ NYA_INTERNAL NYA_Event _nya_event_from_sdl_event(SDL_Event sdl_event) {
     case SDL_EVENT_MOUSE_BUTTON_DOWN: {
       event.type                            = NYA_EVENT_MOUSE_BUTTON_DOWN;
       event.as_mouse_button_event.window_id = _nya_event_sdl_window_id_to_nya_window_id(sdl_event.button.windowID);
+      event.as_mouse_button_event.is_down   = true;
       event.as_mouse_button_event.button    = sdl_event.button.button;
       event.as_mouse_button_event.x         = sdl_event.button.x;
       event.as_mouse_button_event.y         = sdl_event.button.y;
@@ -145,6 +146,7 @@ NYA_INTERNAL NYA_Event _nya_event_from_sdl_event(SDL_Event sdl_event) {
     case SDL_EVENT_MOUSE_BUTTON_UP: {
       event.type                            = NYA_EVENT_MOUSE_BUTTON_UP;
       event.as_mouse_button_event.window_id = _nya_event_sdl_window_id_to_nya_window_id(sdl_event.button.windowID);
+      event.as_mouse_button_event.is_down   = false;
       event.as_mouse_button_event.button    = sdl_event.button.button;
       event.as_mouse_button_event.x         = sdl_event.button.x;
       event.as_mouse_button_event.y         = sdl_event.button.y;

@@ -351,6 +351,151 @@ s32 main(void) {
   nya_hset_destroy(&ident_a);
   nya_hset_destroy(&ident_b);
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: zero value element
+  // ─────────────────────────────────────────────────────────────────────────────
+  u32HSet zero_set = nya_hset_create(&arena, u32);
+  nya_hset_insert(&zero_set, 0U);
+  nya_assert(zero_set.length == 1);
+  nya_assert(nya_hset_contains(&zero_set, 0U) == true);
+  nya_hset_remove(&zero_set, 0U);
+  nya_assert(zero_set.length == 0);
+  nya_assert(nya_hset_contains(&zero_set, 0U) == false);
+  nya_hset_destroy(&zero_set);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: duplicate insert is idempotent
+  // ─────────────────────────────────────────────────────────────────────────────
+  u32HSet dup_set2 = nya_hset_create(&arena, u32);
+  nya_hset_insert(&dup_set2, 42U);
+  nya_assert(dup_set2.length == 1);
+  nya_hset_insert(&dup_set2, 42U);
+  nya_assert(dup_set2.length == 1); // should still be 1
+  nya_hset_insert(&dup_set2, 42U);
+  nya_assert(dup_set2.length == 1);
+  nya_hset_destroy(&dup_set2);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: set operations with self - union with self
+  // ─────────────────────────────────────────────────────────────────────────────
+  u32HSet self_union = nya_hset_create(&arena, u32);
+  nya_hset_insert(&self_union, 1U);
+  nya_hset_insert(&self_union, 2U);
+  nya_hset_union(&self_union, &self_union); // A ∪ A = A
+  nya_assert(self_union.length == 2);
+  nya_assert(nya_hset_contains(&self_union, 1U) == true);
+  nya_assert(nya_hset_contains(&self_union, 2U) == true);
+  nya_hset_destroy(&self_union);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: set operations with self - intersection with self
+  // ─────────────────────────────────────────────────────────────────────────────
+  u32HSet self_inter = nya_hset_create(&arena, u32);
+  nya_hset_insert(&self_inter, 1U);
+  nya_hset_insert(&self_inter, 2U);
+  nya_hset_intersection(&self_inter, &self_inter); // A ∩ A = A
+  nya_assert(self_inter.length == 2);
+  nya_assert(nya_hset_contains(&self_inter, 1U) == true);
+  nya_assert(nya_hset_contains(&self_inter, 2U) == true);
+  nya_hset_destroy(&self_inter);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: set operations with self - difference with self
+  // ─────────────────────────────────────────────────────────────────────────────
+  u32HSet self_diff = nya_hset_create(&arena, u32);
+  nya_hset_insert(&self_diff, 1U);
+  nya_hset_insert(&self_diff, 2U);
+  nya_hset_difference(&self_diff, &self_diff); // A \ A = ∅
+  nya_assert(self_diff.length == 0);
+  nya_hset_destroy(&self_diff);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: set operations with self - symmetric difference with self
+  // ─────────────────────────────────────────────────────────────────────────────
+  u32HSet self_sym = nya_hset_create(&arena, u32);
+  nya_hset_insert(&self_sym, 1U);
+  nya_hset_insert(&self_sym, 2U);
+  nya_hset_symmetric_difference(&self_sym, &self_sym); // A △ A = ∅
+  nya_assert(self_sym.length == 0);
+  nya_hset_destroy(&self_sym);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: collision handling in small capacity
+  // ─────────────────────────────────────────────────────────────────────────────
+  u32HSet small_set = nya_hset_create_with_capacity(&arena, u32, 4);
+  for (u32 i = 0; i < 20; ++i) {
+    nya_hset_insert(&small_set, i);
+  }
+  nya_assert(small_set.length == 20);
+  for (u32 i = 0; i < 20; ++i) {
+    nya_assert(nya_hset_contains(&small_set, i) == true);
+  }
+  // Remove and check
+  for (u32 i = 0; i < 10; ++i) {
+    nya_hset_remove(&small_set, i);
+  }
+  nya_assert(small_set.length == 10);
+  for (u32 i = 10; i < 20; ++i) {
+    nya_assert(nya_hset_contains(&small_set, i) == true);
+  }
+  nya_hset_destroy(&small_set);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: clear and reuse
+  // ─────────────────────────────────────────────────────────────────────────────
+  u32HSet reuse_set = nya_hset_create(&arena, u32);
+  nya_hset_insert(&reuse_set, 1U);
+  nya_hset_insert(&reuse_set, 2U);
+  nya_hset_clear(&reuse_set);
+  nya_assert(reuse_set.length == 0);
+  nya_hset_insert(&reuse_set, 3U);
+  nya_hset_insert(&reuse_set, 4U);
+  nya_assert(reuse_set.length == 2);
+  nya_assert(nya_hset_contains(&reuse_set, 1U) == false);
+  nya_assert(nya_hset_contains(&reuse_set, 3U) == true);
+  nya_hset_destroy(&reuse_set);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: stress test - random insert/remove/contains
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    NYA_RNG rng     = nya_rng_create();
+    u32HSet stress  = nya_hset_create(&arena, u32);
+    b8      present[256] = {0};
+
+    NYA_RNGDistribution key_dist = {.type = NYA_RNG_DISTRIBUTION_UNIFORM, .uniform = {.min = 0, .max = 255}};
+    NYA_RNGDistribution op_dist  = {.type = NYA_RNG_DISTRIBUTION_UNIFORM, .uniform = {.min = 0, .max = 99}};
+
+    for (u32 iter = 0; iter < 10000; ++iter) {
+      u32 op  = nya_rng_sample_u32(&rng, op_dist);
+      u32 key = nya_rng_sample_u32(&rng, key_dist);
+
+      if (op < 60) {
+        nya_hset_insert(&stress, key);
+        present[key] = true;
+      } else if (op < 80) {
+        nya_hset_remove(&stress, key);
+        present[key] = false;
+      } else {
+        nya_assert(nya_hset_contains(&stress, key) == present[key]);
+      }
+    }
+
+    // Verify final state
+    u64 count = 0;
+    for (u32 i = 0; i < 256; ++i) {
+      if (present[i]) {
+        count++;
+        nya_assert(nya_hset_contains(&stress, i) == true);
+      } else {
+        nya_assert(nya_hset_contains(&stress, i) == false);
+      }
+    }
+    nya_assert(stress.length == count);
+
+    nya_hset_destroy(&stress);
+  }
+
   nya_arena_destroy(&arena);
   return 0;
 }

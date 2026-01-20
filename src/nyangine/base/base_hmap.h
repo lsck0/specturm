@@ -68,7 +68,7 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-#define nya_hmap_insert_unchecked(hmap_ptr, key, value)                                                                \
+#define nya_hmap_set_unchecked(hmap_ptr, key, value)                                                                   \
   ({                                                                                                                   \
     nya_assert_type_match(key, (hmap_ptr)->keys[0]);                                                                   \
     nya_assert_type_match(value, (hmap_ptr)->values[0]);                                                               \
@@ -76,6 +76,7 @@
     typeof(value) value_var  = value;                                                                                  \
     u64           index      = nya_hash_fnv1a(&key_var, sizeof(key_var)) % (hmap_ptr)->capacity;                       \
     u64           iterations = 0;                                                                                      \
+    b8            updated    = false;                                                                                  \
     while (iterations < (hmap_ptr)->capacity) {                                                                        \
       if (!(hmap_ptr)->occupied[index]) {                                                                              \
         (hmap_ptr)->keys[index]     = key_var;                                                                         \
@@ -84,9 +85,15 @@
         (hmap_ptr)->length++;                                                                                          \
         break;                                                                                                         \
       }                                                                                                                \
+      if (nya_memcmp(&(hmap_ptr)->keys[index], &key_var, sizeof(key_var)) == 0) {                                      \
+        (hmap_ptr)->values[index] = value_var;                                                                         \
+        updated                   = true;                                                                              \
+        break;                                                                                                         \
+      }                                                                                                                \
       index = (index + 1) % (hmap_ptr)->capacity;                                                                      \
       iterations++;                                                                                                    \
     }                                                                                                                  \
+    (void)updated;                                                                                                     \
   })
 
 #define nya_hmap_resize_and_rehash(hmap_ptr, new_capacity)                                                             \
@@ -105,7 +112,7 @@
                                                                                                                        \
     for (u64 i = 0; i < old_capacity; i++) {                                                                           \
       if (!old_occupied[i]) continue;                                                                                  \
-      nya_hmap_insert_unchecked(hmap_ptr, old_keys[i], old_values[i]);                                                 \
+      nya_hmap_set_unchecked(hmap_ptr, old_keys[i], old_values[i]);                                                    \
     }                                                                                                                  \
                                                                                                                        \
     nya_arena_free((hmap_ptr)->arena, old_keys, sizeof(*old_keys) * old_capacity);                                     \
@@ -163,14 +170,14 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-#define nya_hmap_insert(hmap_ptr, key, value)                                                                          \
+#define nya_hmap_set(hmap_ptr, key, value)                                                                             \
   ({                                                                                                                   \
     nya_assert_type_match(key, (hmap_ptr)->keys[0]);                                                                   \
     nya_assert_type_match(value, (hmap_ptr)->values[0]);                                                               \
     if (((f32)((hmap_ptr)->length + 1) / (f32)(hmap_ptr)->capacity) > _NYA_HASHMAP_LOAD_FACTOR) {                      \
       nya_hmap_resize_and_rehash(hmap_ptr, (hmap_ptr)->capacity * 2);                                                  \
     }                                                                                                                  \
-    nya_hmap_insert_unchecked(hmap_ptr, key, value);                                                                   \
+    nya_hmap_set_unchecked(hmap_ptr, key, value);                                                                      \
   })
 
 #define nya_hmap_remove(hmap_ptr, key)                                                                                 \

@@ -122,8 +122,8 @@ nya_derive_array(f128_4x4);
   ({                                                                                                                   \
     nya_assert_type_match(arena_ptr, (NYA_Arena*)0);                                                                   \
     nya_assert_type_match(argv, (const char**)0);                                                                      \
-    NYA_StringArray args = nya_array_create_with_capacity(&arena, string, argc);                                       \
-    nya_range_for (idx, 0, argc) nya_array_push_back(&args, nya_string_from(&arena, (argv)[idx]));                     \
+    NYA_StringArray args = nya_array_create_with_capacity(arena_ptr, NYA_String, argc);                                \
+    nya_range_for (idx, 0, argc) nya_array_push_back(&args, nya_string_from(arena_ptr, (argv)[idx]));                  \
     args;                                                                                                              \
   })
 

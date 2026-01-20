@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nyangine/base/base.h"
+#include "nyangine/base/base_hmap.h"
 #include "nyangine/core/core_event.h"
 
 /*
@@ -10,8 +11,21 @@
  */
 
 typedef struct NYA_InputSystem NYA_InputSystem;
+nya_derive_hmap(NYA_Keycode, b8);
 
-struct NYA_InputSystem {};
+struct NYA_InputSystem {
+  NYA_Keycode_b8_HMap keys_just_pressed;
+  NYA_Keycode_b8_HMap keys_pressed;
+  NYA_Keycode_b8_HMap keys_just_released;
+
+  f32x2 mouse_position;
+  f32x2 mouse_position_delta;
+  f32x2 mouse_wheel_delta;
+
+  b8 mouse_buttons_just_pressed[NYA_MOUSE_BUTTON_COUNT];
+  b8 mouse_buttons_pressed[NYA_MOUSE_BUTTON_COUNT];
+  b8 mouse_buttons_just_released[NYA_MOUSE_BUTTON_COUNT];
+};
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -34,3 +48,14 @@ NYA_API NYA_EXTERN void nya_system_input_handle_event(NYA_Event* event);
  * INPUT FUNCTIONS
  * ─────────────────────────────────────────────────────────
  */
+
+NYA_API NYA_EXTERN b8 nya_input_is_key_just_pressed(NYA_Keycode key);
+NYA_API NYA_EXTERN b8 nya_input_is_key_pressed(NYA_Keycode key);
+NYA_API NYA_EXTERN b8 nya_input_is_key_just_released(NYA_Keycode key);
+
+NYA_API NYA_EXTERN f32x2 nya_input_get_mouse_position(void);
+NYA_API NYA_EXTERN f32x2 nya_input_get_mouse_position_delta(void);
+NYA_API NYA_EXTERN f32x2 nya_input_get_mouse_wheel_scroll(void);
+NYA_API NYA_EXTERN b8    nya_input_is_mouse_button_just_pressed(NYA_MouseButton button);
+NYA_API NYA_EXTERN b8    nya_input_is_mouse_button_pressed(NYA_MouseButton button);
+NYA_API NYA_EXTERN b8    nya_input_is_mouse_button_just_released(NYA_MouseButton button);

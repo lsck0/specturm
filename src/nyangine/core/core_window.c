@@ -95,10 +95,10 @@ void nya_window_destroy(void* window_id) {
   nya_system_render_for_window_deinit(window);
   SDL_DestroyWindow(window->sdl_window);
 
-  nya_array_for (&app->window_system.windows, window_index) {
-    NYA_Window* window = &app->window_system.windows.items[window_index];
-    if (window->id == window_id) {
-      nya_array_remove(&app->window_system.windows, window_index);
+  nya_array_for (&app->window_system.windows, idx) {
+    NYA_Window* w = &app->window_system.windows.items[idx];
+    if (w->id == window_id) {
+      nya_array_remove(&app->window_system.windows, idx);
       return;
     }
   }

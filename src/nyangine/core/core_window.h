@@ -49,7 +49,7 @@ struct NYA_Window {
 
   // this is the swapchain texture size
   u32 screen_width;
-  u32 screed_height;
+  u32 screen_height;
 
   NYA_LayerArray layer_stack;
 

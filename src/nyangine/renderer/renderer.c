@@ -100,7 +100,7 @@ void nya_render_begin(NYA_Window* window) {
       window->sdl_window,
       &swapchain_texture,
       &window->screen_width,
-      &window->screed_height
+      &window->screen_height
   );
   window->render_system.swapchain_texture = swapchain_texture;
   if (swapchain_texture == nullptr) return;

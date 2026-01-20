@@ -413,6 +413,87 @@ s32 main(void) {
     nya_assert(n1->prev == n2);
   }
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: large list operations
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    TestDLL    dll   = {0};
+    TestNode** nodes = (TestNode**)nya_arena_alloc(&arena, 100 * sizeof(TestNode*));
+    for (s32 i = 0; i < 100; ++i) {
+      nodes[i]        = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
+      nodes[i]->value = i;
+      nya_dll_node_push_back(&dll, nodes[i]);
+    }
+
+    // Verify forward traversal
+    s32 expected_val = 0;
+    nya_dll_foreach (&dll, node) {
+      nya_assert(node->value == expected_val);
+      expected_val++;
+    }
+    nya_assert(expected_val == 100);
+
+    // Verify reverse traversal
+    expected_val = 99;
+    nya_dll_foreach_reverse(&dll, node) {
+      nya_assert(node->value == expected_val);
+      expected_val--;
+    }
+    nya_assert(expected_val == -1);
+
+    // Remove every other node
+    for (s32 i = 0; i < 100; i += 2) {
+      nya_dll_node_unlink(&dll, nodes[i]);
+    }
+
+    // Verify remaining
+    s32 count = 0;
+    nya_dll_foreach (&dll, node) {
+      nya_assert(node->value % 2 == 1); // only odd values remain
+      count++;
+    }
+    nya_assert(count == 50);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: pop from single element list
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    TestDLL   dll = {0};
+    TestNode* n1  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
+    n1->value     = 42;
+
+    nya_dll_node_push_back(&dll, n1);
+    TestNode* popped = nya_dll_node_pop_front(&dll);
+
+    nya_assert(popped == n1);
+    nya_assert(dll.head == nullptr);
+    nya_assert(dll.tail == nullptr);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: nya_dll_node_link at boundaries
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    TestDLL   dll = {0};
+    TestNode* n1  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
+    TestNode* n2  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
+    n1->value     = 1;
+    n2->value     = 2;
+
+    // Link n1 as head (prev = nullptr)
+    nya_dll_node_link(&dll, nullptr, n1, nullptr);
+    nya_assert(dll.head == n1);
+    nya_assert(dll.tail == n1);
+
+    // Link n2 at the end
+    nya_dll_node_link(&dll, n1, n2, nullptr);
+    nya_assert(dll.head == n1);
+    nya_assert(dll.tail == n2);
+    nya_assert(n1->next == n2);
+    nya_assert(n2->prev == n1);
+  }
+
   nya_arena_destroy(&arena);
 
   return 0;

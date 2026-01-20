@@ -209,11 +209,15 @@ void _nya_arena_nodebug_free(NYA_Arena* arena, void* ptr, u64 size) {
 void _nya_arena_nodebug_free_all(NYA_Arena* arena) {
   nya_assert(arena != nullptr);
 
-  nya_dll_foreach (arena, region) {
+  for (NYA_ArenaRegion* region = arena->head; region != nullptr;) {
+    NYA_ArenaRegion* next = region->next;
+
     // deallocate region if unused long enough
     if (arena->options.defragmentation_enabled && region->used == 0 &&
         region->gc_counter++ >= arena->options.garbage_collection_threshold) {
       _nya_arena_region_destroy(arena, region);
+      region = next;
+      continue;
     }
 
     region->used = 0;
@@ -224,6 +228,8 @@ void _nya_arena_nodebug_free_all(NYA_Arena* arena) {
       _nya_arena_free_list_destroy(region->free_list);
       region->free_list = nullptr;
     }
+
+    region = next;
   }
 }
 
@@ -231,9 +237,12 @@ void _nya_arena_nodebug_garbage_collect(NYA_Arena* arena) {
   nya_assert(arena != nullptr);
 
   for (NYA_ArenaRegion* region = arena->head; region != nullptr;) {
-    if (region->used > 0) continue;
-
     NYA_ArenaRegion* next = region->next;
+    if (region->used > 0) {
+      region = next;
+      continue;
+    }
+
     _nya_arena_region_destroy(arena, region);
     region = next;
   }
@@ -616,15 +625,18 @@ NYA_INTERNAL void _nya_arena_free_list_defragment(NYA_ArenaFreeList* free_list) 
   for (NYA_ArenaFreeListNode* node = free_list->head; node != nullptr && node->next != nullptr;) {
     // check if current node is directly before the next node
     if ((u8*)node->ptr + node->size == (u8*)node->next->ptr) {
-      NYA_ArenaFreeListNode* next = node->next;
+      NYA_ArenaFreeListNode* next      = node->next;
+      u32                    next_size = next->size;
 
       // merge nodes
-      node->size += next->size;
+      node->size += next_size;
       nya_dll_node_unlink(free_list, next);
       nya_free(next);
 
-      free_list->average_free_size = (free_list->average_free_size * (f32)free_list->node_counter - (f32)next->size) /
-                                     (f32)(free_list->node_counter - 1);
+      if (free_list->node_counter > 1) {
+        free_list->average_free_size = (free_list->average_free_size * (f32)free_list->node_counter - (f32)next_size) /
+                                       (f32)(free_list->node_counter - 1);
+      }
       free_list->node_counter--;
 
       // continue with the same node

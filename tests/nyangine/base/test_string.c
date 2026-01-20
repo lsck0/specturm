@@ -390,6 +390,171 @@ s32 main(void) {
   nya_assert(nya_string_count(&single, "x") == 1);
 
   // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: edge cases - nya_string_join with empty array (potential underflow)
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    NYA_StringArray empty_arr = nya_array_create(&arena, NYA_String);
+    NYA_String      joined_empty = nya_string_join(&arena, &empty_arr, ",");
+    nya_assert(nya_string_is_empty(&joined_empty) == true);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: edge cases - nya_string_join with single element (no separator needed)
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    NYA_StringArray single_arr = nya_array_create(&arena, NYA_String);
+    NYA_String      elem = nya_string_from(&arena, "only");
+    nya_array_push_back(&single_arr, elem);
+    NYA_String joined_single = nya_string_join(&arena, &single_arr, ",");
+    nya_assert(nya_string_equals(&joined_single, "only") == true);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: edge cases - nya_string_split with empty string
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    NYA_String      empty_split = nya_string_from(&arena, "");
+    NYA_StringArray split_result = nya_string_split(&arena, &empty_split, ",");
+    nya_assert(split_result.length == 0);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: edge cases - nya_string_split separator at boundaries
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    // separator at start
+    NYA_String      sep_start = nya_string_from(&arena, ",a,b");
+    NYA_StringArray parts_start = nya_string_split(&arena, &sep_start, ",");
+    nya_assert(parts_start.length == 3);
+    nya_assert(nya_string_is_empty(&parts_start.items[0]) == true);
+    nya_assert(nya_string_equals(&parts_start.items[1], "a") == true);
+    nya_assert(nya_string_equals(&parts_start.items[2], "b") == true);
+
+    // separator at end
+    NYA_String      sep_end = nya_string_from(&arena, "a,b,");
+    NYA_StringArray parts_end = nya_string_split(&arena, &sep_end, ",");
+    nya_assert(parts_end.length == 2);
+    nya_assert(nya_string_equals(&parts_end.items[0], "a") == true);
+    nya_assert(nya_string_equals(&parts_end.items[1], "b") == true);
+
+    // consecutive separators
+    NYA_String      consec_sep = nya_string_from(&arena, "a,,b");
+    NYA_StringArray parts_consec = nya_string_split(&arena, &consec_sep, ",");
+    nya_assert(parts_consec.length == 3);
+    nya_assert(nya_string_equals(&parts_consec.items[0], "a") == true);
+    nya_assert(nya_string_is_empty(&parts_consec.items[1]) == true);
+    nya_assert(nya_string_equals(&parts_consec.items[2], "b") == true);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: edge cases - nya_string_split with multi-char separator at boundary
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    // multi-char separator near end (potential buffer over-read)
+    NYA_String      near_end = nya_string_from(&arena, "abc::d");
+    NYA_StringArray parts_near = nya_string_split(&arena, &near_end, "::");
+    nya_assert(parts_near.length == 2);
+    nya_assert(nya_string_equals(&parts_near.items[0], "abc") == true);
+    nya_assert(nya_string_equals(&parts_near.items[1], "d") == true);
+
+    // string shorter than separator
+    NYA_String      short_str = nya_string_from(&arena, "a");
+    NYA_StringArray parts_short = nya_string_split(&arena, &short_str, "::");
+    nya_assert(parts_short.length == 1);
+    nya_assert(nya_string_equals(&parts_short.items[0], "a") == true);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: edge cases - nya_string_remove match at start (potential underflow)
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    NYA_String remove_start = nya_string_from(&arena, "XXXhello");
+    nya_string_remove(&remove_start, "XXX");
+    nya_assert(nya_string_equals(&remove_start, "hello") == true);
+
+    // multiple matches at start
+    NYA_String remove_multi_start = nya_string_from(&arena, "aaabbb");
+    nya_string_remove(&remove_multi_start, "a");
+    nya_assert(nya_string_equals(&remove_multi_start, "bbb") == true);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: edge cases - nya_string_remove entire string
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    NYA_String remove_all = nya_string_from(&arena, "xxx");
+    nya_string_remove(&remove_all, "xxx");
+    nya_assert(nya_string_is_empty(&remove_all) == true);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: edge cases - nya_string_replace at boundaries
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    // replace at start
+    NYA_String replace_start = nya_string_from(&arena, "XXXhello");
+    nya_string_replace(&replace_start, "XXX", "Y");
+    nya_assert(nya_string_equals(&replace_start, "Yhello") == true);
+
+    // replace at end
+    NYA_String replace_end = nya_string_from(&arena, "helloXXX");
+    nya_string_replace(&replace_end, "XXX", "Y");
+    nya_assert(nya_string_equals(&replace_end, "helloY") == true);
+
+    // replace with empty string (effectively remove)
+    NYA_String replace_empty = nya_string_from(&arena, "helloXXXworld");
+    nya_string_replace(&replace_empty, "XXX", "");
+    nya_assert(nya_string_equals(&replace_empty, "helloworld") == true);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: edge cases - nya_string_count with overlapping patterns
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    // "aaa" contains "aa" twice if overlapping, but we expect non-overlapping count
+    NYA_String overlap = nya_string_from(&arena, "aaaa");
+    nya_assert(nya_string_count(&overlap, "aa") == 2); // non-overlapping: aa|aa
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: edge cases - nya_string_strip operations on exact match
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    NYA_String strip_exact = nya_string_from(&arena, "prefix");
+    nya_string_strip_prefix(&strip_exact, "prefix");
+    nya_assert(nya_string_is_empty(&strip_exact) == true);
+
+    NYA_String strip_exact2 = nya_string_from(&arena, "suffix");
+    nya_string_strip_suffix(&strip_exact2, "suffix");
+    nya_assert(nya_string_is_empty(&strip_exact2) == true);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: edge cases - empty string operations
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    NYA_String empty_op = nya_string_from(&arena, "");
+
+    // operations on empty string should not crash
+    nya_assert(nya_string_contains(&empty_op, "x") == false);
+    nya_assert(nya_string_starts_with(&empty_op, "x") == false);
+    nya_assert(nya_string_ends_with(&empty_op, "x") == false);
+    nya_assert(nya_string_count(&empty_op, "x") == 0);
+
+    nya_string_to_lower(&empty_op);
+    nya_assert(nya_string_is_empty(&empty_op) == true);
+
+    nya_string_to_upper(&empty_op);
+    nya_assert(nya_string_is_empty(&empty_op) == true);
+
+    nya_string_trim_whitespace(&empty_op);
+    nya_assert(nya_string_is_empty(&empty_op) == true);
+
+    nya_string_reverse(&empty_op);
+    nya_assert(nya_string_is_empty(&empty_op) == true);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
   // CLEANUP
   // ─────────────────────────────────────────────────────────────────────────────
   nya_arena_destroy(&arena);

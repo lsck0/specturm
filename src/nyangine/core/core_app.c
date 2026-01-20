@@ -108,6 +108,10 @@ void nya_app_run(void) {
     // updating
     {
       while (app->time_behind_ms >= app->config.time_step_ms) {
+        nya_event_dispatch((NYA_Event){
+            .type = NYA_EVENT_NEW_TICK,
+        });
+
         nya_array_foreach (&app->window_system.windows, window) {
           nya_array_foreach (&window->layer_stack, layer) {
             if (layer->enabled && layer->on_update != nullptr) {
@@ -115,6 +119,7 @@ void nya_app_run(void) {
             }
           }
         }
+
         app->time_behind_ms -= app->config.time_step_ms;
       }
     }

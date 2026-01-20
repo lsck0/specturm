@@ -65,12 +65,25 @@
 #define nya_hset_insert_unchecked(hset_ptr, item)                                                                      \
   ({                                                                                                                   \
     nya_assert_type_match(item, (hset_ptr)->items[0]);                                                                 \
-    typeof(item) item_var = item;                                                                                      \
-    u64          index    = nya_hash_fnv1a(&item_var, sizeof(item_var)) % (hset_ptr)->capacity;                        \
-    while ((hset_ptr)->occupied[index]) index = (index + 1) % (hset_ptr)->capacity;                                    \
-    (hset_ptr)->items[index]    = item_var;                                                                            \
-    (hset_ptr)->occupied[index] = true;                                                                                \
-    (hset_ptr)->length++;                                                                                              \
+    typeof(item) item_var   = item;                                                                                    \
+    u64          index      = nya_hash_fnv1a(&item_var, sizeof(item_var)) % (hset_ptr)->capacity;                      \
+    u64          iterations = 0;                                                                                       \
+    b8           found      = false;                                                                                   \
+    while (iterations < (hset_ptr)->capacity) {                                                                        \
+      if (!(hset_ptr)->occupied[index]) {                                                                              \
+        (hset_ptr)->items[index]    = item_var;                                                                        \
+        (hset_ptr)->occupied[index] = true;                                                                            \
+        (hset_ptr)->length++;                                                                                          \
+        break;                                                                                                         \
+      }                                                                                                                \
+      if (nya_memcmp(&(hset_ptr)->items[index], &item_var, sizeof(item_var)) == 0) {                                   \
+        found = true;                                                                                                  \
+        break;                                                                                                         \
+      }                                                                                                                \
+      index = (index + 1) % (hset_ptr)->capacity;                                                                      \
+      iterations++;                                                                                                    \
+    }                                                                                                                  \
+    (void)found;                                                                                                       \
   })
 
 #define nya_hset_resize_and_rehash(hset_ptr, new_capacity)                                                             \

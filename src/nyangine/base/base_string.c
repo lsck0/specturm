@@ -119,7 +119,9 @@ NYA_String nya_string_from(NYA_Arena* arena, NYA_ConstCString cstr) __attr_overl
   nya_assert(arena);
   nya_assert(cstr);
 
-  u64        length = strlen(cstr);
+  u64 length = strlen(cstr);
+  if (length == 0) return nya_string_create(arena);
+
   NYA_String result = nya_string_create_with_capacity(arena, length);
   nya_memcpy(result.items, cstr, length);
   result.length = length;
@@ -131,6 +133,9 @@ NYA_String nya_string_join(NYA_Arena* arena, const NYA_StringArray* arr, NYA_Con
   nya_assert(arena);
   nya_assert(arr);
   nya_assert(separator);
+
+  // handle empty array case to avoid underflow
+  if (arr->length == 0) return nya_string_create(arena);
 
   u64 separator_length = strlen(separator);
   u64 total_length     = 0;
@@ -204,7 +209,9 @@ NYA_String nya_string_substring_excld(NYA_Arena* arena, const NYA_String* str, u
   nya_assert(start <= end);
   nya_assert(end <= str->length);
 
-  u64        length = end - start;
+  u64 length = end - start;
+  if (length == 0) return nya_string_create(arena);
+
   NYA_String substr = nya_string_create_with_capacity(arena, length);
   nya_memmove(substr.items, str->items + start, length);
   substr.length = length;
@@ -233,7 +240,8 @@ NYA_StringArray nya_string_split(NYA_Arena* arena, const NYA_String* str, NYA_Co
   u64             end        = 0;
 
   while (end < str->length) {
-    if (nya_memcmp(str->items + end, separator, sep_length) == 0) {
+    // bounds check: ensure we have enough bytes left to compare with separator
+    if (end + sep_length <= str->length && nya_memcmp(str->items + end, separator, sep_length) == 0) {
       NYA_String substr = nya_string_substring_excld(arena, str, start, end);
       nya_array_push_back(&result, substr);
 
@@ -402,12 +410,15 @@ void nya_string_remove(NYA_String* str, NYA_ConstCString substr) __attr_overload
   nya_assert(substr);
 
   u64 length = strlen(substr);
+  if (length == 0 || length > str->length) return;
 
-  for (u64 i = 0; i < str->length; i++) {
+  for (u64 i = 0; i + length <= str->length;) {
     if (nya_memcmp(str->items + i, substr, length) == 0) {
       nya_memmove(str->items + i, str->items + i + length, str->length - i - length);
       str->length -= length;
-      i           -= length;
+      // don't increment i - check same position again for consecutive matches
+    } else {
+      i++;
     }
   }
 }
@@ -416,11 +427,15 @@ void nya_string_remove(NYA_String* str, const NYA_String* substr) __attr_overloa
   nya_assert(str);
   nya_assert(substr);
 
-  for (u64 i = 0; i < str->length; i++) {
+  if (substr->length == 0 || substr->length > str->length) return;
+
+  for (u64 i = 0; i + substr->length <= str->length;) {
     if (nya_memcmp(str->items + i, substr->items, substr->length) == 0) {
       nya_memmove(str->items + i, str->items + i + substr->length, str->length - i - substr->length);
       str->length -= substr->length;
-      i           -= substr->length;
+      // don't increment i - check same position again for consecutive matches
+    } else {
+      i++;
     }
   }
 }
@@ -433,14 +448,23 @@ void nya_string_replace(NYA_String* str, NYA_ConstCString old, NYA_ConstCString 
   u64 old_length = strlen(old);
   u64 new_length = strlen(new);
 
-  for (u64 i = 0; i < str->length; i++) {
+  if (old_length == 0 || old_length > str->length) return;
+
+  for (u64 i = 0; i + old_length <= str->length;) {
     if (nya_memcmp(str->items + i, old, old_length) == 0) {
-      if (old_length != new_length) nya_array_reserve(str, str->length + new_length - old_length);
+      if (new_length > old_length) { nya_array_reserve(str, str->length + (new_length - old_length)); }
 
       nya_memmove(str->items + i + new_length, str->items + i + old_length, str->length - i - old_length);
       nya_memmove(str->items + i, new, new_length);
-      str->length += new_length - old_length;
-      i           += new_length - 1;
+
+      // use signed arithmetic for length change
+      str->length  = str->length - old_length + new_length;
+      i           += new_length;
+
+      // handle case where new is empty (effectively a remove)
+      if (new_length == 0) continue;
+    } else {
+      i++;
     }
   }
 }
@@ -450,14 +474,23 @@ void nya_string_replace(NYA_String* str, const NYA_String* old, const NYA_String
   nya_assert(old);
   nya_assert(new);
 
-  for (u64 i = 0; i < str->length; i++) {
+  if (old->length == 0 || old->length > str->length) return;
+
+  for (u64 i = 0; i + old->length <= str->length;) {
     if (nya_memcmp(str->items + i, old->items, old->length) == 0) {
-      if (old->length != new->length) nya_array_reserve(str, str->length + new->length - old->length);
+      if (new->length > old->length) { nya_array_reserve(str, str->length + (new->length - old->length)); }
 
       nya_memmove(str->items + i + new->length, str->items + i + old->length, str->length - i - old->length);
       nya_memmove(str->items + i, new->items, new->length);
-      str->length += new->length - old->length;
-      i           += new->length - 1;
+
+      // use signed arithmetic for length change
+      str->length  = str->length - old->length + new->length;
+      i           += new->length;
+
+      // handle case where new is empty (effectively a remove)
+      if (new->length == 0) continue;
+    } else {
+      i++;
     }
   }
 }
