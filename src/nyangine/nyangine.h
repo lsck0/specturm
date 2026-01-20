@@ -36,6 +36,7 @@
 #include "nyangine/core/core_entity.h"
 #include "nyangine/core/core_event.h"
 #include "nyangine/core/core_input.h"
+#include "nyangine/core/core_job.h"
 #include "nyangine/core/core_window.h"
 #include "nyangine/math/math.h"
 #include "nyangine/platform/platform.h"

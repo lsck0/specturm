@@ -23,6 +23,7 @@
 #include "nyangine/core/core_entity.c"
 #include "nyangine/core/core_event.c"
 #include "nyangine/core/core_input.c"
+#include "nyangine/core/core_job.c"
 #include "nyangine/core/core_window.c"
 #include "nyangine/math/math_la.c"
 #include "nyangine/renderer/renderer.c"

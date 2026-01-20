@@ -38,6 +38,7 @@ void nya_app_init(NYA_AppConfig config) {
       .frame_allocator  = nya_arena_create(.name = "frame_allocator"),
   };
 
+  nya_system_job_init();
   nya_system_render_init();
   nya_system_window_init();
   nya_system_events_init();
@@ -55,6 +56,7 @@ void nya_app_deinit(void) {
   nya_system_events_deinit();
   nya_system_window_deinit();
   nya_system_render_deinit();
+  nya_system_job_deinit();
 
   nya_arena_destroy(&app->global_allocator);
   nya_arena_destroy(&app->entity_allocator);
