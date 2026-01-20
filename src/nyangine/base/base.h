@@ -218,6 +218,9 @@ static_assert(ASAN_PADDING >= 0);
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
+#define atomic       _Atomic
+#define thread_local _Thread_local
+#define true         ((b8)1)
+#define false        ((b8)0)
+
 #define OUT
-#define true  ((b8)1)
-#define false ((b8)0)

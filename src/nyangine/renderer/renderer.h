@@ -3,6 +3,7 @@
 #include "SDL3/SDL_gpu.h"
 
 #include "nyangine/base/base.h"
+#include "nyangine/base/base_types.h"
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -57,5 +58,6 @@ NYA_API NYA_EXTERN void nya_system_render_for_window_deinit(NYA_Window* window);
  * ─────────────────────────────────────────────────────────
  */
 
+NYA_API NYA_EXTERN void nya_render_set_vsync(b8 enabled);
 NYA_API NYA_EXTERN void nya_render_begin(NYA_Window* window);
 NYA_API NYA_EXTERN void nya_render_end(NYA_Window* window);

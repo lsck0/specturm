@@ -29,6 +29,25 @@ void nya_system_window_deinit(void) {
   nya_array_destroy(&app->window_system.windows);
 }
 
+void nya_system_window_handle_event(NYA_Event* event) {
+  nya_assert(event);
+
+  NYA_App* app = nya_app_get_instance();
+
+  if (event->type == NYA_EVENT_QUIT) app->should_quit_game_loop = true;
+
+  if (event->type == NYA_EVENT_WINDOW_CLOSE_REQUESTED) {
+    nya_window_destroy(event->as_window_event.window_id);
+    if (app->window_system.windows.length == 0) app->should_quit_game_loop = true;
+  }
+
+  if (event->type == NYA_EVENT_WINDOW_RESIZED) {
+    NYA_Window* window = nya_window_get(event->as_window_resized_event.window_id);
+    window->width      = event->as_window_resized_event.width;
+    window->height     = event->as_window_resized_event.height;
+  }
+}
+
 /*
  * ─────────────────────────────────────────────────────────
  * WINDOW FUNCTIONS

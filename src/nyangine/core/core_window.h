@@ -87,6 +87,7 @@ struct NYA_Layer {
 
 NYA_API NYA_EXTERN void nya_system_window_init(void);
 NYA_API NYA_EXTERN void nya_system_window_deinit(void);
+NYA_API NYA_EXTERN void nya_system_window_handle_event(NYA_Event* event);
 
 /*
  * ─────────────────────────────────────────────────────────

@@ -30,7 +30,6 @@ s32 main(s32 argc, char** argv) {
 #include <dlfcn.h>
 #include <pthread.h>
 #include <sys/stat.h>
-#include <unistd.h>
 
 #define DLL_PATH "./gnyame.debug.so"
 
@@ -38,13 +37,13 @@ typedef void(gnyame_init_fn)(s32 argc, char** argv);
 typedef void(gnyame_run_fn)(void);
 typedef void(gnyame_deinit_fn)(void);
 
-NYA_App*            nya_app;
-void*               gnyame_dll;
-gnyame_init_fn*    gnyame_init;
-gnyame_run_fn*      gnyame_run;
+NYA_App*          nya_app;
+void*             gnyame_dll;
+gnyame_init_fn*   gnyame_init;
+gnyame_run_fn*    gnyame_run;
 gnyame_deinit_fn* gnyame_deinit;
-u64                 gnyame_dll_last_modified;
-b8                  gnyame_dll_reload_requested = false;
+u64               gnyame_dll_last_modified;
+atomic b8         gnyame_dll_reload_requested = false;
 
 b8    dll_load(void);
 b8    dll_unload(void);
@@ -104,8 +103,8 @@ b8 dll_load(void) {
     return false;
   }
 
-  gnyame_init    = (gnyame_init_fn*)dlsym(gnyame_dll, "gnyame_init");
-  gnyame_run      = (gnyame_run_fn*)dlsym(gnyame_dll, "gnyame_run");
+  gnyame_init   = (gnyame_init_fn*)dlsym(gnyame_dll, "gnyame_init");
+  gnyame_run    = (gnyame_run_fn*)dlsym(gnyame_dll, "gnyame_run");
   gnyame_deinit = (gnyame_deinit_fn*)dlsym(gnyame_dll, "gnyame_deinit");
   if (!gnyame_init || !gnyame_run || !gnyame_deinit) {
     (void)fprintf(stderr, "Failed to load symbols from %s: %s.\n", DLL_PATH, dlerror());
@@ -131,9 +130,9 @@ b8 dll_unload(void) {
       return false;
     }
 
-    gnyame_dll      = nullptr;
-    gnyame_init    = nullptr;
-    gnyame_run      = nullptr;
+    gnyame_dll    = nullptr;
+    gnyame_init   = nullptr;
+    gnyame_run    = nullptr;
     gnyame_deinit = nullptr;
   }
 

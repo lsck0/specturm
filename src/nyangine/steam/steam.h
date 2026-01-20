@@ -23,10 +23,10 @@
  */
 
 typedef enum {
-  nya_system_steam_init_OK               = 0,
-  nya_system_steam_init_FAILED_GENERIC   = 1,
-  nya_system_steam_init_NO_STEAM_CLIENT  = 2,
-  nya_system_steam_init_VERSION_MISMATCH = 3,
+  NYA_SYSTEM_STEAM_INIT_OK               = 0,
+  NYA_SYSTEM_STEAM_INIT_FAILED_GENERIC   = 1,
+  NYA_SYSTEM_STEAM_INIT_NO_STEAM_CLIENT  = 2,
+  NYA_SYSTEM_STEAM_INIT_VERSION_MISMATCH = 3,
 } NYA_SteamInitResult;
 
 /*

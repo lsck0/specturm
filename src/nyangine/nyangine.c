@@ -26,4 +26,6 @@
 #include "nyangine/core/core_job.c"
 #include "nyangine/core/core_window.c"
 #include "nyangine/math/math_la.c"
+#include "nyangine/nn/nn.c"
 #include "nyangine/renderer/renderer.c"
+#include "nyangine/ui/ui.c"

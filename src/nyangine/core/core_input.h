@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nyangine/base/base.h"
+#include "nyangine/core/core_event.h"
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -18,5 +19,18 @@ struct NYA_InputSystem {};
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
+/*
+ * ─────────────────────────────────────────────────────────
+ * SYSTEM FUNCTIONS
+ * ─────────────────────────────────────────────────────────
+ */
+
 NYA_API NYA_EXTERN void nya_system_input_init(void);
 NYA_API NYA_EXTERN void nya_system_input_deinit(void);
+NYA_API NYA_EXTERN void nya_system_input_handle_event(NYA_Event* event);
+
+/*
+ * ─────────────────────────────────────────────────────────
+ * INPUT FUNCTIONS
+ * ─────────────────────────────────────────────────────────
+ */

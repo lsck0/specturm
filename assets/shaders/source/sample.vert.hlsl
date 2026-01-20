@@ -10,11 +10,6 @@ struct VertOutput
     float4 color : COLOR0;
 };
 
-cbuffer Uniforms
-{
-    float4 pos   : POSITION;
-}
-
 VertOutput main(VertInput input)
 {
     VertOutput output;

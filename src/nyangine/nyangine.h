@@ -39,5 +39,7 @@
 #include "nyangine/core/core_job.h"
 #include "nyangine/core/core_window.h"
 #include "nyangine/math/math.h"
+#include "nyangine/nn/nn.h"
 #include "nyangine/platform/platform.h"
 #include "nyangine/renderer/renderer.h"
+#include "nyangine/ui/ui.h"

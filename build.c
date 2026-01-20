@@ -474,9 +474,9 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
     nya_string_strip_suffix(shader, ".dxil");
 
     nya_string_extend_front(shader, "./assets/shaders/compiled/MSL/");
-    nya_string_extend(shader, ".mls");
+    nya_string_extend(shader, ".msl");
     NYA_CString target_metal = nya_string_to_cstring(&nya_arena_global, shader);
-    nya_string_strip_suffix(shader, ".mls");
+    nya_string_strip_suffix(shader, ".msl");
     nya_string_strip_prefix(shader, "./assets/shaders/compiled/MSL/");
 
     nya_string_extend_front(shader, "./assets/shaders/compiled/SPIRV/");

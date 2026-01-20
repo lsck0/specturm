@@ -68,18 +68,7 @@ void nya_app_deinit(void) {
 void nya_app_options_update(NYA_AppConfig config) {
   NYA_App* app = nya_app_get_instance();
 
-  // move into the renderer system?
-  if (app->config.vsync_enabled != config.vsync_enabled) {
-    nya_array_foreach (&app->window_system.windows, window) {
-      b8 ok = SDL_SetGPUSwapchainParameters(
-          app->render_system.gpu_device,
-          window->sdl_window,
-          SDL_GPU_SWAPCHAINCOMPOSITION_SDR,
-          config.vsync_enabled ? SDL_GPU_PRESENTMODE_VSYNC : SDL_GPU_PRESENTMODE_MAILBOX
-      );
-      nya_assert(ok, "SDL_SetGPUSwapchainParameters() failed: %s", SDL_GetError());
-    }
-  }
+  nya_render_set_vsync(config.vsync_enabled);
 
   app->config = config;
 }
@@ -99,18 +88,10 @@ void nya_app_run(void) {
 
       NYA_Event event;
       while (nya_event_poll(&event)) {
-        if (event.was_handled) continue;
+        nya_system_window_handle_event(&event);
+        nya_system_input_handle_event(&event);
 
-        if (event.type == NYA_EVENT_QUIT) app->should_quit_game_loop = true;
-        if (event.type == NYA_EVENT_WINDOW_CLOSE_REQUESTED) {
-          nya_window_destroy(event.as_window_event.window_id);
-          if (app->window_system.windows.length == 0) app->should_quit_game_loop = true;
-        }
-        if (event.type == NYA_EVENT_WINDOW_RESIZED) {
-          NYA_Window* window = nya_window_get(event.as_window_resized_event.window_id);
-          window->width      = event.as_window_resized_event.width;
-          window->height     = event.as_window_resized_event.height;
-        }
+        if (event.was_handled) continue;
 
         nya_array_foreach (&app->window_system.windows, window) {
           nya_array_foreach_reverse (&window->layer_stack, layer) {
