@@ -34,7 +34,6 @@ void nya_app_init(NYA_AppConfig config) {
       .initialized      = true,
       .config           = config,
       .global_allocator = nya_arena_create(.name = "global_allocator"),
-      .entity_allocator = nya_arena_create(.name = "entity_allocator", .defragmentation_enabled = false),
       .frame_allocator  = nya_arena_create(.name = "frame_allocator"),
   };
 
@@ -59,7 +58,6 @@ void nya_app_deinit(void) {
   nya_system_job_deinit();
 
   nya_arena_destroy(&app->global_allocator);
-  nya_arena_destroy(&app->entity_allocator);
   nya_arena_destroy(&app->frame_allocator);
 
   app->initialized = false;

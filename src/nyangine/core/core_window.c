@@ -18,7 +18,11 @@
 void nya_system_window_init(void) {
   NYA_App* app = nya_app_get_instance();
 
-  app->window_system.windows = nya_array_create(&app->global_allocator, NYA_Window);
+  app->window_system = (NYA_WindowSystem){
+      .allocator = nya_arena_create(.name = "window_system_allocator"),
+  };
+
+  app->window_system.windows = nya_array_create(&app->window_system.allocator, NYA_Window);
 }
 
 void nya_system_window_deinit(void) {
@@ -27,6 +31,8 @@ void nya_system_window_deinit(void) {
   SDL_WaitForGPUIdle(app->render_system.gpu_device);
   nya_array_foreach_reverse (&app->window_system.windows, window) nya_window_destroy(window->id);
   nya_array_destroy(&app->window_system.windows);
+
+  nya_arena_destroy(&app->window_system.allocator);
 }
 
 void nya_system_window_handle_event(NYA_Event* event) {

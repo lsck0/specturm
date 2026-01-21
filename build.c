@@ -36,6 +36,7 @@
 // clang-format on
 
 NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule);
+NYA_INTERNAL void hook_bundle_assets(NYA_BuildRule* rule);
 NYA_INTERNAL void hook_add_version_flag_and_git_hash(NYA_BuildRule* rule);
 NYA_INTERNAL void hook_convert_perf_data_to_plain(NYA_BuildRule* rule);
 NYA_INTERNAL void hook_remove_output_file(NYA_BuildRule* rule);
@@ -54,6 +55,7 @@ NYA_Command build_rebuild_command = {
     .arguments = {
         "build.c",
         "-o", "build",
+        "-DIS_DEBUG=true",
         CFLAGS,
         WARNINGS,
         INCLUDE_PATHS,
@@ -211,6 +213,13 @@ NYA_BuildRule build_shaders = {
     .pre_build_hooks = { &hook_compile_shaders, },
 };
 
+NYA_BuildRule bundle_assets = {
+    .name            = "bundle_assets",
+    .is_metarule     = true,
+    .dependencies    = { &build_windows_icon, &build_shaders, },
+    .post_build_hooks = { &hook_bundle_assets, },
+};
+
 /*
  * ─────────────────────────────────────────────────────────
  * PROJECT BUILD RULES
@@ -289,7 +298,7 @@ NYA_BuildRule build_project_linux_x86_64 = {
     },
 
     .pre_build_hooks = { &hook_add_version_flag_and_git_hash, },
-    .dependencies    = { &build_linux_x64_64_sdl, },
+    .dependencies    = { &build_linux_x64_64_sdl, &bundle_assets, },
 };
 
 NYA_BuildRule build_project_windows_x86_64 = {
@@ -312,7 +321,7 @@ NYA_BuildRule build_project_windows_x86_64 = {
     },
 
     .pre_build_hooks = { &hook_add_version_flag_and_git_hash, },
-    .dependencies    = { &build_windows_x86_64_sdl, &build_windows_icon, },
+    .dependencies    = { &build_windows_x86_64_sdl, &bundle_assets, },
 };
 
 NYA_BuildRule build_project = {
@@ -557,6 +566,15 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
     nya_build(&compile_to_spirv);
     // clang-format off
   }
+}
+
+NYA_INTERNAL void hook_bundle_assets(NYA_BuildRule* rule) {
+  nya_assert(rule);
+
+  NYA_ConstCString asset_directory = "./assets/";
+  NYA_ConstCString output_file = "./assets/assets.c";
+
+  nya_asset_generate_asset_embedding(asset_directory, output_file);
 }
 
 NYA_INTERNAL void hook_add_version_flag_and_git_hash(NYA_BuildRule* rule) {

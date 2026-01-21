@@ -4,6 +4,7 @@
 #include "SDL3/SDL_init.h"
 #include "SDL3/SDL_mutex.h"
 
+#include "nyangine/base/base_arena.h"
 #include "nyangine/base/base_array.h"
 #include "nyangine/base/base_keys.h"
 #include "nyangine/base/base_types.h"
@@ -33,6 +34,8 @@ nya_derive_array(NYA_Event);
  */
 
 struct NYA_EventSystem {
+  NYA_Arena allocator;
+
   SDL_Mutex*     event_queue_mutex;
   NYA_EventArray event_queue;
   u64            event_queue_read_index;

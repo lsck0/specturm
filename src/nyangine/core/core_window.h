@@ -25,6 +25,8 @@ nya_derive_array(NYA_Window);
  */
 
 struct NYA_WindowSystem {
+  NYA_Arena allocator;
+
   NYA_WindowArray windows;
 };
 

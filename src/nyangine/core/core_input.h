@@ -14,6 +14,8 @@ typedef struct NYA_InputSystem NYA_InputSystem;
 nya_derive_hmap(NYA_Keycode, b8);
 
 struct NYA_InputSystem {
+  NYA_Arena allocator;
+
   NYA_Keycode_b8_HMap keys_just_pressed;
   NYA_Keycode_b8_HMap keys_pressed;
   NYA_Keycode_b8_HMap keys_just_released;

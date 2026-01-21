@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nyangine/base/base.h"
+#include "nyangine/base/base_arena.h"
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -10,7 +11,9 @@
 
 typedef struct NYA_JobSystem NYA_JobSystem;
 
-struct NYA_JobSystem {};
+struct NYA_JobSystem {
+  NYA_Arena allocator;
+};
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────

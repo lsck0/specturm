@@ -16,13 +16,15 @@
 void nya_system_input_init(void) {
   NYA_App* app = nya_app_get_instance();
 
-  u32 upper_bound = 300;
-
   app->input_system = (NYA_InputSystem){
-      .keys_just_pressed  = nya_hmap_create_with_capacity(&app->global_allocator, NYA_Keycode, b8, upper_bound),
-      .keys_pressed       = nya_hmap_create_with_capacity(&app->global_allocator, NYA_Keycode, b8, upper_bound),
-      .keys_just_released = nya_hmap_create_with_capacity(&app->global_allocator, NYA_Keycode, b8, upper_bound),
+      .allocator = nya_arena_create(.name = "input_system_allocator"),
   };
+
+  const u32  capacity                  = 300;
+  NYA_Arena* allocator                 = &app->input_system.allocator;
+  app->input_system.keys_just_pressed  = nya_hmap_create_with_capacity(allocator, NYA_Keycode, b8, capacity);
+  app->input_system.keys_pressed       = nya_hmap_create_with_capacity(allocator, NYA_Keycode, b8, capacity);
+  app->input_system.keys_just_released = nya_hmap_create_with_capacity(allocator, NYA_Keycode, b8, capacity);
 }
 
 void nya_system_input_deinit(void) {
@@ -31,6 +33,8 @@ void nya_system_input_deinit(void) {
   nya_hmap_destroy(&app->input_system.keys_just_pressed);
   nya_hmap_destroy(&app->input_system.keys_pressed);
   nya_hmap_destroy(&app->input_system.keys_just_released);
+
+  nya_arena_destroy(&app->input_system.allocator);
 }
 
 void nya_system_input_handle_event(NYA_Event* event) {

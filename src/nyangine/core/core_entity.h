@@ -17,7 +17,9 @@ typedef struct NYA_EntitySystem NYA_EntitySystem;
  * ─────────────────────────────────────────────────────────
  */
 
-struct NYA_EntitySystem {};
+struct NYA_EntitySystem {
+  NYA_Arena allocator;
+};
 
 /*
  * ─────────────────────────────────────────────────────────

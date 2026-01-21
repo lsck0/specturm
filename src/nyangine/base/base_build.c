@@ -134,7 +134,11 @@ b8 _nya_build_always(NYA_BuildRule* build_rule) {
 
   // running the command
   b8 ok = true;
-  if (build_rule->is_metarule) goto skip_build;
+  if (build_rule->is_metarule) {
+    printf("[BUILDING META] %s \n\n", build_rule->name);
+
+    goto skip_build;
+  }
 
   printf("[BUILDING] %s \n", build_rule->name);
   printf("[CMD] %s ", build_rule->command.program);

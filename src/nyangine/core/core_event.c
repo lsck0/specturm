@@ -29,10 +29,12 @@ void nya_system_events_init(void) {
   NYA_App* app = nya_app_get_instance();
 
   app->event_system = (NYA_EventSystem){
+      .allocator              = nya_arena_create(.name = "event_system_allocator"),
       .event_queue_mutex      = SDL_CreateMutex(),
-      .event_queue            = nya_array_create(&app->global_allocator, NYA_Event),
       .event_queue_read_index = 0,
   };
+
+  app->event_system.event_queue = nya_array_create(&app->event_system.allocator, NYA_Event);
 }
 
 void nya_system_events_deinit(void) {
@@ -40,6 +42,8 @@ void nya_system_events_deinit(void) {
 
   SDL_DestroyMutex(app->event_system.event_queue_mutex);
   nya_array_destroy(&app->event_system.event_queue);
+
+  nya_arena_destroy(&app->event_system.allocator);
 }
 
 /*

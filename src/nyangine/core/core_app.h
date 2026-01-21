@@ -33,7 +33,6 @@ struct NYA_App {
   NYA_AppConfig config;
 
   NYA_Arena global_allocator;
-  NYA_Arena entity_allocator;
   NYA_Arena frame_allocator;
 
   NYA_AssetSystem  asset_system;
