@@ -59,6 +59,4 @@ NYA_API NYA_EXTERN void nya_system_asset_deinit(void);
  * ─────────────────────────────────────────────────────────
  */
 
-// clang-format off
-NYA_API NYA_EXTERN void nya_asset_generate_asset_embedding(NYA_ConstCString asset_directory, NYA_ConstCString output_file);
-// clang-format on
+NYA_API NYA_EXTERN void nya_asset_generate_embedding(NYA_ConstCString asset_directory, NYA_ConstCString output_file);

@@ -574,7 +574,7 @@ NYA_INTERNAL void hook_bundle_assets(NYA_BuildRule* rule) {
   NYA_ConstCString asset_directory = "./assets/";
   NYA_ConstCString output_file = "./assets/assets.c";
 
-  nya_asset_generate_asset_embedding(asset_directory, output_file);
+  nya_asset_generate_embedding(asset_directory, output_file);
 }
 
 NYA_INTERNAL void hook_add_version_flag_and_git_hash(NYA_BuildRule* rule) {

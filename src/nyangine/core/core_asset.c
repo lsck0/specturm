@@ -28,7 +28,7 @@ void nya_system_asset_deinit(void) {
  * ─────────────────────────────────────────────────────────
  */
 
-void nya_asset_generate_asset_embedding(NYA_ConstCString asset_directory, NYA_ConstCString output_file) {
+void nya_asset_generate_embedding(NYA_ConstCString asset_directory, NYA_ConstCString output_file) {
   nya_assert(asset_directory);
 
   NYA_Arena* arena               = &nya_arena_global;
