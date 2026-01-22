@@ -17,7 +17,7 @@ void nya_system_input_init(void) {
   NYA_App* app = nya_app_get_instance();
 
   app->input_system = (NYA_InputSystem){
-      .allocator = nya_arena_create(.name = "input_system_allocator"),
+    .allocator = nya_arena_create(.name = "input_system_allocator"),
   };
 
   const u32  capacity                  = 300;
@@ -83,20 +83,20 @@ void nya_system_input_handle_event(NYA_Event* event) {
 
   if (event->type == NYA_EVENT_MOUSE_MOVED) {
     app->input_system.mouse_position = (f32x2){
-        event->as_mouse_moved_event.x,
-        event->as_mouse_moved_event.y,
+      event->as_mouse_moved_event.x,
+      event->as_mouse_moved_event.y,
     };
 
     app->input_system.mouse_position_delta += (f32x2){
-        event->as_mouse_moved_event.delta_x,
-        event->as_mouse_moved_event.delta_y,
+      event->as_mouse_moved_event.delta_x,
+      event->as_mouse_moved_event.delta_y,
     };
   }
 
   if (event->type == NYA_EVENT_MOUSE_WHEEL_MOVED) {
     app->input_system.mouse_wheel_delta += (f32x2){
-        event->as_mouse_wheel_event.amount_x,
-        event->as_mouse_wheel_event.amount_y,
+      event->as_mouse_wheel_event.amount_x,
+      event->as_mouse_wheel_event.amount_y,
     };
   }
 }

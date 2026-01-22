@@ -6,8 +6,8 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-__attr_unused NYA_INTERNAL NYA_Arena                _nya_perf_arena         = {0};
-__attr_unused NYA_INTERNAL NYA_PerfMeasurementArray _nya_perf_measurements  = {0};
+__attr_unused NYA_INTERNAL NYA_Arena                _nya_perf_arena         = { 0 };
+__attr_unused NYA_INTERNAL NYA_PerfMeasurementArray _nya_perf_measurements  = { 0 };
 __attr_unused NYA_INTERNAL u64                      _nya_perf_start_time_ms = 0;
 __attr_unused NYA_INTERNAL u64                      _nya_perf_start_cylces  = 0;
 
@@ -50,15 +50,15 @@ void _nya_perf_timer_start(NYA_ConstCString name) {
   }
 
   NYA_PerfMeasurement new_measurement = {
-      .name           = name,
-      .is_running     = true,
-      .started_ms     = {[0] = _nya_perf_time_since_start_ms()},
-      .ended_ms       = {0},
-      .elapsed_ms     = {0},
-      .started_cycles = {[0] = _nya_perf_cycles_since_start()},
-      .ended_cycles   = {0},
-      .elapsed_cycles = {0},
-      .current        = 0,
+    .name           = name,
+    .is_running     = true,
+    .started_ms     = { [0] = _nya_perf_time_since_start_ms() },
+    .ended_ms       = { 0 },
+    .elapsed_ms     = { 0 },
+    .started_cycles = { [0] = _nya_perf_cycles_since_start() },
+    .ended_cycles   = { 0 },
+    .elapsed_cycles = { 0 },
+    .current        = 0,
   };
   nya_array_push_back(&_nya_perf_measurements, new_measurement);
 }

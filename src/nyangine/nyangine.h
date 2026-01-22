@@ -27,6 +27,7 @@
 #include "nyangine/base/base_lexer.h"
 #include "nyangine/base/base_logging.h"
 #include "nyangine/base/base_memory.h"
+#include "nyangine/base/base_mouse.h"
 #include "nyangine/base/base_perf.h"
 #include "nyangine/base/base_random.h"
 #include "nyangine/base/base_string.h"

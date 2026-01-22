@@ -50,11 +50,8 @@ void _nya_log_message(NYA_LogLevel level, const char* function, const char* file
   if (level < _nya_log_level_current) return;
 
   static const char* log_level_strings[] = {
-      [NYA_LOG_LEVEL_DEBUG] = "DEBUG",
-      [NYA_LOG_LEVEL_INFO]  = "INFO",
-      [NYA_LOG_LEVEL_WARN]  = "WARN",
-      [NYA_LOG_LEVEL_ERROR] = "ERROR",
-      [NYA_LOG_LEVEL_PANIC] = "PANIC",
+    [NYA_LOG_LEVEL_DEBUG] = "DEBUG", [NYA_LOG_LEVEL_INFO] = "INFO",   [NYA_LOG_LEVEL_WARN] = "WARN",
+    [NYA_LOG_LEVEL_ERROR] = "ERROR", [NYA_LOG_LEVEL_PANIC] = "PANIC",
   };
   if (nya_unlikely(level == NYA_LOG_LEVEL_PANIC) && _nya_panic_prevent_jmp) {
     printf("[PREVENTED PANIC] %s (%s:%u): ", function, file, line);

@@ -6,9 +6,7 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-// clang-format off
 NYA_INTERNAL NYA_CString _nya_strstrn(NYA_ConstCString haystack, NYA_ConstCString needle, u64 haystack_len, u64 needle_len);
-// clang-format on
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -157,8 +155,7 @@ NYA_String nya_string_join(NYA_Arena* arena, const NYA_StringArray* arr, NYA_Con
   return result;
 }
 
-NYA_String nya_string_join(NYA_Arena* arena, const NYA_StringArray* arr, const NYA_String* separator)
-    __attr_overloaded {
+NYA_String nya_string_join(NYA_Arena* arena, const NYA_StringArray* arr, const NYA_String* separator) __attr_overloaded {
   nya_assert(arena);
   nya_assert(arr);
   nya_assert(separator);
@@ -228,8 +225,7 @@ NYA_String nya_string_substring_incld(NYA_Arena* arena, const NYA_String* str, u
   return nya_string_substring_excld(arena, str, start, end + 1);
 }
 
-NYA_StringArray nya_string_split(NYA_Arena* arena, const NYA_String* str, NYA_ConstCString separator)
-    __attr_overloaded {
+NYA_StringArray nya_string_split(NYA_Arena* arena, const NYA_String* str, NYA_ConstCString separator) __attr_overloaded {
   nya_assert(arena);
   nya_assert(str);
   nya_assert(separator);
@@ -260,8 +256,7 @@ NYA_StringArray nya_string_split(NYA_Arena* arena, const NYA_String* str, NYA_Co
   return result;
 }
 
-NYA_StringArray nya_string_split(NYA_Arena* arena, const NYA_String* str, const NYA_String* separator)
-    __attr_overloaded {
+NYA_StringArray nya_string_split(NYA_Arena* arena, const NYA_String* str, const NYA_String* separator) __attr_overloaded {
   nya_assert(arena);
   nya_assert(str);
   nya_assert(separator);
@@ -538,9 +533,7 @@ void nya_string_strip_suffix(NYA_String* str, NYA_ConstCString suffix) {
 
   u64 suffix_length = strlen(suffix);
 
-  if (nya_memcmp(str->items + str->length - suffix_length, suffix, suffix_length) == 0) {
-    str->length -= suffix_length;
-  }
+  if (nya_memcmp(str->items + str->length - suffix_length, suffix, suffix_length) == 0) { str->length -= suffix_length; }
 }
 
 NYA_CString nya_string_to_cstring(NYA_Arena* arena, const NYA_String* str) {

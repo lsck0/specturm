@@ -44,20 +44,19 @@ struct NYA_PerfMeasurement {
 #define nya_perf_timer_stop(name)  _nya_perf_timer_stop(name)
 #define nya_perf_timer_get_all()   _nya_perf_timer_get_all()
 #else
-#define nya_perf_get_timer(name)                                                                                       \
-  ({                                                                                                                   \
-    nya_unused(name);                                                                                                  \
-    nya_panic("Perf module is disabled.");                                                                             \
+#define nya_perf_get_timer(name)                                                                                                                     \
+  ({                                                                                                                                                 \
+    nya_unused(name);                                                                                                                                \
+    nya_panic("Perf module is disabled.");                                                                                                           \
   })
 #define nya_perf_timer_start(name) nya_unused(name)
 #define nya_perf_timer_stop(name)  nya_unused(name)
 #define nya_perf_timer_get_all()   nya_panic("Perf module is disabled.")
 #endif // NYA_IS_DEBUG
 
-// clang-format off
-#define nya_perf_time_this_scope(name) __attr_cleanup(_nya_perf_cleanup) NYA_CString _nya_perf_scope_timer_##__LINE__ = (nya_perf_timer_start(name), (NYA_CString)(name))
-#define nya_perf_time_this_function()  nya_perf_time_this_scope(__FILE__##__FUNCTION__)
-// clang-format on
+#define nya_perf_time_this_scope(name)                                                                                                               \
+  __attr_cleanup(_nya_perf_cleanup) NYA_CString _nya_perf_scope_timer_##__LINE__ = (nya_perf_timer_start(name), (NYA_CString)(name))
+#define nya_perf_time_this_function() nya_perf_time_this_scope(__FILE__##__FUNCTION__)
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────

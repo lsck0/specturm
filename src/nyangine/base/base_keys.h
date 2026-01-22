@@ -571,20 +571,20 @@ NYA_API NYA_EXTERN NYA_ConstCString nya_keycode_to_cstring(NYA_Keycode keycode);
 
 typedef u16 NYA_KeyModFlag;
 
-#define NYA_KEYMOD_NONE   0x0000u /**< no modifier is applicable. */
-#define NYA_KEYMOD_LSHIFT 0x0001u /**< the left Shift key is down. */
-#define NYA_KEYMOD_RSHIFT 0x0002u /**< the right Shift key is down. */
-#define NYA_KEYMOD_LEVEL5 0x0004u /**< the Level 5 Shift key is down. */
-#define NYA_KEYMOD_LCTRL  0x0040u /**< the left Ctrl (Control) key is down. */
-#define NYA_KEYMOD_RCTRL  0x0080u /**< the right Ctrl (Control) key is down. */
-#define NYA_KEYMOD_LALT   0x0100u /**< the left Alt key is down. */
-#define NYA_KEYMOD_RALT   0x0200u /**< the right Alt key is down. */
-#define NYA_KEYMOD_LGUI   0x0400u /**< the left GUI key (often the Windows key) is down. */
-#define NYA_KEYMOD_RGUI   0x0800u /**< the right GUI key (often the Windows key) is down. */
-#define NYA_KEYMOD_NUM    0x1000u /**< the Num Lock key (may be located on an extended keypad) is down. */
-#define NYA_KEYMOD_CAPS   0x2000u /**< the Caps Lock key is down. */
-#define NYA_KEYMOD_MODE   0x4000u /**< the !AltGr key is down. */
-#define NYA_KEYMOD_SCROLL 0x8000u /**< the Scroll Lock key is down. */
+#define NYA_KEYMOD_NONE   0x0000u                                 /**< no modifier is applicable. */
+#define NYA_KEYMOD_LSHIFT 0x0001u                                 /**< the left Shift key is down. */
+#define NYA_KEYMOD_RSHIFT 0x0002u                                 /**< the right Shift key is down. */
+#define NYA_KEYMOD_LEVEL5 0x0004u                                 /**< the Level 5 Shift key is down. */
+#define NYA_KEYMOD_LCTRL  0x0040u                                 /**< the left Ctrl (Control) key is down. */
+#define NYA_KEYMOD_RCTRL  0x0080u                                 /**< the right Ctrl (Control) key is down. */
+#define NYA_KEYMOD_LALT   0x0100u                                 /**< the left Alt key is down. */
+#define NYA_KEYMOD_RALT   0x0200u                                 /**< the right Alt key is down. */
+#define NYA_KEYMOD_LGUI   0x0400u                                 /**< the left GUI key (often the Windows key) is down. */
+#define NYA_KEYMOD_RGUI   0x0800u                                 /**< the right GUI key (often the Windows key) is down. */
+#define NYA_KEYMOD_NUM    0x1000u                                 /**< the Num Lock key (may be located on an extended keypad) is down. */
+#define NYA_KEYMOD_CAPS   0x2000u                                 /**< the Caps Lock key is down. */
+#define NYA_KEYMOD_MODE   0x4000u                                 /**< the !AltGr key is down. */
+#define NYA_KEYMOD_SCROLL 0x8000u                                 /**< the Scroll Lock key is down. */
 #define NYA_KEYMOD_CTRL   (NYA_KEYMOD_LCTRL | NYA_KEYMOD_RCTRL)   /**< Any Ctrl key is down. */
 #define NYA_KEYMOD_SHIFT  (NYA_KEYMOD_LSHIFT | NYA_KEYMOD_RSHIFT) /**< Any Shift key is down. */
 #define NYA_KEYMOD_ALT    (NYA_KEYMOD_LALT | NYA_KEYMOD_RALT)     /**< Any Alt key is down. */

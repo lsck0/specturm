@@ -29,9 +29,9 @@ void nya_system_events_init(void) {
   NYA_App* app = nya_app_get_instance();
 
   app->event_system = (NYA_EventSystem){
-      .allocator              = nya_arena_create(.name = "event_system_allocator"),
-      .event_queue_mutex      = SDL_CreateMutex(),
-      .event_queue_read_index = 0,
+    .allocator              = nya_arena_create(.name = "event_system_allocator"),
+    .event_queue_mutex      = SDL_CreateMutex(),
+    .event_queue_read_index = 0,
   };
 
   app->event_system.event_queue = nya_array_create(&app->event_system.allocator, NYA_Event);
@@ -112,7 +112,7 @@ void nya_event_listen(NYA_EventHook hook) {
 NYA_INTERNAL NYA_Event _nya_event_from_sdl_event(SDL_Event sdl_event) {
   nya_unused(sdl_event);
 
-  NYA_Event event = {0};
+  NYA_Event event = { 0 };
 
   switch (sdl_event.type) {
     case SDL_EVENT_KEY_DOWN: {

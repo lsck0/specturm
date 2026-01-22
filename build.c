@@ -18,19 +18,18 @@
 #define WINDOWS_X86_64_BINARY PROJECT_NAME "." VERSION ".windows-x86_64.exe"
 #define LINUX_X86_64_BINARY   PROJECT_NAME "." VERSION ".linux-x86_64"
 
-// clang-format off
 #define CC            "clang"
 #define CFLAGS        "-std=c23", "-ggdb", "-fenable-matrix", "-mavx", "-mavx2"
 #define WARNINGS      "-pedantic", "-Wall", "-Wextra", "-Wpedantic", "-Wno-gnu", "-Wno-gcc-compat", "-Wno-initializer-overrides", "-Wno-keyword-macro"
-#define INCLUDE_PATHS "-I./src/", "-I./vendor/sdl/include/"
+#define INCLUDE_PATHS "-I./src/", "-I./", "-I./vendor/sdl/include/"
 #define LINKER_FLAGS  "-lm", "-pthread", "-lSDL3"
 #define NPROCS        "16"
 
-#define FLAGS_SANITIZE  "-fno-omit-frame-pointer", "-fno-optimize-sibling-calls", "-fno-sanitize-recover=all", "-fsanitize=address,leak,undefined,signed-integer-overflow,unsigned-integer-overflow,shift,float-cast-overflow,float-divide-by-zero,pointer-overflow"
+// clang-format off
 #define FLAGS_DEBUG     "-O0", "-DIS_DEBUG=true", "-rdynamic"
 #define FLAGS_DLL       "-fPIC", "-shared"
+#define FLAGS_SANITIZE  "-fno-omit-frame-pointer", "-fno-optimize-sibling-calls", "-fno-sanitize-recover=all", "-fsanitize=address,leak,undefined,signed-integer-overflow,unsigned-integer-overflow,shift,float-cast-overflow,float-divide-by-zero,pointer-overflow"
 #define FLAGS_RELEASE   "-O3", "-D_FORTIFY_SOURCE=2", "-fno-omit-frame-pointer", "-fstack-protector-strong", "-Wl,-rpath,$ORIGIN"
-
 #define FLAGS_WINDOWS_X86_64 "--target=x86_64-w64-mingw32", "-Wl,-subsystem,windows", "-static", "-L./vendor/sdl/build-window-x86_64/", "-lcomdlg32", "-ldxguid", "-lgdi32", "-limm32", "-lkernel32", "-lole32", "-loleaut32", "-lsetupapi", "-luser32", "-luuid", "-lversion", "-lwinmm"
 #define FLAGS_LINUX_X86_64   "-L./vendor/sdl/build-linux-x86_64/"
 // clang-format on
@@ -47,8 +46,6 @@ NYA_INTERNAL void hook_bundle_project(NYA_BuildRule* rule);
  * BUILD RULES
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
-// for some reason clang-format shits itself formatting the build rules
-// clang-format off
 
 NYA_Command build_rebuild_command = {
     .program   = CC,
@@ -193,15 +190,15 @@ NYA_BuildRule build_shadercross_linux_x86_64 = {
 NYA_BuildRule build_windows_icon = {
     .name        = "build_windows_icon",
     .policy      = NYA_BUILD_IF_OUTDATED,
-    .input_file  = "./assets/icons/icon.ico",
-    .output_file = "./assets/icons/icon.res",
+    .input_file  = "./assets/icon/icon.ico",
+    .output_file = "./assets/icon/icon.res",
 
     .command = {
         .program   = "x86_64-w64-mingw32-windres",
         .arguments = {
-            "./assets/icons/icon.rc",
+            "./assets/icon/icon.rc",
             "-O", "coff",
-            "-o", "./assets/icons/icon.res",
+            "-o", "./assets/icon/icon.res",
         },
     },
 };
@@ -316,7 +313,7 @@ NYA_BuildRule build_project_windows_x86_64 = {
             LINKER_FLAGS,
             FLAGS_RELEASE,
             FLAGS_WINDOWS_X86_64,
-            "./assets/icons/icon.res",
+            "./assets/icon/icon.res",
         },
     },
 
@@ -451,7 +448,6 @@ NYA_BuildRule update_submodules = {
     },
 };
 
-// clang-format on
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  * HOOKS
@@ -462,10 +458,10 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
   nya_assert(rule);
 
   NYA_Command find_source_shaders = {
-      .arena     = &nya_arena_global,
-      .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
-      .program   = "find",
-      .arguments = {"./assets/shaders/source/", "-name", "*.hlsl"},
+    .arena     = &nya_arena_global,
+    .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
+    .program   = "find",
+    .arguments = { "./assets/shaders/source/", "-name", "*.hlsl", },
   };
   nya_command_run(&find_source_shaders);
   nya_assert(find_source_shaders.exit_code == 0, "Failed to find source shaders.");
@@ -494,7 +490,6 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
     nya_string_strip_suffix(shader, ".spv");
     nya_string_strip_prefix(shader, "./assets/shaders/compiled/SPIRV/");
 
-    // clang-format off
     NYA_Command create_dirs = {
         .program   = "mkdir",
         .arguments = {
@@ -508,7 +503,7 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
     nya_assert(create_dirs.exit_code == 0, "Failed to create shader output directories.");
 
     // compile to DXIL
-    NYA_String    compile_to_dxil_name = nya_string_sprintf(&nya_arena_global, "%s -> %s", source, target_dxil);
+    NYA_String compile_to_dxil_name = nya_string_sprintf(&nya_arena_global, "%s -> %s", source, target_dxil);
     NYA_BuildRule compile_to_dxil      = {
         .name        = nya_string_to_cstring(&nya_arena_global, &compile_to_dxil_name),
         .policy      = NYA_BUILD_IF_OUTDATED,
@@ -527,7 +522,7 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
     nya_build(&compile_to_dxil);
 
     // compile to Metal
-    NYA_String    compile_to_metal_name = nya_string_sprintf(&nya_arena_global, "%s -> %s", source, target_metal);
+    NYA_String compile_to_metal_name = nya_string_sprintf(&nya_arena_global, "%s -> %s", source, target_metal);
     NYA_BuildRule compile_to_metal      = {
         .name        = nya_string_to_cstring(&nya_arena_global, &compile_to_metal_name),
         .policy      = NYA_BUILD_IF_OUTDATED,
@@ -547,7 +542,7 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
     nya_build(&compile_to_metal);
 
     // compile to SPIR-V
-    NYA_String    compile_to_spirv_name = nya_string_sprintf(&nya_arena_global, "%s -> %s", source, target_spirv);
+    NYA_String compile_to_spirv_name = nya_string_sprintf(&nya_arena_global, "%s -> %s", source, target_spirv);
     NYA_BuildRule compile_to_spirv      = {
         .name        = nya_string_to_cstring(&nya_arena_global, &compile_to_spirv_name),
         .policy      = NYA_BUILD_IF_OUTDATED,
@@ -564,7 +559,6 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
         },
     };
     nya_build(&compile_to_spirv);
-    // clang-format off
   }
 }
 
@@ -572,7 +566,7 @@ NYA_INTERNAL void hook_bundle_assets(NYA_BuildRule* rule) {
   nya_assert(rule);
 
   NYA_ConstCString asset_directory = "./assets/";
-  NYA_ConstCString output_file = "./assets/assets.c";
+  NYA_ConstCString output_file     = "./assets/assets.c";
 
   nya_asset_generate_embedding(asset_directory, output_file);
 }
@@ -586,10 +580,10 @@ NYA_INTERNAL void hook_add_version_flag_and_git_hash(NYA_BuildRule* rule) {
   if (initialized) goto skip_initialization;
 
   NYA_Command git_hash_command = {
-      .arena     = &nya_arena_global,
-      .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
-      .program   = "git",
-      .arguments = {"rev-parse", "HEAD"},
+    .arena     = &nya_arena_global,
+    .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
+    .program   = "git",
+    .arguments = { "rev-parse", "HEAD" },
   };
   nya_command_run(&git_hash_command);
   nya_assert(git_hash_command.exit_code == 0, "Failed to get git commit hash.");
@@ -615,10 +609,10 @@ NYA_INTERNAL void hook_convert_perf_data_to_plain(NYA_BuildRule* rule) {
   nya_assert(rule);
 
   NYA_Command command = {
-      .arena     = &nya_arena_global,
-      .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
-      .program   = "perf",
-      .arguments = {"script", "-i", "./perf.data"},
+    .arena     = &nya_arena_global,
+    .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
+    .program   = "perf",
+    .arguments = { "script", "-i", "./perf.data" },
   };
   nya_command_run(&command);
   nya_assert(command.exit_code == 0, "Failed to convert perf data to plain text.");
@@ -642,15 +636,15 @@ NYA_INTERNAL void hook_bundle_project(NYA_BuildRule* rule) {
   NYA_ConstCString windows_path = "./dist/" PROJECT_NAME "." VERSION ".windows-x86_64/";
 
   NYA_Command clean_dist = {
-      .program   = "rm",
-      .arguments = {"-rf", dist_path},
+    .program   = "rm",
+    .arguments = { "-rf", dist_path },
   };
   nya_command_run(&clean_dist);
   nya_assert(clean_dist.exit_code == 0, "Failed to clean dist directory.");
 
   NYA_Command create_dirs = {
-      .program   = "mkdir",
-      .arguments = {"-p", linux_path, windows_path},
+    .program   = "mkdir",
+    .arguments = { "-p", linux_path, windows_path, },
   };
   nya_command_run(&create_dirs);
   nya_assert(create_dirs.exit_code == 0, "Failed to create dist directories.");
@@ -658,15 +652,15 @@ NYA_INTERNAL void hook_bundle_project(NYA_BuildRule* rule) {
   // LINUX
 
   NYA_Command copy_linux_binary = {
-      .program   = "cp",
-      .arguments = {LINUX_X86_64_BINARY, linux_path},
+    .program   = "cp",
+    .arguments = { LINUX_X86_64_BINARY, linux_path, },
   };
   nya_command_run(&copy_linux_binary);
   nya_assert(copy_linux_binary.exit_code == 0, "Failed to copy linux binary.");
 
   NYA_Command copy_steam_sdk_linux = {
-      .program   = "cp",
-      .arguments = {"./vendor/steam/redistributable_bin/linux64/libsteam_api.so", linux_path},
+    .program   = "cp",
+    .arguments = { "./vendor/steam/redistributable_bin/linux64/libsteam_api.so", linux_path, },
   };
   nya_command_run(&copy_steam_sdk_linux);
   nya_assert(copy_steam_sdk_linux.exit_code == 0, "Failed to copy steam sdk for linux.");
@@ -674,15 +668,15 @@ NYA_INTERNAL void hook_bundle_project(NYA_BuildRule* rule) {
   // WINDOWS
 
   NYA_Command copy_windows_binary = {
-      .program   = "cp",
-      .arguments = {WINDOWS_X86_64_BINARY, windows_path},
+    .program   = "cp",
+    .arguments = { WINDOWS_X86_64_BINARY, windows_path },
   };
   nya_command_run(&copy_windows_binary);
   nya_assert(copy_windows_binary.exit_code == 0, "Failed to copy windows binary.");
 
   NYA_Command copy_steam_sdk_windows = {
-      .program   = "cp",
-      .arguments = {"./vendor/steam/redistributable_bin/win64/steam_api64.dll", windows_path},
+    .program   = "cp",
+    .arguments = { "./vendor/steam/redistributable_bin/win64/steam_api64.dll", windows_path, },
   };
   nya_command_run(&copy_steam_sdk_windows);
   nya_assert(copy_steam_sdk_windows.exit_code == 0, "Failed to copy steam sdk for windows.");
@@ -702,10 +696,10 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
   nya_assert(strcmp(test_files->name, "tests") == 0);
 
   NYA_Command find_tests_command = {
-      .arena     = &nya_arena_global,
-      .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
-      .program   = "find",
-      .arguments = {"./tests/", "-name", "*.c"},
+    .arena     = &nya_arena_global,
+    .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
+    .program   = "find",
+    .arguments = { "./tests/", "-name", "*.c" },
   };
   nya_command_run(&find_tests_command);
   NYA_StringArray tests = nya_string_split_lines(&nya_arena_global, &find_tests_command.stdout_content);
@@ -727,8 +721,7 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
     nya_string_strip_suffix(test, ".c");
     NYA_CString test_binary = nya_string_to_cstring(&nya_arena_global, test);
 
-    // clang-format off
-    NYA_String    build_test_name = nya_string_sprintf(&nya_arena_global, "build_test:%s", test_binary);
+    NYA_String build_test_name = nya_string_sprintf(&nya_arena_global, "build_test:%s", test_binary);
     NYA_BuildRule build_test = {
         .name        = nya_string_to_cstring(&nya_arena_global, &build_test_name),
         .policy      = NYA_BUILD_ALWAYS,
@@ -753,7 +746,7 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
         .pre_build_hooks = { &hook_add_version_flag_and_git_hash, },
     };
 
-    NYA_String    run_test_name = nya_string_sprintf(&nya_arena_global, "run_test:%s", test_binary);
+    NYA_String run_test_name = nya_string_sprintf(&nya_arena_global, "run_test:%s", test_binary);
     NYA_BuildRule run_test = {
         .name        = nya_string_to_cstring(&nya_arena_global, &run_test_name),
         .policy      = NYA_BUILD_ALWAYS,
@@ -772,7 +765,6 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
         .dependencies      = { &build_test, },
         .post_build_hooks  = { &hook_remove_output_file, },
     };
-    // clang-format on
 
     b8 ok = nya_build(&run_test);
     if (!ok) nya_panic("TEST FAILED: %s", test_binary);
@@ -784,28 +776,27 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
  * CLI PARSER
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
-// clang-format off
 
 NYA_ArgParameter test_files = {
-    .kind        = NYA_ARG_PARAMETER_KIND_POSITIONAL,
-    .variadic    = true,
-    .value.type  = NYA_TYPE_STRING,
-    .name        = "tests",
-    .description = "Which tests to run. If none specified, all tests are run.",
+  .kind        = NYA_ARG_PARAMETER_KIND_POSITIONAL,
+  .variadic    = true,
+  .value.type  = NYA_TYPE_STRING,
+  .name        = "tests",
+  .description = "Which tests to run. If none specified, all tests are run.",
 };
 
 NYA_ArgParameter skip_self_rebuild_flag = {
-    .kind        = NYA_ARG_PARAMETER_KIND_FLAG,
-    .value.type  = NYA_TYPE_BOOL,
-    .name        = "no-rebuild",
-    .description = "Don't rebuild the build system before executing the command.",
+  .kind        = NYA_ARG_PARAMETER_KIND_FLAG,
+  .value.type  = NYA_TYPE_BOOL,
+  .name        = "no-rebuild",
+  .description = "Don't rebuild the build system before executing the command.",
 };
 
 NYA_ArgParameter help_flag = {
-    .kind        = NYA_ARG_PARAMETER_KIND_FLAG,
-    .value.type  = NYA_TYPE_BOOL,
-    .name        = "help",
-    .description = "Show this message.",
+  .kind        = NYA_ARG_PARAMETER_KIND_FLAG,
+  .value.type  = NYA_TYPE_BOOL,
+  .name        = "help",
+  .description = "Show this message.",
 };
 
 NYA_ArgCommand run = {
@@ -868,33 +859,33 @@ NYA_ArgCommand build = {
 };
 
 NYA_ArgCommand bundle = {
-    .name        = "bundle",
-    .description = "Bundle for shipping.",
-    .build_rule  = &bundle_project,
+  .name        = "bundle",
+  .description = "Bundle for shipping.",
+  .build_rule  = &bundle_project,
 };
 
 NYA_ArgCommand perf = {
-    .name        = "perf",
-    .description = "Open Profiler with last profiling data.",
-    .build_rule  = &open_perf_report,
+  .name        = "perf",
+  .description = "Open Profiler with last profiling data.",
+  .build_rule  = &open_perf_report,
 };
 
 NYA_ArgCommand docs = {
-    .name        = "docs",
-    .description = "Open doxygen generated documentation.",
-    .build_rule  = &open_docs,
+  .name        = "docs",
+  .description = "Open doxygen generated documentation.",
+  .build_rule  = &open_docs,
 };
 
 NYA_ArgCommand stats = {
-    .name        = "stats",
-    .description = "Show code statistics.",
-    .build_rule  = &show_stats,
+  .name        = "stats",
+  .description = "Show code statistics.",
+  .build_rule  = &show_stats,
 };
 
 NYA_ArgCommand update = {
-    .name        = "update",
-    .description = "Update git submodules.",
-    .build_rule  = &update_submodules,
+  .name        = "update",
+  .description = "Update git submodules.",
+  .build_rule  = &update_submodules,
 };
 
 NYA_ArgParser parser = {
@@ -919,7 +910,6 @@ NYA_ArgParser parser = {
     },
 };
 
-// clang-format on
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  * ENTRY POINT

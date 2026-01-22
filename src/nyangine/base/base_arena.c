@@ -15,7 +15,7 @@ NYA_INTERNAL void  _nya_arena_free_list_add(NYA_ArenaRegion* region, void* ptr, 
 NYA_INTERNAL void  _nya_arena_free_list_defragment(NYA_ArenaFreeList* free_list);
 NYA_INTERNAL void  _nya_arena_free_list_destroy(NYA_ArenaFreeList* free_list);
 
-NYA_INTERNAL NYA_MemoryActionArray _nya_arena_memory_actions = {0};
+NYA_INTERNAL NYA_MemoryActionArray _nya_arena_memory_actions = { 0 };
 NYA_INTERNAL void                  _nya_arena_action_insert(NYA_MemoryAction action);
 
 /** The global arena won't be cleared. */
@@ -48,9 +48,9 @@ NYA_Arena _nya_arena_nodebug_create_with_options(NYA_ArenaOptions options) {
   nya_assert(ASAN_PADDING % options.alignment == 0, "ASAN padding must be divisible by alignment.");
 
   return (NYA_Arena){
-      .options = options,
-      .head    = nullptr,
-      .tail    = nullptr,
+    .options = options,
+    .head    = nullptr,
+    .tail    = nullptr,
   };
 }
 
@@ -98,13 +98,13 @@ skip_search:
   nya_assert(new_region_memory != nullptr);
 
   *new_region = (NYA_ArenaRegion){
-      .used       = size,
-      .capacity   = new_region_size,
-      .memory     = new_region_memory,
-      .gc_counter = 0,
-      .free_list  = nullptr,
-      .next       = nullptr,
-      .prev       = nullptr,
+    .used       = size,
+    .capacity   = new_region_size,
+    .memory     = new_region_memory,
+    .gc_counter = 0,
+    .free_list  = nullptr,
+    .next       = nullptr,
+    .prev       = nullptr,
   };
   nya_dll_node_push_back(arena, new_region);
 
@@ -137,9 +137,7 @@ void* _nya_arena_nodebug_realloc(NYA_Arena* arena, void* ptr, u64 old_size, u64 
     asan_poison_memory_region(old_ptr + new_size - ASAN_PADDING, ASAN_PADDING);
 
     // only free the excess if it's larger than ASAN_PADDING
-    if (old_size - new_size > ASAN_PADDING) {
-      _nya_arena_nodebug_free(arena, old_ptr + new_size, old_size - new_size - ASAN_PADDING);
-    }
+    if (old_size - new_size > ASAN_PADDING) { _nya_arena_nodebug_free(arena, old_ptr + new_size, old_size - new_size - ASAN_PADDING); }
 
     return old_ptr;
   }
@@ -151,8 +149,7 @@ void* _nya_arena_nodebug_realloc(NYA_Arena* arena, void* ptr, u64 old_size, u64 
     // no checking if we are followed by big freed memory, makes free list much more complex
 
     // if its the last allocation in the region, we can maybe just extend it
-    if (old_ptr + old_size == region->memory + region->used &&
-        region->used + (new_size - old_size) <= region->capacity) {
+    if (old_ptr + old_size == region->memory + region->used && region->used + (new_size - old_size) <= region->capacity) {
       region->used += new_size - old_size;
 
       asan_unpoison_memory_region(old_ptr, new_size - ASAN_PADDING);
@@ -195,8 +192,7 @@ void _nya_arena_nodebug_free(NYA_Arena* arena, void* ptr, u64 size) {
     _nya_arena_free_list_add(region, ptr, size);
 
     // maybe defragment
-    if (arena->options.defragmentation_enabled &&
-        region->free_list->defragmentation_counter >= arena->options.defragmentation_threshold) {
+    if (arena->options.defragmentation_enabled && region->free_list->defragmentation_counter >= arena->options.defragmentation_threshold) {
       _nya_arena_free_list_defragment(region->free_list);
     }
 
@@ -213,8 +209,7 @@ void _nya_arena_nodebug_free_all(NYA_Arena* arena) {
     NYA_ArenaRegion* next = region->next;
 
     // deallocate region if unused long enough
-    if (arena->options.defragmentation_enabled && region->used == 0 &&
-        region->gc_counter++ >= arena->options.garbage_collection_threshold) {
+    if (arena->options.defragmentation_enabled && region->used == 0 && region->gc_counter++ >= arena->options.garbage_collection_threshold) {
       _nya_arena_region_destroy(arena, region);
       region = next;
       continue;
@@ -292,18 +287,13 @@ void* _nya_arena_nodebug_move(NYA_Arena* src, NYA_Arena* dst, void* ptr, u64 siz
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_Arena _nya_arena_debug_create_with_options(
-    NYA_ArenaOptions options,
-    NYA_ConstCString function,
-    NYA_ConstCString file,
-    u32              line
-) {
+NYA_Arena _nya_arena_debug_create_with_options(NYA_ArenaOptions options, NYA_ConstCString function, NYA_ConstCString file, u32 line) {
   NYA_MemoryAction action = {
-      .type          = NYA_MEMORY_ACTION_ARENA_NEW,
-      .arena_name    = options.name,
-      .file_name     = file,
-      .line_number   = line,
-      .function_name = function,
+    .type          = NYA_MEMORY_ACTION_ARENA_NEW,
+    .arena_name    = options.name,
+    .file_name     = file,
+    .line_number   = line,
+    .function_name = function,
   };
   _nya_arena_action_insert(action);
 
@@ -330,15 +320,7 @@ void* _nya_arena_debug_alloc(NYA_Arena* arena, u64 size, NYA_ConstCString functi
   return ptr;
 }
 
-void* _nya_arena_debug_realloc(
-    NYA_Arena*       arena,
-    void*            ptr,
-    u64              old_size,
-    u64              new_size,
-    NYA_ConstCString function,
-    NYA_ConstCString file,
-    u32              line
-) {
+void* _nya_arena_debug_realloc(NYA_Arena* arena, void* ptr, u64 old_size, u64 new_size, NYA_ConstCString function, NYA_ConstCString file, u32 line) {
   void* new_ptr = _nya_arena_nodebug_realloc(arena, ptr, old_size, new_size);
   if (new_ptr == nullptr && new_size != 0) return nullptr;
 
@@ -360,14 +342,7 @@ void* _nya_arena_debug_realloc(
   return new_ptr;
 }
 
-void _nya_arena_debug_free(
-    NYA_Arena*       arena,
-    void*            ptr,
-    u64              size,
-    NYA_ConstCString function,
-    NYA_ConstCString file,
-    u32              line
-) {
+void _nya_arena_debug_free(NYA_Arena* arena, void* ptr, u64 size, NYA_ConstCString function, NYA_ConstCString file, u32 line) {
   NYA_MemoryAction action = {
       .type          = NYA_MEMORY_ACTION_FREE,
       .arena_name    = arena->options.name,
@@ -386,11 +361,11 @@ void _nya_arena_debug_free(
 
 void _nya_arena_debug_free_all(NYA_Arena* arena, NYA_ConstCString function, NYA_ConstCString file, u32 line) {
   NYA_MemoryAction action = {
-      .type          = NYA_MEMORY_ACTION_FREE_ALL,
-      .arena_name    = arena->options.name,
-      .file_name     = file,
-      .line_number   = line,
-      .function_name = function,
+    .type          = NYA_MEMORY_ACTION_FREE_ALL,
+    .arena_name    = arena->options.name,
+    .file_name     = file,
+    .line_number   = line,
+    .function_name = function,
   };
   _nya_arena_action_insert(action);
 
@@ -399,11 +374,11 @@ void _nya_arena_debug_free_all(NYA_Arena* arena, NYA_ConstCString function, NYA_
 
 void _nya_arena_debug_garbage_collect(NYA_Arena* arena, NYA_ConstCString function, NYA_ConstCString file, u32 line) {
   NYA_MemoryAction action = {
-      .type          = NYA_MEMORY_ACTION_FREE_ALL,
-      .arena_name    = arena->options.name,
-      .file_name     = file,
-      .line_number   = line,
-      .function_name = function,
+    .type          = NYA_MEMORY_ACTION_FREE_ALL,
+    .arena_name    = arena->options.name,
+    .file_name     = file,
+    .line_number   = line,
+    .function_name = function,
   };
   _nya_arena_action_insert(action);
 
@@ -412,25 +387,18 @@ void _nya_arena_debug_garbage_collect(NYA_Arena* arena, NYA_ConstCString functio
 
 void _nya_arena_debug_destroy(NYA_Arena* arena, NYA_ConstCString function, NYA_ConstCString file, u32 line) {
   NYA_MemoryAction action = {
-      .type          = NYA_MEMORY_ACTION_ARENA_DESTROY,
-      .arena_name    = arena->options.name,
-      .file_name     = file,
-      .line_number   = line,
-      .function_name = function,
+    .type          = NYA_MEMORY_ACTION_ARENA_DESTROY,
+    .arena_name    = arena->options.name,
+    .file_name     = file,
+    .line_number   = line,
+    .function_name = function,
   };
   _nya_arena_action_insert(action);
 
   _nya_arena_nodebug_destroy(arena);
 }
 
-void* _nya_arena_debug_copy(
-    NYA_Arena*       dst,
-    void*            ptr,
-    u64              size,
-    NYA_ConstCString function,
-    NYA_ConstCString file,
-    u32              line
-) {
+void* _nya_arena_debug_copy(NYA_Arena* dst, void* ptr, u64 size, NYA_ConstCString function, NYA_ConstCString file, u32 line) {
   void* copy_ptr = _nya_arena_nodebug_copy(dst, ptr, size);
   if (copy_ptr == nullptr) return nullptr;
 
@@ -451,15 +419,7 @@ void* _nya_arena_debug_copy(
   return copy_ptr;
 }
 
-void* _nya_arena_debug_move(
-    NYA_Arena*       src,
-    NYA_Arena*       dst,
-    void*            ptr,
-    u64              size,
-    NYA_ConstCString function,
-    NYA_ConstCString file,
-    u32              line
-) {
+void* _nya_arena_debug_move(NYA_Arena* src, NYA_Arena* dst, void* ptr, u64 size, NYA_ConstCString function, NYA_ConstCString file, u32 line) {
   void* move_ptr = _nya_arena_nodebug_move(src, dst, ptr, size);
   if (move_ptr == nullptr) return nullptr;
 
@@ -548,8 +508,7 @@ NYA_INTERNAL void* _nya_arena_free_list_find(NYA_ArenaFreeList* free_list, u32 s
       if (free_list->node_counter == 0) {
         free_list->average_free_size = 0.0F;
       } else {
-        free_list->average_free_size = (free_list->average_free_size * (f32)(free_list->node_counter + 1) - (f32)size) /
-                                       (f32)free_list->node_counter;
+        free_list->average_free_size = (free_list->average_free_size * (f32)(free_list->node_counter + 1) - (f32)size) / (f32)free_list->node_counter;
       }
 
       return ptr;
@@ -558,10 +517,9 @@ NYA_INTERNAL void* _nya_arena_free_list_find(NYA_ArenaFreeList* free_list, u32 s
     // free node is bigger than we need
     void* ptr = node->ptr;
 
-    node->ptr   = (u8*)node->ptr + size;
-    node->size -= size;
-    free_list->average_free_size =
-        (free_list->average_free_size * (f32)free_list->node_counter - (f32)size) / (f32)(free_list->node_counter);
+    node->ptr                     = (u8*)node->ptr + size;
+    node->size                   -= size;
+    free_list->average_free_size  = (free_list->average_free_size * (f32)free_list->node_counter - (f32)size) / (f32)(free_list->node_counter);
 
     return ptr;
   }
@@ -577,11 +535,11 @@ NYA_INTERNAL void _nya_arena_free_list_add(NYA_ArenaRegion* region, void* ptr, u
     nya_assert(region->free_list != nullptr);
 
     *region->free_list = (NYA_ArenaFreeList){
-        .node_counter            = 0,
-        .average_free_size       = 0.0F,
-        .defragmentation_counter = 0,
-        .head                    = nullptr,
-        .tail                    = nullptr,
+      .node_counter            = 0,
+      .average_free_size       = 0.0F,
+      .defragmentation_counter = 0,
+      .head                    = nullptr,
+      .tail                    = nullptr,
     };
   }
 
@@ -589,10 +547,10 @@ NYA_INTERNAL void _nya_arena_free_list_add(NYA_ArenaRegion* region, void* ptr, u
   nya_assert(new_node != nullptr);
 
   *new_node = (NYA_ArenaFreeListNode){
-      .ptr  = ptr,
-      .size = size,
-      .prev = nullptr,
-      .next = nullptr,
+    .ptr  = ptr,
+    .size = size,
+    .prev = nullptr,
+    .next = nullptr,
   };
 
   if (region->free_list->head == nullptr) {
@@ -613,8 +571,7 @@ NYA_INTERNAL void _nya_arena_free_list_add(NYA_ArenaRegion* region, void* ptr, u
     region->free_list->average_free_size = (f32)size;
   } else {
     region->free_list->average_free_size =
-        ((region->free_list->average_free_size * (f32)region->free_list->node_counter) + (f32)size) /
-        (f32)(region->free_list->node_counter + 1);
+        ((region->free_list->average_free_size * (f32)region->free_list->node_counter) + (f32)size) / (f32)(region->free_list->node_counter + 1);
     region->free_list->node_counter++;
   }
 }
@@ -634,8 +591,8 @@ NYA_INTERNAL void _nya_arena_free_list_defragment(NYA_ArenaFreeList* free_list) 
       nya_free(next);
 
       if (free_list->node_counter > 1) {
-        free_list->average_free_size = (free_list->average_free_size * (f32)free_list->node_counter - (f32)next_size) /
-                                       (f32)(free_list->node_counter - 1);
+        free_list->average_free_size =
+            (free_list->average_free_size * (f32)free_list->node_counter - (f32)next_size) / (f32)(free_list->node_counter - 1);
       }
       free_list->node_counter--;
 

@@ -11,9 +11,7 @@ b8 nya_fd_read(s32 fd, OUT NYA_String* out_content) {
 
   char buffer[4096];
   u64  n;
-  while ((n = read(fd, buffer, sizeof(buffer))) > 0) {
-    nya_string_extend(out_content, &(NYA_String){.items = (u8*)buffer, .length = n});
-  }
+  while ((n = read(fd, buffer, sizeof(buffer))) > 0) { nya_string_extend(out_content, &(NYA_String){ .items = (u8*)buffer, .length = n }); }
 
   return n == 0;
 }

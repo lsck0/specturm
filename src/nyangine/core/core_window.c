@@ -19,7 +19,7 @@ void nya_system_window_init(void) {
   NYA_App* app = nya_app_get_instance();
 
   app->window_system = (NYA_WindowSystem){
-      .allocator = nya_arena_create(.name = "window_system_allocator"),
+    .allocator = nya_arena_create(.name = "window_system_allocator"),
   };
 
   app->window_system.windows = nya_array_create(&app->window_system.allocator, NYA_Window);
@@ -73,11 +73,11 @@ void* nya_window_create(const char* title, u32 initial_width, u32 initial_height
   nya_assert(sdl_window != nullptr, "SDL_CreateWindow() failed: %s", SDL_GetError());
 
   NYA_Window nya_window = {
-      .id          = id != nullptr ? id : (void*)(uintmax_t)(++id_counter),
-      .sdl_window  = sdl_window,
-      .width       = initial_width,
-      .height      = initial_height,
-      .layer_stack = nya_array_create(&app->global_allocator, NYA_Layer),
+    .id          = id != nullptr ? id : (void*)(uintmax_t)(++id_counter),
+    .sdl_window  = sdl_window,
+    .width       = initial_width,
+    .height      = initial_height,
+    .layer_stack = nya_array_create(&app->global_allocator, NYA_Layer),
   };
   nya_system_render_for_window_init(&nya_window);
 

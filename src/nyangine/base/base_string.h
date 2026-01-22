@@ -17,7 +17,6 @@ nya_derive_array(NYA_String);
 nya_derive_array(NYA_CString);
 nya_derive_array(NYA_ConstCString);
 
-// clang-format off
 NYA_API NYA_EXTERN b8              nya_string_contains(const NYA_String* str, NYA_ConstCString substr) __attr_overloaded;
 NYA_API NYA_EXTERN b8              nya_string_contains(const NYA_String* str, const NYA_String* substr) __attr_overloaded;
 NYA_API NYA_EXTERN NYA_String      nya_string_create(NYA_Arena* arena);
@@ -43,7 +42,7 @@ NYA_API NYA_EXTERN NYA_StringArray nya_string_split_words(NYA_Arena* arena, cons
 NYA_API NYA_EXTERN u64             nya_string_count(const NYA_String* str, NYA_ConstCString substr) __attr_overloaded;
 NYA_API NYA_EXTERN u64             nya_string_count(const NYA_String* str, const NYA_String* substr) __attr_overloaded;
 NYA_API NYA_EXTERN void            nya_string_clear(NYA_String* str);
-NYA_API NYA_EXTERN void            nya_string_destroy(NYA_String *str);
+NYA_API NYA_EXTERN void            nya_string_destroy(NYA_String* str);
 NYA_API NYA_EXTERN void            nya_string_extend(NYA_String* str, NYA_ConstCString extension) __attr_overloaded;
 NYA_API NYA_EXTERN void            nya_string_extend(NYA_String* str, const NYA_String* extension) __attr_overloaded;
 NYA_API NYA_EXTERN void            nya_string_extend_front(NYA_String* str, NYA_ConstCString extension) __attr_overloaded;
@@ -63,7 +62,6 @@ NYA_API NYA_EXTERN NYA_CString     nya_string_to_cstring(NYA_Arena* arena, const
 NYA_API NYA_EXTERN void            nya_string_to_lower(NYA_String* str);
 NYA_API NYA_EXTERN void            nya_string_to_upper(NYA_String* str);
 NYA_API NYA_EXTERN void            nya_string_trim_whitespace(NYA_String* str);
-// clang-format on
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────

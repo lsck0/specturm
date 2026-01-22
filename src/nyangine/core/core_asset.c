@@ -1,7 +1,17 @@
 #include "nyangine/nyangine.h"
 
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * PRIVATE API DECLRARATION
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
 #if !NYA_IS_DEBUG
 #include "../../../assets/assets.c"
+
+NYA_EXTERN const u64                 NYA_ASSET_BLOB_HEADER_COUNT;
+NYA_EXTERN const NYA_AssetBlobHeader NYA_ASSET_BLOB_HEADER[];
+NYA_EXTERN const u8                  NYA_ASSET_BLOB[];
 #endif
 
 /*
@@ -17,9 +27,17 @@
  */
 
 void nya_system_asset_init(void) {
+  NYA_App* app = nya_app_get_instance();
+
+  app->asset_system = (NYA_AssetSystem){
+    .allocator = nya_arena_create(.name = "asset_system_allocator"),
+  };
 }
 
 void nya_system_asset_deinit(void) {
+  NYA_App* app = nya_app_get_instance();
+
+  nya_arena_destroy(&app->asset_system.allocator);
 }
 
 /*
@@ -37,7 +55,6 @@ void nya_asset_generate_embedding(NYA_ConstCString asset_directory, NYA_ConstCSt
   NYA_String header_string       = nya_string_create(arena);
   NYA_String blob_string         = nya_string_create(arena);
 
-  // clang-format off
   NYA_Command find_assets_command = {
       .arena     = arena,
       .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
@@ -49,16 +66,13 @@ void nya_asset_generate_embedding(NYA_ConstCString asset_directory, NYA_ConstCSt
           "-not", "-name", ".keep",
       },
   };
-  // clang-format on
   nya_command_run(&find_assets_command);
   NYA_StringArray files = nya_string_split_lines(arena, &find_assets_command.stdout_content);
-
-  // clang-format off
+  nya_string_extend(&result, "/* THIS FILE IS GENERATED. DO NYAT TOUCH. */\n\n");
   nya_string_extend(&result, "#include \"nyangine/nyangine.h\"\n\n");
-  header_count_string = nya_string_sprintf(arena, "const u64 NYA_ASSET_BLOB_HEADER_COUNT = " FMTu64 ";\n\n", files.length);
-  nya_string_extend(&header_string, "const NYA_AssetHeader NYA_ASSET_BLOB_HEADER[] = {\n");
+  header_count_string = nya_string_sprintf(arena, "const u64 NYA_ASSET_BLOB_HEADER_COUNT = " FMTu64 ";\n", files.length);
+  nya_string_extend(&header_string, "const NYA_AssetBlobHeader NYA_ASSET_BLOB_HEADER[] = {\n");
   nya_string_extend(&blob_string, "const u8 NYA_ASSET_BLOB[] = {\n");
-  // clang-format on
 
   u64 cursor = 0;
   nya_array_foreach (&files, file) {
@@ -66,13 +80,8 @@ void nya_asset_generate_embedding(NYA_ConstCString asset_directory, NYA_ConstCSt
     b8         ok      = nya_file_read(file, &content);
     nya_assert(ok);
 
-    NYA_String header_element_string = nya_string_sprintf(
-        arena,
-        "  { \"%.*s\", " FMTu64 ", " FMTu64 " },\n",
-        NYA_FMT_STRING_ARG(*file),
-        cursor,
-        content.length
-    );
+    NYA_String header_element_string =
+        nya_string_sprintf(arena, "  { \"%.*s\", " FMTu64 ", " FMTu64 " },\n", NYA_FMT_STRING_ARG(*file), cursor, content.length);
     nya_string_extend(&header_string, &header_element_string);
 
     nya_array_foreach (&content, c) {
@@ -91,4 +100,10 @@ void nya_asset_generate_embedding(NYA_ConstCString asset_directory, NYA_ConstCSt
 
   b8 ok = nya_file_write(output_file, &result);
   nya_assert(ok);
+
+  NYA_Command format_command = {
+    .program   = "clang-format",
+    .arguments = { "-i", output_file, },
+  };
+  nya_command_run(&format_command);
 }

@@ -73,7 +73,7 @@ before_run:
     }
 
     // give the compiler time to finish writing the new DLL
-    struct timespec ts = {0};
+    struct timespec ts = { 0 };
     ts.tv_nsec         = 150UL * 1000UL * 1000UL; // 150 ms
     nanosleep(&ts, nullptr);
 
@@ -160,7 +160,7 @@ void* dll_watch_thread_func(void* arg) {
       nya_app->should_quit_game_loop = true;
     }
 
-    struct timespec ts = {0};
+    struct timespec ts = { 0 };
     ts.tv_nsec         = 50UL * 1000UL * 1000UL; // 50 ms
     nanosleep(&ts, nullptr);
   }

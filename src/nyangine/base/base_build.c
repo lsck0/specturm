@@ -61,9 +61,9 @@ void nya_rebuild_yourself(s32* argc, NYA_CString* argv, NYA_Command cmd) {
   }
 
   NYA_BuildRule rule = {
-      .name    = "Rebuild Build System",
-      .policy  = NYA_BUILD_ALWAYS,
-      .command = cmd,
+    .name    = "Rebuild Build System",
+    .policy  = NYA_BUILD_ALWAYS,
+    .command = cmd,
   };
 
   // backup, build, restore
@@ -71,8 +71,8 @@ void nya_rebuild_yourself(s32* argc, NYA_CString* argv, NYA_Command cmd) {
 
   // need to not only copy backup, but also permissions and i cant be bothered
   NYA_Command copy_command = {
-      .program   = "cp",
-      .arguments = {argv[0], ".backup_build_executable"},
+    .program   = "cp",
+    .arguments = { argv[0], ".backup_build_executable" },
   };
   nya_command_run(&copy_command);
   nya_assert(copy_command.exit_code == 0, "Failed to backup build executable before rebuild.");

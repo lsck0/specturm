@@ -10,13 +10,14 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
+typedef struct NYA_AssetBlobHeader NYA_AssetBlobHeader;
+typedef struct NYA_AssetSystem     NYA_AssetSystem;
+
 /*
  * ─────────────────────────────────────────────────────────
  * SYSTEM STRUCT
  * ─────────────────────────────────────────────────────────
  */
-
-typedef struct NYA_AssetSystem NYA_AssetSystem;
 
 struct NYA_AssetSystem {
   NYA_Arena allocator;
@@ -28,15 +29,11 @@ struct NYA_AssetSystem {
  * ─────────────────────────────────────────────────────────
  */
 
-typedef struct {
+struct NYA_AssetBlobHeader {
   NYA_ConstCString path;
   u64              start;
   u64              size;
-} NYA_AssetHeader;
-
-NYA_API NYA_EXTERN const u64             NYA_ASSET_BLOB_HEADER_COUNT;
-NYA_API NYA_EXTERN const NYA_AssetHeader NYA_ASSET_BLOB_HEADER[];
-NYA_API NYA_EXTERN const u8              NYA_ASSET_BLOB[];
+};
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -59,4 +56,5 @@ NYA_API NYA_EXTERN void nya_system_asset_deinit(void);
  * ─────────────────────────────────────────────────────────
  */
 
+/// this is used in the build system
 NYA_API NYA_EXTERN void nya_asset_generate_embedding(NYA_ConstCString asset_directory, NYA_ConstCString output_file);

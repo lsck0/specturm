@@ -9,11 +9,11 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-#define NYA_DEFINE_CLEANUP_FN(name, type, var_name, code)                                                              \
-  __attr_unused void __cleanup_##name(type const* p) {                                                                 \
-    if (!p) return;                                                                                                    \
-    type var_name = *p;                                                                                                \
-    code;                                                                                                              \
+#define NYA_DEFINE_CLEANUP_FN(name, type, var_name, code)                                                                                            \
+  __attr_unused void __cleanup_##name(type const* p) {                                                                                               \
+    if (!p) return;                                                                                                                                  \
+    type var_name = *p;                                                                                                                              \
+    code;                                                                                                                                            \
   }
 
 /**

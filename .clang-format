@@ -1,7 +1,7 @@
 BasedOnStyle: LLVM
 
 AlignAfterOpenBracket: BlockIndent
-AlignArrayOfStructures: Right
+AlignArrayOfStructures: Left
 AlignConsecutiveAssignments:
   Enabled: true
   AcrossEmptyLines: false
@@ -34,7 +34,9 @@ AllowShortLoopsOnASingleLine: true
 BinPackArguments: false
 BinPackParameters: false
 BreakAfterAttributes: Always
-ColumnLimit: 120
+BreakArrays: true
+ColumnLimit: 150
+Cpp11BracedListStyle: false
 IncludeBlocks: Regroup
 IndentCaseLabels: true
 IncludeCategories:

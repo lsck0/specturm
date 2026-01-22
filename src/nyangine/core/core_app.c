@@ -31,10 +31,10 @@ void nya_app_init(NYA_AppConfig config) {
   nya_assert(ok, "SDL_Init() failed: %s", SDL_GetError());
 
   *app = (NYA_App){
-      .initialized      = true,
-      .config           = config,
-      .global_allocator = nya_arena_create(.name = "global_allocator"),
-      .frame_allocator  = nya_arena_create(.name = "frame_allocator"),
+    .initialized      = true,
+    .config           = config,
+    .global_allocator = nya_arena_create(.name = "global_allocator"),
+    .frame_allocator  = nya_arena_create(.name = "frame_allocator"),
   };
 
   nya_system_job_init();
@@ -112,9 +112,7 @@ void nya_app_run(void) {
 
         nya_array_foreach (&app->window_system.windows, window) {
           nya_array_foreach (&window->layer_stack, layer) {
-            if (layer->enabled && layer->on_update != nullptr) {
-              layer->on_update(window, (f32)(app->config.time_step_ms) / 1000.0F);
-            }
+            if (layer->enabled && layer->on_update != nullptr) { layer->on_update(window, (f32)(app->config.time_step_ms) / 1000.0F); }
           }
         }
 

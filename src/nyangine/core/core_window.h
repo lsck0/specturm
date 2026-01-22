@@ -97,11 +97,9 @@ NYA_API NYA_EXTERN void nya_system_window_handle_event(NYA_Event* event);
  * ─────────────────────────────────────────────────────────
  */
 
-// clang-format off
 NYA_API NYA_EXTERN void*       nya_window_create(const char* title, u32 initial_width, u32 initial_height, NYA_WindowFlags flags, void* id);
 NYA_API NYA_EXTERN void        nya_window_destroy(void* window_id);
 NYA_API NYA_EXTERN NYA_Window* nya_window_get(void* window_id);
-// clang-format on
 
 /*
  * ─────────────────────────────────────────────────────────

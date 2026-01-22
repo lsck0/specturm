@@ -19,7 +19,7 @@
 #define nya_memmove memmove
 #define nya_memset  memset
 
-#define nya_is_zeroed(val) (nya_memcmp(&(val), &(typeof(val)){0}, sizeof(val)) == 0)
+#define nya_is_zeroed(val) (nya_memcmp(&(val), &(typeof(val)){ 0 }, sizeof(val)) == 0)
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -31,17 +31,17 @@
 #define nya_sizeof_field(type, member) sizeof((((type*)0)->member))
 #define nya_offsetof(type, member)     __builtin_offsetof(type, member)
 #define nya_offsetof_end(type, member) (offsetof(type, member) + sizeof_field(type, member))
-#define nya_container_of(ptr, type, member)                                                                            \
-  _Generic(                                                                                                            \
-      ptr,                                                                                                             \
-      const typeof(*(ptr))*: ((const type*)_nya_raw_container_of(ptr, type, member)),                                  \
-      default: ((type*)_nya_raw_container_of(ptr, type, member))                                                       \
+#define nya_container_of(ptr, type, member)                                                                                                          \
+  _Generic(                                                                                                                                          \
+      ptr,                                                                                                                                           \
+      const typeof(*(ptr))*: ((const type*)_nya_raw_container_of(ptr, type, member)),                                                                \
+      default: ((type*)_nya_raw_container_of(ptr, type, member))                                                                                     \
   )
-#define _nya_raw_container_of(ptr, type, member)                                                                       \
-  ({                                                                                                                   \
-    void* ptr_var = (void*)(ptr);                                                                                      \
-    assert_type_match(*(ptr), ((type*)0)->member);                                                                     \
-    ((type*)(ptr_var - offsetof(type, member)));                                                                       \
+#define _nya_raw_container_of(ptr, type, member)                                                                                                     \
+  ({                                                                                                                                                 \
+    void* ptr_var = (void*)(ptr);                                                                                                                    \
+    assert_type_match(*(ptr), ((type*)0)->member);                                                                                                   \
+    ((type*)(ptr_var - offsetof(type, member)));                                                                                                     \
   })
 
 /*

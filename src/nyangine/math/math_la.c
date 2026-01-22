@@ -308,96 +308,96 @@ f128_3x3 nya_matrix_create(f128 entries[3][3]) __attr_overloaded {
 
 f16x2 nya_matrix_times_vector(f16_2x2 mat, f16x2 vec) __attr_overloaded {
   return (f16x2){
-      mat[0][0] * vec[0] + mat[0][1] * vec[1],
-      mat[1][0] * vec[0] + mat[1][1] * vec[1],
+    mat[0][0] * vec[0] + mat[0][1] * vec[1],
+    mat[1][0] * vec[0] + mat[1][1] * vec[1],
   };
 }
 
 f16x3 nya_matrix_times_vector(f16_3x3 mat, f16x3 vec) __attr_overloaded {
   return (f16x3){
-      mat[0][0] * vec[0] + mat[0][1] * vec[1] + mat[0][2] * vec[2],
-      mat[1][0] * vec[0] + mat[1][1] * vec[1] + mat[1][2] * vec[2],
-      mat[2][0] * vec[0] + mat[2][1] * vec[1] + mat[2][2] * vec[2],
+    mat[0][0] * vec[0] + mat[0][1] * vec[1] + mat[0][2] * vec[2],
+    mat[1][0] * vec[0] + mat[1][1] * vec[1] + mat[1][2] * vec[2],
+    mat[2][0] * vec[0] + mat[2][1] * vec[1] + mat[2][2] * vec[2],
   };
 }
 
 f16x4 nya_matrix_times_vector(f16_4x4 mat, f16x4 vec) __attr_overloaded {
   return (f16x4){
-      mat[0][0] * vec[0] + mat[0][1] * vec[1] + mat[0][2] * vec[2] + mat[0][3] * vec[3],
-      mat[1][0] * vec[0] + mat[1][1] * vec[1] + mat[1][2] * vec[2] + mat[1][3] * vec[3],
-      mat[2][0] * vec[0] + mat[2][1] * vec[1] + mat[2][2] * vec[2] + mat[2][3] * vec[3],
-      mat[3][0] * vec[0] + mat[3][1] * vec[1] + mat[3][2] * vec[2] + mat[3][3] * vec[3],
+    mat[0][0] * vec[0] + mat[0][1] * vec[1] + mat[0][2] * vec[2] + mat[0][3] * vec[3],
+    mat[1][0] * vec[0] + mat[1][1] * vec[1] + mat[1][2] * vec[2] + mat[1][3] * vec[3],
+    mat[2][0] * vec[0] + mat[2][1] * vec[1] + mat[2][2] * vec[2] + mat[2][3] * vec[3],
+    mat[3][0] * vec[0] + mat[3][1] * vec[1] + mat[3][2] * vec[2] + mat[3][3] * vec[3],
   };
 }
 
 f32x2 nya_matrix_times_vector(f32_2x2 mat, f32x2 vec) __attr_overloaded {
   return (f32x2){
-      mat[0][0] * vec[0] + mat[0][1] * vec[1],
-      mat[1][0] * vec[0] + mat[1][1] * vec[1],
+    mat[0][0] * vec[0] + mat[0][1] * vec[1],
+    mat[1][0] * vec[0] + mat[1][1] * vec[1],
   };
 }
 
 f32x3 nya_matrix_times_vector(f32_3x3 mat, f32x3 vec) __attr_overloaded {
   return (f32x3){
-      mat[0][0] * vec[0] + mat[0][1] * vec[1] + mat[0][2] * vec[2],
-      mat[1][0] * vec[0] + mat[1][1] * vec[1] + mat[1][2] * vec[2],
-      mat[2][0] * vec[0] + mat[2][1] * vec[1] + mat[2][2] * vec[2],
+    mat[0][0] * vec[0] + mat[0][1] * vec[1] + mat[0][2] * vec[2],
+    mat[1][0] * vec[0] + mat[1][1] * vec[1] + mat[1][2] * vec[2],
+    mat[2][0] * vec[0] + mat[2][1] * vec[1] + mat[2][2] * vec[2],
   };
 }
 
 f32x4 nya_matrix_times_vector(f32_4x4 mat, f32x4 vec) __attr_overloaded {
   return (f32x4){
-      mat[0][0] * vec[0] + mat[0][1] * vec[1] + mat[0][2] * vec[2] + mat[0][3] * vec[3],
-      mat[1][0] * vec[0] + mat[1][1] * vec[1] + mat[1][2] * vec[2] + mat[1][3] * vec[3],
-      mat[2][0] * vec[0] + mat[2][1] * vec[1] + mat[2][2] * vec[2] + mat[2][3] * vec[3],
-      mat[3][0] * vec[0] + mat[3][1] * vec[1] + mat[3][2] * vec[2] + mat[3][3] * vec[3],
+    mat[0][0] * vec[0] + mat[0][1] * vec[1] + mat[0][2] * vec[2] + mat[0][3] * vec[3],
+    mat[1][0] * vec[0] + mat[1][1] * vec[1] + mat[1][2] * vec[2] + mat[1][3] * vec[3],
+    mat[2][0] * vec[0] + mat[2][1] * vec[1] + mat[2][2] * vec[2] + mat[2][3] * vec[3],
+    mat[3][0] * vec[0] + mat[3][1] * vec[1] + mat[3][2] * vec[2] + mat[3][3] * vec[3],
   };
 }
 
 f64x2 nya_matrix_times_vector(f64_2x2 mat, f64x2 vec) __attr_overloaded {
   return (f64x2){
-      mat[0][0] * vec[0] + mat[0][1] * vec[1],
-      mat[1][0] * vec[0] + mat[1][1] * vec[1],
+    mat[0][0] * vec[0] + mat[0][1] * vec[1],
+    mat[1][0] * vec[0] + mat[1][1] * vec[1],
   };
 }
 
 f64x3 nya_matrix_times_vector(f64_3x3 mat, f64x3 vec) __attr_overloaded {
   return (f64x3){
-      mat[0][0] * vec[0] + mat[0][1] * vec[1] + mat[0][2] * vec[2],
-      mat[1][0] * vec[0] + mat[1][1] * vec[1] + mat[1][2] * vec[2],
-      mat[2][0] * vec[0] + mat[2][1] * vec[1] + mat[2][2] * vec[2],
+    mat[0][0] * vec[0] + mat[0][1] * vec[1] + mat[0][2] * vec[2],
+    mat[1][0] * vec[0] + mat[1][1] * vec[1] + mat[1][2] * vec[2],
+    mat[2][0] * vec[0] + mat[2][1] * vec[1] + mat[2][2] * vec[2],
   };
 }
 
 f64x4 nya_matrix_times_vector(f64_4x4 mat, f64x4 vec) __attr_overloaded {
   return (f64x4){
-      mat[0][0] * vec[0] + mat[0][1] * vec[1] + mat[0][2] * vec[2] + mat[0][3] * vec[3],
-      mat[1][0] * vec[0] + mat[1][1] * vec[1] + mat[1][2] * vec[2] + mat[1][3] * vec[3],
-      mat[2][0] * vec[0] + mat[2][1] * vec[1] + mat[2][2] * vec[2] + mat[2][3] * vec[3],
-      mat[3][0] * vec[0] + mat[3][1] * vec[1] + mat[3][2] * vec[2] + mat[3][3] * vec[3],
+    mat[0][0] * vec[0] + mat[0][1] * vec[1] + mat[0][2] * vec[2] + mat[0][3] * vec[3],
+    mat[1][0] * vec[0] + mat[1][1] * vec[1] + mat[1][2] * vec[2] + mat[1][3] * vec[3],
+    mat[2][0] * vec[0] + mat[2][1] * vec[1] + mat[2][2] * vec[2] + mat[2][3] * vec[3],
+    mat[3][0] * vec[0] + mat[3][1] * vec[1] + mat[3][2] * vec[2] + mat[3][3] * vec[3],
   };
 }
 
 f128x2 nya_matrix_times_vector(f128_2x2 mat, f128x2 vec) __attr_overloaded {
   return (f128x2){
-      mat[0][0] * vec[0] + mat[0][1] * vec[1],
-      mat[1][0] * vec[0] + mat[1][1] * vec[1],
+    mat[0][0] * vec[0] + mat[0][1] * vec[1],
+    mat[1][0] * vec[0] + mat[1][1] * vec[1],
   };
 }
 
 f128x3 nya_matrix_times_vector(f128_3x3 mat, f128x3 vec) __attr_overloaded {
   return (f128x3){
-      mat[0][0] * vec[0] + mat[0][1] * vec[1] + mat[0][2] * vec[2],
-      mat[1][0] * vec[0] + mat[1][1] * vec[1] + mat[1][2] * vec[2],
-      mat[2][0] * vec[0] + mat[2][1] * vec[1] + mat[2][2] * vec[2],
+    mat[0][0] * vec[0] + mat[0][1] * vec[1] + mat[0][2] * vec[2],
+    mat[1][0] * vec[0] + mat[1][1] * vec[1] + mat[1][2] * vec[2],
+    mat[2][0] * vec[0] + mat[2][1] * vec[1] + mat[2][2] * vec[2],
   };
 }
 
 f128x4 nya_matrix_times_vector(f128_4x4 mat, f128x4 vec) __attr_overloaded {
   return (f128x4){
-      mat[0][0] * vec[0] + mat[0][1] * vec[1] + mat[0][2] * vec[2] + mat[0][3] * vec[3],
-      mat[1][0] * vec[0] + mat[1][1] * vec[1] + mat[1][2] * vec[2] + mat[1][3] * vec[3],
-      mat[2][0] * vec[0] + mat[2][1] * vec[1] + mat[2][2] * vec[2] + mat[2][3] * vec[3],
-      mat[3][0] * vec[0] + mat[3][1] * vec[1] + mat[3][2] * vec[2] + mat[3][3] * vec[3],
+    mat[0][0] * vec[0] + mat[0][1] * vec[1] + mat[0][2] * vec[2] + mat[0][3] * vec[3],
+    mat[1][0] * vec[0] + mat[1][1] * vec[1] + mat[1][2] * vec[2] + mat[1][3] * vec[3],
+    mat[2][0] * vec[0] + mat[2][1] * vec[1] + mat[2][2] * vec[2] + mat[2][3] * vec[3],
+    mat[3][0] * vec[0] + mat[3][1] * vec[1] + mat[3][2] * vec[2] + mat[3][3] * vec[3],
   };
 }

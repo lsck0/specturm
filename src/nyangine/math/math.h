@@ -9,30 +9,30 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-#define nya_min(a, b)                                                                                                  \
-  ({                                                                                                                   \
-    nya_assert_type_match(a, b);                                                                                       \
-    (a) < (b) ? (a) : (b);                                                                                             \
+#define nya_min(a, b)                                                                                                                                \
+  ({                                                                                                                                                 \
+    nya_assert_type_match(a, b);                                                                                                                     \
+    (a) < (b) ? (a) : (b);                                                                                                                           \
   })
 
-#define nya_max(a, b)                                                                                                  \
-  ({                                                                                                                   \
-    nya_assert_type_match(a, b);                                                                                       \
-    (a) > (b) ? (a) : (b);                                                                                             \
+#define nya_max(a, b)                                                                                                                                \
+  ({                                                                                                                                                 \
+    nya_assert_type_match(a, b);                                                                                                                     \
+    (a) > (b) ? (a) : (b);                                                                                                                           \
   })
 
-#define nya_clamp(val, min, max)                                                                                       \
-  ({                                                                                                                   \
-    nya_assert_type_match(val, min);                                                                                   \
-    nya_assert_type_match(val, max);                                                                                   \
-    nya_min(nya_max((val), (min)), (max));                                                                             \
+#define nya_clamp(val, min, max)                                                                                                                     \
+  ({                                                                                                                                                 \
+    nya_assert_type_match(val, min);                                                                                                                 \
+    nya_assert_type_match(val, max);                                                                                                                 \
+    nya_min(nya_max((val), (min)), (max));                                                                                                           \
   })
 
-#define nya_lerp(a, b, t)                                                                                              \
-  ({                                                                                                                   \
-    nya_assert_type_match(a, b);                                                                                       \
-    nya_assert(0 <= (t) && (t) <= 1);                                                                                  \
-    (a) + ((b) - (a)) * (t);                                                                                           \
+#define nya_lerp(a, b, t)                                                                                                                            \
+  ({                                                                                                                                                 \
+    nya_assert_type_match(a, b);                                                                                                                     \
+    nya_assert(0 <= (t) && (t) <= 1);                                                                                                                \
+    (a) + ((b) - (a)) * (t);                                                                                                                         \
   })
 
 /*
@@ -80,57 +80,57 @@ typedef f128 f128x4 __attr_vector(4);
 #define FMTf128x3_ARG(val) (val).x, (val).y, (val).z
 #define FMTf128x4_ARG(val) (val).x, (val).y, (val).z, (val).w
 
-#define f16x2_zero  ((f16x2){0, 0})
-#define f16x3_zero  ((f16x3){0, 0, 0})
-#define f16x4_zero  ((f16x4){0, 0, 0, 0})
-#define f32x2_zero  ((f32x2){0, 0})
-#define f32x3_zero  ((f32x3){0, 0, 0})
-#define f32x4_zero  ((f32x4){0, 0, 0, 0})
-#define f64x2_zero  ((f64x2){0, 0})
-#define f64x3_zero  ((f64x3){0, 0, 0})
-#define f64x4_zero  ((f64x4){0, 0, 0, 0})
-#define f128x2_zero ((f128x2){0, 0})
-#define f128x3_zero ((f128x3){0, 0, 0})
-#define f128x4_zero ((f128x4){0, 0, 0, 0})
+#define f16x2_zero  ((f16x2){ 0, 0 })
+#define f16x3_zero  ((f16x3){ 0, 0, 0 })
+#define f16x4_zero  ((f16x4){ 0, 0, 0, 0 })
+#define f32x2_zero  ((f32x2){ 0, 0 })
+#define f32x3_zero  ((f32x3){ 0, 0, 0 })
+#define f32x4_zero  ((f32x4){ 0, 0, 0, 0 })
+#define f64x2_zero  ((f64x2){ 0, 0 })
+#define f64x3_zero  ((f64x3){ 0, 0, 0 })
+#define f64x4_zero  ((f64x4){ 0, 0, 0, 0 })
+#define f128x2_zero ((f128x2){ 0, 0 })
+#define f128x3_zero ((f128x3){ 0, 0, 0 })
+#define f128x4_zero ((f128x4){ 0, 0, 0, 0 })
 
-#define f16x2_unit_x  ((f16x2){1, 0})
-#define f16x2_unit_y  ((f16x2){0, 1})
-#define f32x2_unit_x  ((f32x2){1, 0})
-#define f32x2_unit_y  ((f32x2){0, 1})
-#define f64x2_unit_x  ((f64x2){1, 0})
-#define f64x2_unit_y  ((f64x2){0, 1})
-#define f128x2_unit_x ((f128x2){1, 0})
-#define f128x2_unit_y ((f128x2){0, 1})
+#define f16x2_unit_x  ((f16x2){ 1, 0 })
+#define f16x2_unit_y  ((f16x2){ 0, 1 })
+#define f32x2_unit_x  ((f32x2){ 1, 0 })
+#define f32x2_unit_y  ((f32x2){ 0, 1 })
+#define f64x2_unit_x  ((f64x2){ 1, 0 })
+#define f64x2_unit_y  ((f64x2){ 0, 1 })
+#define f128x2_unit_x ((f128x2){ 1, 0 })
+#define f128x2_unit_y ((f128x2){ 0, 1 })
 
-#define f16x3_unit_x  ((f16x3){1, 0, 0})
-#define f16x3_unit_y  ((f16x3){0, 1, 0})
-#define f16x3_unit_z  ((f16x3){0, 0, 1})
-#define f32x3_unit_x  ((f32x3){1, 0, 0})
-#define f32x3_unit_y  ((f32x3){0, 1, 0})
-#define f32x3_unit_z  ((f32x3){0, 0, 1})
-#define f64x3_unit_x  ((f64x3){1, 0, 0})
-#define f64x3_unit_y  ((f64x3){0, 1, 0})
-#define f64x3_unit_z  ((f64x3){0, 0, 1})
-#define f128x3_unit_x ((f128x3){1, 0, 0})
-#define f128x3_unit_y ((f128x3){0, 1, 0})
-#define f128x3_unit_z ((f128x3){0, 0, 1})
+#define f16x3_unit_x  ((f16x3){ 1, 0, 0 })
+#define f16x3_unit_y  ((f16x3){ 0, 1, 0 })
+#define f16x3_unit_z  ((f16x3){ 0, 0, 1 })
+#define f32x3_unit_x  ((f32x3){ 1, 0, 0 })
+#define f32x3_unit_y  ((f32x3){ 0, 1, 0 })
+#define f32x3_unit_z  ((f32x3){ 0, 0, 1 })
+#define f64x3_unit_x  ((f64x3){ 1, 0, 0 })
+#define f64x3_unit_y  ((f64x3){ 0, 1, 0 })
+#define f64x3_unit_z  ((f64x3){ 0, 0, 1 })
+#define f128x3_unit_x ((f128x3){ 1, 0, 0 })
+#define f128x3_unit_y ((f128x3){ 0, 1, 0 })
+#define f128x3_unit_z ((f128x3){ 0, 0, 1 })
 
-#define f16x4_unit_x  ((f16x4){1, 0, 0, 0})
-#define f16x4_unit_y  ((f16x4){0, 1, 0, 0})
-#define f16x4_unit_z  ((f16x4){0, 0, 1, 0})
-#define f16x4_unit_w  ((f16x4){0, 0, 0, 1})
-#define f32x4_unit_x  ((f32x4){1, 0, 0, 0})
-#define f32x4_unit_y  ((f32x4){0, 1, 0, 0})
-#define f32x4_unit_z  ((f32x4){0, 0, 1, 0})
-#define f32x4_unit_w  ((f32x4){0, 0, 0, 1})
-#define f64x4_unit_x  ((f64x4){1, 0, 0, 0})
-#define f64x4_unit_y  ((f64x4){0, 1, 0, 0})
-#define f64x4_unit_z  ((f64x4){0, 0, 1, 0})
-#define f64x4_unit_w  ((f64x4){0, 0, 0, 1})
-#define f128x4_unit_x ((f128x4){1, 0, 0, 0})
-#define f128x4_unit_y ((f128x4){0, 1, 0, 0})
-#define f128x4_unit_z ((f128x4){0, 0, 1, 0})
-#define f128x4_unit_w ((f128x4){0, 0, 0, 1})
+#define f16x4_unit_x  ((f16x4){ 1, 0, 0, 0 })
+#define f16x4_unit_y  ((f16x4){ 0, 1, 0, 0 })
+#define f16x4_unit_z  ((f16x4){ 0, 0, 1, 0 })
+#define f16x4_unit_w  ((f16x4){ 0, 0, 0, 1 })
+#define f32x4_unit_x  ((f32x4){ 1, 0, 0, 0 })
+#define f32x4_unit_y  ((f32x4){ 0, 1, 0, 0 })
+#define f32x4_unit_z  ((f32x4){ 0, 0, 1, 0 })
+#define f32x4_unit_w  ((f32x4){ 0, 0, 0, 1 })
+#define f64x4_unit_x  ((f64x4){ 1, 0, 0, 0 })
+#define f64x4_unit_y  ((f64x4){ 0, 1, 0, 0 })
+#define f64x4_unit_z  ((f64x4){ 0, 0, 1, 0 })
+#define f64x4_unit_w  ((f64x4){ 0, 0, 0, 1 })
+#define f128x4_unit_x ((f128x4){ 1, 0, 0, 0 })
+#define f128x4_unit_y ((f128x4){ 0, 1, 0, 0 })
+#define f128x4_unit_z ((f128x4){ 0, 0, 1, 0 })
+#define f128x4_unit_w ((f128x4){ 0, 0, 0, 1 })
 #endif // defined(__has_feature) && __has_attribute(ext_vector_type)
 
 /*

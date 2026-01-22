@@ -28,7 +28,7 @@ extern b8                  SteamAPI_RestartAppIfNecessary(u32 unOwnAppID);
  */
 
 NYA_SteamInitResult nya_system_steam_init(OUT NYA_CString err_msg) {
-  SteamErrMsg         raw_err = {0};
+  SteamErrMsg         raw_err = { 0 };
   ESteamAPIInitResult result  = SteamAPI_InitFlat(&raw_err);
 
   if (err_msg != nullptr && result != NYA_SYSTEM_STEAM_INIT_OK) {
