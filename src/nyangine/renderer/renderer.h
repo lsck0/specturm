@@ -4,6 +4,7 @@
 
 #include "nyangine/base/base.h"
 #include "nyangine/base/base_types.h"
+#include "nyangine/core/core_event.h"
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -51,6 +52,7 @@ NYA_API NYA_EXTERN void nya_system_render_init(void);
 NYA_API NYA_EXTERN void nya_system_render_deinit(void);
 NYA_API NYA_EXTERN void nya_system_render_for_window_init(NYA_Window* window);
 NYA_API NYA_EXTERN void nya_system_render_for_window_deinit(NYA_Window* window);
+NYA_API NYA_EXTERN void nya_system_render_handle_event(NYA_Event* event);
 
 /*
  * ─────────────────────────────────────────────────────────

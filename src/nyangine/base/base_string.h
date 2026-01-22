@@ -55,6 +55,7 @@ NYA_API NYA_EXTERN void            nya_string_replace(NYA_String* str, NYA_Const
 NYA_API NYA_EXTERN void            nya_string_replace(NYA_String* str, NYA_String* old, const NYA_String* new) __attr_overloaded;
 NYA_API NYA_EXTERN void            nya_string_reserve(NYA_String* str, u64 capacity);
 NYA_API NYA_EXTERN void            nya_string_reverse(NYA_String* str);
+NYA_API NYA_EXTERN void            nya_string_shrink_to_fit(NYA_String* str);
 NYA_API NYA_EXTERN s32             nya_string_sscanf(NYA_String* str, NYA_ConstCString fmt, ...) __attr_fmt_scanf(2, 3);
 NYA_API NYA_EXTERN void            nya_string_strip_prefix(NYA_String* str, NYA_ConstCString prefix);
 NYA_API NYA_EXTERN void            nya_string_strip_suffix(NYA_String* str, NYA_ConstCString suffix);

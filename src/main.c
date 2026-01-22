@@ -1,6 +1,4 @@
-#include "nyangine/nyangine.c"
-#include "nyangine/nyangine.h"
-
+#include "nyangine/base/base.h"
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  * RELEASE ENTRY POINT
@@ -8,6 +6,9 @@
  */
 
 #if !NYA_IS_DEBUG
+#include "nyangine/nyangine.c"
+#include "nyangine/nyangine.h"
+
 #include "gnyame/gnyame.c"
 #include "gnyame/gnyame.h"
 
@@ -30,6 +31,10 @@ s32 main(s32 argc, char** argv) {
 #include <dlfcn.h>
 #include <pthread.h>
 #include <sys/stat.h>
+
+#define NYA_ASSET_MANIFEST_ALREADY_INCLUDED
+#include "nyangine/nyangine.c"
+#include "nyangine/nyangine.h"
 
 #define DLL_PATH "./gnyame.debug.so"
 

@@ -20,6 +20,7 @@ typedef struct NYA_ArgParameter NYA_ArgParameter;
 typedef enum {
   NYA_ARG_PARAMETER_KIND_FLAG,
   NYA_ARG_PARAMETER_KIND_POSITIONAL,
+  NYA_ARG_PARAMETER_KIND_COUNT,
 } NYA_ArgParameterKind;
 
 struct NYA_ArgParameter {

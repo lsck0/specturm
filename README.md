@@ -24,7 +24,7 @@ git submodule update --init --recursive
 and bootstrap the build system with
 
 ```bash
-clang build.c -o build -std=c23 -fenable-matrix -mavx -mavx2 -Wno-gcc-compat -Wno-initializer-overrides -I./src -lm -lSDL3
+clang build.c -o build -std=c23 -fenable-matrix -mavx -mavx2 -Wno-gcc-compat -Wno-initializer-overrides -I./src -lm -lSDL3 -DNYA_ASSET_BACKEND_FS
 ```
 
 then run

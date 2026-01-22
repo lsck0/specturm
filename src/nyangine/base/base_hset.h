@@ -272,4 +272,5 @@
 #define nya_hset_foreach(hset_ptr, item_name)                                                                                                        \
   for (u64 _hset_foreach_idx = 0; _hset_foreach_idx < (hset_ptr)->capacity; _hset_foreach_idx++)                                                     \
     if ((hset_ptr)->occupied[_hset_foreach_idx])                                                                                                     \
-      for (typeof((hset_ptr)->items[0]) item_name = (hset_ptr)->items[_hset_foreach_idx]; (void)item_name, true; break)
+      for (int _hset_foreach_once = 1; _hset_foreach_once; _hset_foreach_once = 0)                                                                   \
+        for (typeof((hset_ptr)->items[0]) item_name = (hset_ptr)->items[_hset_foreach_idx]; _hset_foreach_once; _hset_foreach_once = 0)

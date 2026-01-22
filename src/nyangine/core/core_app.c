@@ -2,7 +2,6 @@
 #include "SDL3/SDL_init.h"
 #include "SDL3/SDL_timer.h"
 
-#include "nyangine/core/core_event.h"
 #include "nyangine/nyangine.h"
 
 /*
@@ -88,6 +87,8 @@ void nya_app_run(void) {
       while (nya_event_poll(&event)) {
         nya_system_window_handle_event(&event);
         nya_system_input_handle_event(&event);
+        nya_system_asset_handle_event(&event);
+        nya_system_render_handle_event(&event);
 
         if (event.was_handled) continue;
 

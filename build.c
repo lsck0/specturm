@@ -26,10 +26,10 @@
 #define NPROCS        "16"
 
 // clang-format off
-#define FLAGS_DEBUG     "-O0", "-DIS_DEBUG=true", "-rdynamic"
+#define FLAGS_DEBUG     "-O0", "-DIS_DEBUG=true", "-DNYA_ASSET_BACKEND_FS", "-rdynamic"
 #define FLAGS_DLL       "-fPIC", "-shared"
 #define FLAGS_SANITIZE  "-fno-omit-frame-pointer", "-fno-optimize-sibling-calls", "-fno-sanitize-recover=all", "-fsanitize=address,leak,undefined,signed-integer-overflow,unsigned-integer-overflow,shift,float-cast-overflow,float-divide-by-zero,pointer-overflow"
-#define FLAGS_RELEASE   "-O3", "-D_FORTIFY_SOURCE=2", "-fno-omit-frame-pointer", "-fstack-protector-strong", "-Wl,-rpath,$ORIGIN"
+#define FLAGS_RELEASE   "-O3", "-DNYA_ASSET_BACKEND_BLOB", "-D_FORTIFY_SOURCE=2", "-fno-omit-frame-pointer", "-fstack-protector-strong", "-Wl,-rpath,$ORIGIN"
 #define FLAGS_WINDOWS_X86_64 "--target=x86_64-w64-mingw32", "-Wl,-subsystem,windows", "-static", "-L./vendor/sdl/build-window-x86_64/", "-lcomdlg32", "-ldxguid", "-lgdi32", "-limm32", "-lkernel32", "-lole32", "-loleaut32", "-lsetupapi", "-luser32", "-luuid", "-lversion", "-lwinmm"
 #define FLAGS_LINUX_X86_64   "-L./vendor/sdl/build-linux-x86_64/"
 // clang-format on
@@ -54,6 +54,7 @@ NYA_Command build_rebuild_command = {
         "build.c",
         "-o", "build",
         "-DIS_DEBUG=true",
+        "-DNYA_ASSET_BACKEND_FS",
         CFLAGS,
         WARNINGS,
         INCLUDE_PATHS,

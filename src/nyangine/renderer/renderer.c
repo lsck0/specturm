@@ -61,6 +61,10 @@ void nya_system_render_for_window_deinit(NYA_Window* window) {
   SDL_ReleaseWindowFromGPUDevice(app->render_system.gpu_device, window->sdl_window);
 }
 
+void nya_system_render_handle_event(NYA_Event* event) {
+  nya_unused(event);
+}
+
 /*
  * ─────────────────────────────────────────────────────────
  * RENDERING FUNCTIONS

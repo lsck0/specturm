@@ -502,6 +502,12 @@ void nya_string_reverse(NYA_String* str) {
   nya_array_reverse(str);
 }
 
+void nya_string_shrink_to_fit(NYA_String* str) {
+  nya_assert(str);
+
+  nya_array_shrink_to_fit(str);
+}
+
 s32 nya_string_sscanf(NYA_String* str, NYA_ConstCString fmt, ...) __attr_fmt_scanf(2, 3) {
   nya_assert(str);
   nya_assert(fmt);

@@ -1,7 +1,5 @@
 #include "gnyame/gnyame.h"
 
-#include "nyangine/base/base_keys.h"
-
 void on_create(void);
 void on_destroy(void);
 void on_update(NYA_Window* window, f32 delta_time);
@@ -63,17 +61,8 @@ void on_update(NYA_Window* window, f32 delta_time) {
   nya_unused(window);
   nya_unused(delta_time);
 
-  // if (nya_input_is_key_just_pressed(NYA_KEY_6)) nya_info("INITIALIZE 67");
-  // if (nya_input_is_key_pressed(NYA_KEY_6)) nya_info("67");
-  // if (nya_input_is_key_just_released(NYA_KEY_6)) nya_info("DEINITIALIZE 67");
-
-  // nya_info("Mouse Position: " FMTf32x2, FMTf32x2_ARG(nya_input_get_mouse_position()));
-  // nya_info("Mouse Delta: " FMTf32x2, FMTf32x2_ARG(nya_input_get_mouse_position_delta()));
-  // nya_info("Mouse Wheel Scroll: " FMTf32x2, FMTf32x2_ARG(nya_input_get_mouse_wheel_scroll()));
-
-  // if (nya_input_is_mouse_button_just_pressed(NYA_MOUSE_BUTTON_LEFT)) nya_info("Left Mouse Button Just Pressed");
-  // if (nya_input_is_mouse_button_pressed(NYA_MOUSE_BUTTON_LEFT)) nya_info("Left Mouse Button Pressed");
-  // if (nya_input_is_mouse_button_just_released(NYA_MOUSE_BUTTON_LEFT)) nya_info("Left Mouse Button Just Released");
+  NYA_Asset* asset = nya_asset_load_and_get(NYA_ASSETS_TEXTS_HELLO_TXT);
+  printf("%.*s", (s32)asset->size, (char*)asset->data);
 }
 
 void on_event(NYA_Window* window, NYA_Event* event) {

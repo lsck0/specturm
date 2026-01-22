@@ -368,6 +368,11 @@ nya_derive_array(f128_4x4);
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
+#define nya_array_shrink_to_fit(arr_ptr)                                                                                                             \
+  ({                                                                                                                                                 \
+    if ((arr_ptr)->length < (arr_ptr)->capacity) nya_array_resize(arr_ptr, (arr_ptr)->length);                                                       \
+  })
+
 #define nya_array_copy(arr_ptr)                                                                                                                      \
   ({                                                                                                                                                 \
     typeof(*(arr_ptr)) copy = { .items    = nya_arena_copy((arr_ptr)->arena, (arr_ptr)->items, sizeof(*(arr_ptr)->items) * (arr_ptr)->capacity),     \

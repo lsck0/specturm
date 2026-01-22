@@ -5,6 +5,8 @@
  * -DNYA_NO_ASSERT : Disable runtime assertions.
  * -DNYA_ARENA_FORCE_DEBUG : Force arena to use debug mode, to enable it in release builds.
  * -DNYA_ARENA_FORCE_NODEBUG : Force arena to use no-debug mode, to disable it in debug builds.
+ * -DNYA_ASSET_BACKEND_FS : Use filesystem as the asset backend.
+ * -DNYA_ASSET_BACKEND_BLOB : Use embedded blob as the asset backend.
  * */
 
 #pragma once
