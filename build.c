@@ -35,6 +35,7 @@
 // clang-format on
 
 NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule);
+NYA_INTERNAL void hook_index_assets(NYA_BuildRule* rule);
 NYA_INTERNAL void hook_bundle_assets(NYA_BuildRule* rule);
 NYA_INTERNAL void hook_add_version_flag_and_git_hash(NYA_BuildRule* rule);
 NYA_INTERNAL void hook_convert_perf_data_to_plain(NYA_BuildRule* rule);
@@ -210,10 +211,17 @@ NYA_BuildRule build_shaders = {
     .pre_build_hooks = { &hook_compile_shaders, },
 };
 
+NYA_BuildRule index_assets = {
+    .name             = "index_assets",
+    .is_metarule      = true,
+    .dependencies     = { &build_windows_icon, &build_shaders, },
+    .post_build_hooks = { &hook_index_assets, },
+};
+
 NYA_BuildRule bundle_assets = {
-    .name            = "bundle_assets",
-    .is_metarule     = true,
-    .dependencies    = { &build_windows_icon, &build_shaders, },
+    .name             = "bundle_assets",
+    .is_metarule      = true,
+    .dependencies     = { &build_windows_icon, &build_shaders, },
     .post_build_hooks = { &hook_bundle_assets, },
 };
 
@@ -267,7 +275,7 @@ NYA_BuildRule build_project_debug_dll = {
     },
 
     .pre_build_hooks = { &hook_add_version_flag_and_git_hash, },
-    .dependencies    = { &build_linux_x64_64_sdl, &build_shaders, },
+    .dependencies    = { &build_linux_x64_64_sdl, &build_shaders, &index_assets, },
 };
 
 NYA_BuildRule build_project_debug = {
@@ -295,7 +303,7 @@ NYA_BuildRule build_project_linux_x86_64 = {
     },
 
     .pre_build_hooks = { &hook_add_version_flag_and_git_hash, },
-    .dependencies    = { &build_linux_x64_64_sdl, &bundle_assets, },
+    .dependencies    = { &build_linux_x64_64_sdl, &bundle_assets, &index_assets, },
 };
 
 NYA_BuildRule build_project_windows_x86_64 = {
@@ -318,7 +326,7 @@ NYA_BuildRule build_project_windows_x86_64 = {
     },
 
     .pre_build_hooks = { &hook_add_version_flag_and_git_hash, },
-    .dependencies    = { &build_windows_x86_64_sdl, &bundle_assets, },
+    .dependencies    = { &build_windows_x86_64_sdl, &bundle_assets, &index_assets, },
 };
 
 NYA_BuildRule build_project = {
@@ -560,6 +568,15 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
     };
     nya_build(&compile_to_spirv);
   }
+}
+
+NYA_INTERNAL void hook_index_assets(NYA_BuildRule* rule) {
+  nya_assert(rule);
+
+  NYA_ConstCString asset_directory = "./assets/";
+  NYA_ConstCString output_file     = "./assets/assets.h";
+
+  nya_asset_generate_manifest(asset_directory, output_file);
 }
 
 NYA_INTERNAL void hook_bundle_assets(NYA_BuildRule* rule) {

@@ -16,6 +16,7 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
+typedef struct NYA_AssetEvent         NYA_AssetEvent;
 typedef struct NYA_Event              NYA_Event;
 typedef struct NYA_EventHook          NYA_EventHook;
 typedef struct NYA_EventSystem        NYA_EventSystem;
@@ -51,6 +52,9 @@ struct NYA_EventSystem {
 typedef enum {
   NYA_EVENT_INVALID = 0,
 
+  NYA_EVENT_ASSET_LOADED,
+  NYA_EVENT_ASSET_UPDATED,
+
   NYA_EVENT_NEW_TICK,
 
   NYA_EVENT_KEY_DOWN,
@@ -82,6 +86,16 @@ typedef enum {
 
   NYA_EVENT_COUNT,
 } NYA_EventType;
+
+/*
+ * ─────────────────────────────────────────────────────────
+ * ASSET EVENT STRUCT
+ * ─────────────────────────────────────────────────────────
+ */
+
+struct NYA_AssetEvent {
+  NYA_ConstCString path;
+};
 
 /*
  * ─────────────────────────────────────────────────────────
@@ -173,6 +187,7 @@ struct NYA_Event {
   u64           timestamp;
 
   union {
+    NYA_AssetEvent         as_asset_event;
     NYA_KeyEvent           as_key_event;
     NYA_MouseButtonEvent   as_mouse_button_event;
     NYA_MouseMovedEvent    as_mouse_moved_event;

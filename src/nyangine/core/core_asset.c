@@ -1,3 +1,4 @@
+#include "nyangine/base/base_assert.h"
 #include "nyangine/nyangine.h"
 
 /*
@@ -46,8 +47,61 @@ void nya_system_asset_deinit(void) {
  * ─────────────────────────────────────────────────────────
  */
 
+void nya_asset_generate_manifest(NYA_ConstCString asset_directory, NYA_ConstCString output_file) {
+  nya_assert(asset_directory);
+  nya_assert(output_file);
+
+  NYA_Arena* arena  = &nya_arena_global;
+  NYA_String result = nya_string_create(arena);
+
+  NYA_Command find_assets_command = {
+      .arena     = arena,
+      .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
+      .program   = "find",
+      .arguments = {
+          asset_directory,
+          "-type", "f",
+          "-not", "-name", "*.c",
+          "-not", "-name", "*.h",
+          "-not", "-name", ".keep",
+      },
+  };
+  nya_command_run(&find_assets_command);
+  NYA_StringArray files = nya_string_split_lines(arena, &find_assets_command.stdout_content);
+  nya_string_extend(&result, "/* THIS FILE IS GENERATED. DO NYAT TOUCH. */\n\n");
+  nya_string_extend(&result, "#pragma once\n\n");
+
+  nya_array_foreach (&files, file) {
+    NYA_String var_name = nya_string_clone(arena, file);
+    nya_string_strip_prefix(&var_name, "./");
+    nya_string_replace(&var_name, "/", "_");
+    nya_string_replace(&var_name, ".", "_");
+    nya_string_replace(&var_name, "-", "_");
+    nya_string_replace(&var_name, " ", "_");
+    nya_string_to_upper(&var_name);
+
+    NYA_String declaration = nya_string_sprintf(
+        arena,
+        "const char* NYA_" NYA_FMT_STRING " = \"" NYA_FMT_STRING "\";\n",
+        NYA_FMT_STRING_ARG(var_name),
+        NYA_FMT_STRING_ARG(*file)
+    );
+    nya_string_extend(&result, &declaration);
+  }
+
+  b8 ok = nya_file_write(output_file, &result);
+  nya_assert(ok);
+
+  NYA_Command format_command = {
+    .program   = "clang-format",
+    .arguments = { "-i", output_file, },
+  };
+  nya_command_run(&format_command);
+}
+
 void nya_asset_generate_embedding(NYA_ConstCString asset_directory, NYA_ConstCString output_file) {
   nya_assert(asset_directory);
+  nya_assert(output_file);
 
   NYA_Arena* arena               = &nya_arena_global;
   NYA_String result              = nya_string_create(arena);
@@ -63,6 +117,7 @@ void nya_asset_generate_embedding(NYA_ConstCString asset_directory, NYA_ConstCSt
           asset_directory,
           "-type", "f",
           "-not", "-name", "*.c",
+          "-not", "-name", "*.h",
           "-not", "-name", ".keep",
       },
   };
@@ -106,4 +161,34 @@ void nya_asset_generate_embedding(NYA_ConstCString asset_directory, NYA_ConstCSt
     .arguments = { "-i", output_file, },
   };
   nya_command_run(&format_command);
+}
+
+NYA_Asset* nya_asset_get(NYA_ConstCString path) {
+  nya_unused(path);
+  nya_unimplemented();
+}
+
+NYA_Asset* nya_asset_loaded_and_get(NYA_ConstCString path) {
+  nya_unused(path);
+  nya_unimplemented();
+}
+
+void nya_asset_load_blocking(NYA_ConstCString path) {
+  nya_unused(path);
+  nya_unimplemented();
+}
+
+void nya_asset_load_async(NYA_ConstCString path) {
+  nya_unused(path);
+  nya_unimplemented();
+}
+
+b8 nya_asset_is_loaded(NYA_ConstCString path) {
+  nya_unused(path);
+  nya_unimplemented();
+}
+
+void nya_asset_unload(NYA_ConstCString path) {
+  nya_unused(path);
+  nya_unimplemented();
 }
