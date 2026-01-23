@@ -1,3 +1,4 @@
+#include "nyangine/base/base_attributes.h"
 #include "nyangine/nyangine.h"
 
 /*
@@ -77,7 +78,7 @@ b8 nya_string_is_empty(const NYA_String* str) {
   return str->length == 0;
 }
 
-b8 nya_string_starts_with(const NYA_String* str, NYA_ConstCString prefix) {
+b8 nya_string_starts_with(const NYA_String* str, NYA_ConstCString prefix) __attr_overloaded {
   nya_assert(str);
   nya_assert(prefix);
 
@@ -87,6 +88,18 @@ b8 nya_string_starts_with(const NYA_String* str, NYA_ConstCString prefix) {
   if (str_length < prefix_length) return false;
 
   return nya_memcmp(str->items, prefix, prefix_length) == 0;
+}
+
+b8 nya_string_starts_with(NYA_ConstCString* str, NYA_ConstCString prefix) __attr_overloaded {
+  nya_assert(str);
+  nya_assert(prefix);
+
+  u64 str_length    = strlen(*str);
+  u64 prefix_length = strlen(prefix);
+
+  if (str_length < prefix_length) return false;
+
+  return nya_memcmp(*str, prefix, prefix_length) == 0;
 }
 
 NYA_String nya_string_clone(NYA_Arena* arena, const NYA_String* str) {

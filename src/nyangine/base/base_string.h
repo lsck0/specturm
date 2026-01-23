@@ -2,6 +2,7 @@
 
 #include "nyangine/base/base_arena.h"
 #include "nyangine/base/base_array.h"
+#include "nyangine/base/base_attributes.h"
 #include "nyangine/base/base_types.h"
 
 /**
@@ -26,7 +27,8 @@ NYA_API NYA_EXTERN b8              nya_string_equals(NYA_ConstCString str1, NYA_
 NYA_API NYA_EXTERN b8              nya_string_equals(const NYA_String* str1, NYA_ConstCString str2) __attr_overloaded;
 NYA_API NYA_EXTERN b8              nya_string_equals(const NYA_String* str1, const NYA_String* str2) __attr_overloaded;
 NYA_API NYA_EXTERN b8              nya_string_is_empty(const NYA_String* str);
-NYA_API NYA_EXTERN b8              nya_string_starts_with(const NYA_String* str, NYA_ConstCString prefix);
+NYA_API NYA_EXTERN b8              nya_string_starts_with(const NYA_String* str, NYA_ConstCString prefix) __attr_overloaded;
+NYA_API NYA_EXTERN b8              nya_string_starts_with(NYA_ConstCString str, NYA_ConstCString prefix) __attr_overloaded;
 NYA_API NYA_EXTERN NYA_String      nya_string_clone(NYA_Arena* arena, const NYA_String* str);
 NYA_API NYA_EXTERN NYA_String      nya_string_concat(NYA_Arena* arena, const NYA_String* str1, const NYA_String* str2);
 NYA_API NYA_EXTERN NYA_String      nya_string_from(NYA_Arena* arena, NYA_ConstCString cstr) __attr_overloaded;

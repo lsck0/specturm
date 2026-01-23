@@ -1,3 +1,4 @@
+#include "nyangine/base/base_string.h"
 #include "nyangine/nyangine.h"
 
 /*
@@ -28,7 +29,7 @@ NYA_ArgCommand* nya_args_parse_argv(NYA_ArgParser* parser, s32 argc, NYA_CString
 
   // exec name
   if (parser->executable_name != nullptr) {
-    if (strcmp(argv[0], parser->executable_name) != 0) {
+    if (!nya_string_equals(argv[0], parser->executable_name)) {
       _nya_args_print_error_and_exit("Executable name mismatch. Expected '%s' but got '%s'.", parser->executable_name, argv[0]);
     }
   }
@@ -38,7 +39,7 @@ subcommand_matching:
     NYA_ArgCommand* subcommand = path[path_count - 1]->subcommands[subcommand_index];
     if (subcommand == nullptr) continue;
 
-    if (argc > 1 && strcmp(argv[1], subcommand->name) == 0) {
+    if (argc > 1 && nya_string_equals(argv[1], subcommand->name)) {
       argc--;
       argv++;
       path[path_count++] = subcommand;
@@ -63,7 +64,7 @@ subcommand_matching:
   for (s32 arg_index = 0; arg_index < argc; arg_index++) {
     if (argv[arg_index] == nullptr) continue;
 
-    if (strncmp(argv[arg_index], "--", 2) == 0) {
+    if (nya_string_starts_with(argv[arg_index], "--")) {
       // we potentially have a flag
       NYA_CString       flag_name = argv[arg_index] + 2; // skip the '--' prefix
       NYA_ArgParameter* param     = nullptr;
@@ -74,7 +75,7 @@ subcommand_matching:
         for (u32 param_index = 0; param_index < NYA_ARG_MAX_PARAMETERS; param_index++) {
           NYA_ArgParameter* candidate = command_in_path->parameters[param_index];
           if (candidate == nullptr) break;
-          if (candidate->kind == NYA_ARG_PARAMETER_KIND_FLAG && strcmp(candidate->name, flag_name) == 0) {
+          if (candidate->kind == NYA_ARG_PARAMETER_KIND_FLAG && nya_string_equals(candidate->name, flag_name)) {
             param = candidate;
             goto end_parameter_search;
           }
@@ -95,13 +96,13 @@ subcommand_matching:
           NYA_CString flag_value_str = nullptr;
           if (arg_index + 1 < argc) flag_value_str = argv[arg_index + 1];
 
-          if (flag_value_str && strcmp(flag_value_str, "true") == 0) {
+          if (flag_value_str && nya_string_equals(flag_value_str, "true")) {
             param->value.as_bool = true;
             arg_index++;
-          } else if (flag_value_str && strcmp(flag_value_str, "false") == 0) {
+          } else if (flag_value_str && nya_string_equals(flag_value_str, "false")) {
             param->value.as_bool = false;
             arg_index++;
-          } else if (!flag_value_str || strncmp(flag_value_str, "--", 2) == 0) {
+          } else if (!flag_value_str || nya_string_starts_with(flag_value_str, "--")) {
             param->value.as_bool = true;
           } else {
             _nya_args_print_error_and_exit("Failed to parse boolean value for flag '--%s': '%s'.", param->name, flag_value_str);
@@ -183,7 +184,7 @@ subcommand_matching:
       if (param->variadic) {
         // consume all remaining args, upto the next --flag (if any)
         while (arg_index < argc) {
-          if (strncmp(argv[arg_index], "--", 2) == 0) {
+          if (nya_string_starts_with(argv[arg_index], "--")) {
             arg_index--;
             break;
           }
@@ -191,9 +192,9 @@ subcommand_matching:
           // match on type
           switch (param->value.type) {
             case NYA_TYPE_BOOL: {
-              if (strcmp(argv[arg_index], "true") == 0) {
+              if (nya_string_equals(argv[arg_index], "true")) {
                 param->values[param->values_count].as_bool = true;
-              } else if (strcmp(argv[arg_index], "false") == 0) {
+              } else if (nya_string_equals(argv[arg_index], "false")) {
                 param->values[param->values_count].as_bool = false;
               } else {
                 _nya_args_print_error_and_exit("Failed to parse boolean value for argument '%s': '%s'.", param->name, argv[arg_index]);
@@ -234,9 +235,9 @@ subcommand_matching:
         // match on type
         switch (param->value.type) {
           case NYA_TYPE_BOOL: {
-            if (strcmp(argv[arg_index], "true") == 0) {
+            if (nya_string_equals(argv[arg_index], "true")) {
               param->value.as_bool = true;
-            } else if (strcmp(argv[arg_index], "false") == 0) {
+            } else if (nya_string_equals(argv[arg_index], "false")) {
               param->value.as_bool = false;
             } else {
               _nya_args_print_error_and_exit("Failed to parse boolean value for argument '%s': '%s'.", param->name, argv[arg_index]);
@@ -278,7 +279,7 @@ subcommand_matching:
     for (u32 param_index = 0; param_index < NYA_ARG_MAX_PARAMETERS; param_index++) {
       NYA_ArgParameter* param = command_in_path->parameters[param_index];
       if (param == nullptr) break;
-      if (param->kind == NYA_ARG_PARAMETER_KIND_FLAG && strcmp(param->name, "help") == 0 && param->was_matched) {
+      if (param->kind == NYA_ARG_PARAMETER_KIND_FLAG && nya_string_equals(param->name, "help") && param->was_matched) {
         help_requested = true;
         break;
       }

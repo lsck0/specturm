@@ -711,7 +711,7 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
 
   NYA_ArgParameter* test_files = command->parameters[0];
   nya_assert(test_files);
-  nya_assert(strcmp(test_files->name, "tests") == 0);
+  nya_assert(nya_string_equals(test_files->name, "tests"));
 
   NYA_Command find_tests_command = {
     .arena     = &nya_arena_global,

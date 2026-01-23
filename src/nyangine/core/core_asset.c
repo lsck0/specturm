@@ -288,7 +288,7 @@ NYA_INTERNAL NYA_Asset _nya_asset_load_from_blob(NYA_CString path) {
 
   for (u64 asset_header_index = 0; asset_header_index < NYA_ASSET_BLOB_HEADER_COUNT; asset_header_index++) {
     NYA_AssetBlobHeader asset_header = NYA_ASSET_BLOB_HEADER[asset_header_index];
-    if (strcmp(asset_header.path, path) != 0) continue;
+    if (!nya_string_equals(asset_header.path, path)) continue;
 
     return (NYA_Asset){
       .path                   = path,
