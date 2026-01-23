@@ -1,8 +1,9 @@
 * PLAN
 
-- [ ] resource management (asset pipeline, hot-reloading, async streaming -> job system?)
-- [ ] 2d render primitives: shapes (reference raylib), texts, images
+- [ ] render primitives + gpu resource management (does this make sense in the asset system?)
+- [ ] focus on other todos below before moving on
 - [ ] ui system: widgets, layout, styling
+- [ ] debug ui: profiling, memory, console
 - [ ] entity system
 - [ ] rendering system
 - [ ] audio system
@@ -10,5 +11,15 @@
 
 * OTHER TODOs
 
-- [ ] entity ai utils: state machines, behavior trees
+- [ ] (in-code / doxygen) documentation for core nyangine structs / functions
+- [ ] add logging to the subsystems
+- [ ] add perf markers to code
+- [ ] buffered logging to file
+- [ ] descriptions for non-trivial asserts
+- [ ] make the arena, loggin, etc thread-safe
+- [ ] job system / task / multithreadding scheduler
+- [ ] asset system async loading
 - [ ] basic nn library: tensors, layers, autograd --> NEAT implementation
+- [ ] increase test coverage of base layer
+- [ ] can we test core somehow?
+- [ ] CI

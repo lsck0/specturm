@@ -53,12 +53,11 @@ NYA_Command build_rebuild_command = {
     .arguments = {
         "build.c",
         "-o", "build",
-        "-DIS_DEBUG=true",
-        "-DNYA_ASSET_BACKEND_FS",
         CFLAGS,
         WARNINGS,
         INCLUDE_PATHS,
         LINKER_FLAGS,
+        FLAGS_DEBUG,
         FLAGS_LINUX_X86_64,
     },
 };

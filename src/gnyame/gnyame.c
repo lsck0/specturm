@@ -61,8 +61,8 @@ void on_update(NYA_Window* window, f32 delta_time) {
   nya_unused(window);
   nya_unused(delta_time);
 
-  NYA_Asset* asset = nya_asset_load_and_get(NYA_ASSETS_TEXTS_HELLO_TXT);
-  printf("%.*s", (s32)asset->size, (char*)asset->data);
+  // NYA_Asset* asset = nya_asset_load_and_get(NYA_ASSETS_TEXTS_HELLO_TXT);
+  // printf("%.*s", (s32)asset->size, (char*)asset->data);
 }
 
 void on_event(NYA_Window* window, NYA_Event* event) {
