@@ -10,11 +10,11 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_API NYA_EXTERN b8 nya_fd_read(s32 fd, OUT NYA_String* out_content);
-NYA_API NYA_EXTERN b8 nya_fd_write(s32 fd, const NYA_String* content) __attr_overloaded;
-NYA_API NYA_EXTERN b8 nya_fd_write(s32 fd, NYA_ConstCString content) __attr_overloaded;
-NYA_API NYA_EXTERN b8 nya_fd_append(s32 fd, const NYA_String* content) __attr_overloaded;
-NYA_API NYA_EXTERN b8 nya_fd_append(s32 fd, NYA_ConstCString content) __attr_overloaded;
+NYA_API NYA_EXTERN b8 nya_fd_read(s32 fd, OUT NYA_String* out_content) __attr_no_discard;
+NYA_API NYA_EXTERN b8 nya_fd_write(s32 fd, const NYA_String* content) __attr_overloaded __attr_no_discard;
+NYA_API NYA_EXTERN b8 nya_fd_write(s32 fd, NYA_ConstCString content) __attr_overloaded __attr_no_discard;
+NYA_API NYA_EXTERN b8 nya_fd_append(s32 fd, const NYA_String* content) __attr_overloaded __attr_no_discard;
+NYA_API NYA_EXTERN b8 nya_fd_append(s32 fd, NYA_ConstCString content) __attr_overloaded __attr_no_discard;
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -22,13 +22,13 @@ NYA_API NYA_EXTERN b8 nya_fd_append(s32 fd, NYA_ConstCString content) __attr_ove
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_API NYA_EXTERN b8 nya_file_read(const char* path, OUT NYA_String* out_content) __attr_overloaded;
-NYA_API NYA_EXTERN b8 nya_file_read(const NYA_String* path, OUT NYA_String* out_content) __attr_overloaded;
-NYA_API NYA_EXTERN b8 nya_file_write(const char* path, const NYA_String* content) __attr_overloaded;
-NYA_API NYA_EXTERN b8 nya_file_write(const NYA_String* path, const NYA_String* content) __attr_overloaded;
-NYA_API NYA_EXTERN b8 nya_file_write(const char* path, NYA_ConstCString content) __attr_overloaded;
-NYA_API NYA_EXTERN b8 nya_file_write(const NYA_String* path, NYA_ConstCString content) __attr_overloaded;
-NYA_API NYA_EXTERN b8 nya_file_append(const char* path, const NYA_String* content) __attr_overloaded;
-NYA_API NYA_EXTERN b8 nya_file_append(const NYA_String* path, const NYA_String* content) __attr_overloaded;
-NYA_API NYA_EXTERN b8 nya_file_append(const char* path, NYA_ConstCString content) __attr_overloaded;
-NYA_API NYA_EXTERN b8 nya_file_append(const NYA_String* path, NYA_ConstCString content) __attr_overloaded;
+NYA_API NYA_EXTERN b8 nya_file_read(const char* path, OUT NYA_String* out_content) __attr_overloaded __attr_no_discard;
+NYA_API NYA_EXTERN b8 nya_file_read(const NYA_String* path, OUT NYA_String* out_content) __attr_overloaded __attr_no_discard;
+NYA_API NYA_EXTERN b8 nya_file_write(const char* path, const NYA_String* content) __attr_overloaded __attr_no_discard;
+NYA_API NYA_EXTERN b8 nya_file_write(const NYA_String* path, const NYA_String* content) __attr_overloaded __attr_no_discard;
+NYA_API NYA_EXTERN b8 nya_file_write(const char* path, NYA_ConstCString content) __attr_overloaded __attr_no_discard;
+NYA_API NYA_EXTERN b8 nya_file_write(const NYA_String* path, NYA_ConstCString content) __attr_overloaded __attr_no_discard;
+NYA_API NYA_EXTERN b8 nya_file_append(const char* path, const NYA_String* content) __attr_overloaded __attr_no_discard;
+NYA_API NYA_EXTERN b8 nya_file_append(const NYA_String* path, const NYA_String* content) __attr_overloaded __attr_no_discard;
+NYA_API NYA_EXTERN b8 nya_file_append(const char* path, NYA_ConstCString content) __attr_overloaded __attr_no_discard;
+NYA_API NYA_EXTERN b8 nya_file_append(const NYA_String* path, NYA_ConstCString content) __attr_overloaded __attr_no_discard;

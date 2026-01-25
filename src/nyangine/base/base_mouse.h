@@ -1,5 +1,7 @@
 #pragma once
 
+#include "SDL3/SDL_mouse.h"
+
 #include "nyangine/base/base_types.h"
 
 typedef u8 NYA_MouseButton;
@@ -19,3 +21,8 @@ typedef enum {
   NYA_MOUSE_BUTTON_FLAG_X1     = (1 << 3),
   NYA_MOUSE_BUTTON_FLAG_X2     = (1 << 4),
 } NYA_MouseButtonFlags;
+
+typedef enum {
+  NYA_MOUSE_WHEEL_DIRECTION_NORMAL  = SDL_MOUSEWHEEL_NORMAL,
+  NYA_MOUSE_WHEEL_DIRECTION_FLIPPED = SDL_MOUSEWHEEL_FLIPPED,
+} NYA_MouseWheelDirection;

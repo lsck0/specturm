@@ -11,12 +11,24 @@
 #define NYA_FMT_STRING          "%.*s"
 #define NYA_FMT_STRING_ARG(str) (s32)(str).length, (str).items
 
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * TYPES
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
 typedef u8Array     NYA_String;
 typedef char*       NYA_CString;
 typedef const char* NYA_ConstCString;
 nya_derive_array(NYA_String);
 nya_derive_array(NYA_CString);
 nya_derive_array(NYA_ConstCString);
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * FUNCTIONS
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
 
 NYA_API NYA_EXTERN b8              nya_string_contains(const NYA_String* str, NYA_ConstCString substr) __attr_overloaded;
 NYA_API NYA_EXTERN b8              nya_string_contains(const NYA_String* str, const NYA_String* substr) __attr_overloaded;

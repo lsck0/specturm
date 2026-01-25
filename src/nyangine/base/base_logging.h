@@ -10,7 +10,8 @@
  */
 
 typedef enum {
-  NYA_LOG_LEVEL_DEBUG = 0,
+  NYA_LOG_LEVEL_TRACE,
+  NYA_LOG_LEVEL_DEBUG,
   NYA_LOG_LEVEL_INFO,
   NYA_LOG_LEVEL_WARN,
   NYA_LOG_LEVEL_ERROR,
@@ -18,6 +19,11 @@ typedef enum {
   NYA_LOG_LEVEL_COUNT,
 } NYA_LogLevel;
 
+/**
+ * Panic Hook Function
+ * This will be executed before the panic function crashes the program.
+ * If it returns true the crash will be prevented.
+ * */
 typedef u8 (*NYA_PanicHook)(const char* function, const char* file, u32 line, const char* format, ...);
 
 /*
@@ -26,6 +32,7 @@ typedef u8 (*NYA_PanicHook)(const char* function, const char* file, u32 line, co
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
+#define nya_trace(format, ...) _nya_log_message(NYA_LOG_LEVEL_TRACE, __FUNCTION__, __FILE__, __LINE__, format __VA_OPT__(, __VA_ARGS__))
 #define nya_debug(format, ...) _nya_log_message(NYA_LOG_LEVEL_DEBUG, __FUNCTION__, __FILE__, __LINE__, format __VA_OPT__(, __VA_ARGS__))
 #define nya_info(format, ...)  _nya_log_message(NYA_LOG_LEVEL_INFO, __FUNCTION__, __FILE__, __LINE__, format __VA_OPT__(, __VA_ARGS__))
 #define nya_warn(format, ...)  _nya_log_message(NYA_LOG_LEVEL_WARN, __FUNCTION__, __FILE__, __LINE__, format __VA_OPT__(, __VA_ARGS__))

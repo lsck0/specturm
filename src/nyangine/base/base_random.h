@@ -1,5 +1,41 @@
-//! This is a wrapper around https://espadrine.github.io/blog/posts/shishua-the-fastest-prng-in-the-world.html
 #pragma once
+
+/**
+ * @file base_random.h
+ *
+ * Base PRNG used: https://espadrine.github.io/blog/posts/shishua-the-fastest-prng-in-the-world.html
+ *
+ * EXAMPLE USAGE:
+ *
+ * ```c
+ * NYA_RNG rng = nya_rng_create();
+ *
+ * s32 random_value = nya_rng_sample_s32(
+ *     &rng,
+ *     (NYA_RNGDistribution){
+ *         .type    = NYA_RNG_DISTRIBUTION_UNIFORM,
+ *         .uniform = { .min = 0.0F, .max = 100.0F },
+ *     }
+ * );
+ * ```
+ *
+ * ```c
+ * NYA_RNG rng = nya_rng_create(.seed = "DEADBEEF6767");
+ *
+ * f32 random_value = nya_rng_sample_f32(
+ *     &rng,
+ *     (NYA_RNGDistribution){
+ *         .type    = NYA_RNG_DISTRIBUTION_NORMAL,
+ *         .normal = { .mean = 0.0F, .stddev = 100.0F },
+ *     }
+ * );
+ *
+ * if (nya_rng_gen_bool(&rng, 0.1F)) {
+ *    // 10% chance
+ *    // ...
+ * }
+ * ```
+ * */
 
 #include "nyangine/base/base.h"
 #include "nyangine/base/base_attributes.h"

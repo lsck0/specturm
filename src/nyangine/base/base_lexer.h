@@ -17,6 +17,7 @@ nya_derive_array(NYA_Token);
 typedef enum {
   NYA_TOKEN_INVALID,
 
+  NYA_TOKEN_EOF,
   NYA_TOKEN_SYMBOL,
   NYA_TOKEN_IDENT,
   NYA_TOKEN_NUMBER_INTEGER,
@@ -46,6 +47,7 @@ struct NYA_Lexer {
   u32 current_line_number;
   u32 current_char_number;
 
+  /** will be filled after running */
   NYA_TokenArray tokens;
 };
 

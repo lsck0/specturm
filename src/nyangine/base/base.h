@@ -17,6 +17,7 @@
 #include <memory.h>
 #include <setjmp.h>
 #include <stdarg.h>
+#include <stdatomic.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>

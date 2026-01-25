@@ -7,17 +7,19 @@
  */
 
 b8 nya_fd_read(s32 fd, OUT NYA_String* out_content) {
-  nya_assert(out_content);
+  nya_assert(out_content != nullptr);
 
   char buffer[4096];
   u64  n;
-  while ((n = read(fd, buffer, sizeof(buffer))) > 0) { nya_string_extend(out_content, &(NYA_String){ .items = (u8*)buffer, .length = n }); }
+  while ((n = read(fd, buffer, sizeof(buffer))) > 0) { /**/
+    nya_string_extend(out_content, &(NYA_String){ .items = (u8*)buffer, .length = n });
+  }
 
   return n == 0;
 }
 
 b8 nya_fd_write(s32 fd, const NYA_String* content) __attr_overloaded {
-  nya_assert(content);
+  nya_assert(content != nullptr);
 
   u64 total_written = 0;
   while (total_written < content->length) {
@@ -30,7 +32,7 @@ b8 nya_fd_write(s32 fd, const NYA_String* content) __attr_overloaded {
 }
 
 b8 nya_fd_write(s32 fd, NYA_ConstCString content) __attr_overloaded {
-  nya_assert(content);
+  nya_assert(content != nullptr);
 
   return nya_fd_write(
       fd,
@@ -42,7 +44,7 @@ b8 nya_fd_write(s32 fd, NYA_ConstCString content) __attr_overloaded {
 }
 
 b8 nya_fd_append(s32 fd, const NYA_String* content) __attr_overloaded {
-  nya_assert(content);
+  nya_assert(content != nullptr);
 
   if (lseek(fd, 0, SEEK_END) == -1) return false;
 
@@ -50,7 +52,7 @@ b8 nya_fd_append(s32 fd, const NYA_String* content) __attr_overloaded {
 }
 
 b8 nya_fd_append(s32 fd, NYA_ConstCString content) __attr_overloaded {
-  nya_assert(content);
+  nya_assert(content != nullptr);
 
   return nya_fd_append(
       fd,
@@ -74,8 +76,8 @@ b8 nya_fd_append(s32 fd, NYA_ConstCString content) __attr_overloaded {
  */
 
 b8 nya_file_read(const char* path, OUT NYA_String* out_content) __attr_overloaded {
-  nya_assert(path);
-  nya_assert(out_content);
+  nya_assert(path != nullptr);
+  nya_assert(out_content != nullptr);
 
   FILE* file = fopen(path, "rb");
   if (!file) return false;
@@ -88,8 +90,8 @@ b8 nya_file_read(const char* path, OUT NYA_String* out_content) __attr_overloade
 }
 
 b8 nya_file_read(const NYA_String* path, OUT NYA_String* out_content) __attr_overloaded {
-  nya_assert(path);
-  nya_assert(out_content);
+  nya_assert(path != nullptr);
+  nya_assert(out_content != nullptr);
 
   NYA_CString c_path = nya_alloca((path->length + 1) * sizeof(char));
   memcpy((void*)c_path, path->items, path->length);
@@ -105,8 +107,8 @@ b8 nya_file_read(const NYA_String* path, OUT NYA_String* out_content) __attr_ove
  */
 
 b8 nya_file_write(const char* path, const NYA_String* content) __attr_overloaded {
-  nya_assert(path);
-  nya_assert(content);
+  nya_assert(path != nullptr);
+  nya_assert(content != nullptr);
 
   FILE* file = fopen(path, "wb");
   if (!file) return false;
@@ -119,8 +121,8 @@ b8 nya_file_write(const char* path, const NYA_String* content) __attr_overloaded
 }
 
 b8 nya_file_write(const NYA_String* path, const NYA_String* content) __attr_overloaded {
-  nya_assert(path);
-  nya_assert(content);
+  nya_assert(path != nullptr);
+  nya_assert(content != nullptr);
 
   NYA_CString c_path = nya_alloca((path->length + 1) * sizeof(char));
   memcpy((void*)c_path, path->items, path->length);
@@ -130,8 +132,8 @@ b8 nya_file_write(const NYA_String* path, const NYA_String* content) __attr_over
 }
 
 b8 nya_file_write(const char* path, NYA_ConstCString content) __attr_overloaded {
-  nya_assert(path);
-  nya_assert(content);
+  nya_assert(path != nullptr);
+  nya_assert(content != nullptr);
 
   return nya_file_write(
       path,
@@ -143,8 +145,8 @@ b8 nya_file_write(const char* path, NYA_ConstCString content) __attr_overloaded 
 }
 
 b8 nya_file_write(const NYA_String* path, NYA_ConstCString content) __attr_overloaded {
-  nya_assert(path);
-  nya_assert(content);
+  nya_assert(path != nullptr);
+  nya_assert(content != nullptr);
 
   NYA_CString c_path = nya_alloca((path->length + 1) * sizeof(char));
   memcpy((void*)c_path, path->items, path->length);
@@ -166,8 +168,8 @@ b8 nya_file_write(const NYA_String* path, NYA_ConstCString content) __attr_overl
  */
 
 b8 nya_file_append(const char* path, const NYA_String* content) __attr_overloaded {
-  nya_assert(path);
-  nya_assert(content);
+  nya_assert(path != nullptr);
+  nya_assert(content != nullptr);
 
   FILE* file = fopen(path, "ab");
   if (!file) return false;
@@ -180,8 +182,8 @@ b8 nya_file_append(const char* path, const NYA_String* content) __attr_overloade
 }
 
 b8 nya_file_append(const NYA_String* path, const NYA_String* content) __attr_overloaded {
-  nya_assert(path);
-  nya_assert(content);
+  nya_assert(path != nullptr);
+  nya_assert(content != nullptr);
 
   NYA_CString c_path = nya_alloca((path->length + 1) * sizeof(char));
   memcpy((void*)c_path, path->items, path->length);
@@ -191,8 +193,8 @@ b8 nya_file_append(const NYA_String* path, const NYA_String* content) __attr_ove
 }
 
 b8 nya_file_append(const char* path, NYA_ConstCString content) __attr_overloaded {
-  nya_assert(path);
-  nya_assert(content);
+  nya_assert(path != nullptr);
+  nya_assert(content != nullptr);
 
   return nya_file_append(
       path,
@@ -204,8 +206,8 @@ b8 nya_file_append(const char* path, NYA_ConstCString content) __attr_overloaded
 }
 
 b8 nya_file_append(const NYA_String* path, NYA_ConstCString content) __attr_overloaded {
-  nya_assert(path);
-  nya_assert(content);
+  nya_assert(path != nullptr);
+  nya_assert(content != nullptr);
 
   NYA_CString c_path = nya_alloca((path->length + 1) * sizeof(char));
   memcpy((void*)c_path, path->items, path->length);

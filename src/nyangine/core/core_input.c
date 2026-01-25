@@ -25,6 +25,8 @@ void nya_system_input_init(void) {
   app->input_system.keys_just_pressed  = nya_hmap_create_with_capacity(allocator, NYA_Keycode, b8, capacity);
   app->input_system.keys_pressed       = nya_hmap_create_with_capacity(allocator, NYA_Keycode, b8, capacity);
   app->input_system.keys_just_released = nya_hmap_create_with_capacity(allocator, NYA_Keycode, b8, capacity);
+
+  nya_info("Input system initialized.");
 }
 
 void nya_system_input_deinit(void) {
@@ -35,14 +37,17 @@ void nya_system_input_deinit(void) {
   nya_hmap_destroy(&app->input_system.keys_just_released);
 
   nya_arena_destroy(&app->input_system.allocator);
+
+  nya_info("Input system deinitialized.");
 }
 
 void nya_system_input_handle_event(NYA_Event* event) {
-  nya_assert(event);
+  nya_assert(event != nullptr);
 
   NYA_App* app = nya_app_get_instance();
 
-  if (event->type == NYA_EVENT_NEW_TICK) {
+  // TODO: this should be handled in an immediate event listener instead
+  if (event->type == NYA_EVENT_UPDATING_ENDED) {
     nya_hmap_clear(&app->input_system.keys_just_pressed);
     nya_hmap_clear(&app->input_system.keys_just_released);
 

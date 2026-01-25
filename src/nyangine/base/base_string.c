@@ -1,4 +1,3 @@
-#include "nyangine/base/base_attributes.h"
 #include "nyangine/nyangine.h"
 
 /*
@@ -16,22 +15,22 @@ NYA_INTERNAL NYA_CString _nya_strstrn(NYA_ConstCString haystack, NYA_ConstCStrin
  */
 
 b8 nya_string_contains(const NYA_String* str, NYA_ConstCString substr) __attr_overloaded {
-  nya_assert(str);
-  nya_assert(substr);
+  nya_assert(str != nullptr);
+  nya_assert(substr != nullptr);
 
   return _nya_strstrn((NYA_CString)str->items, substr, str->length, strlen(substr)) != nullptr;
 }
 
 b8 nya_string_contains(const NYA_String* str, const NYA_String* substr) __attr_overloaded {
-  nya_assert(str);
-  nya_assert(substr);
+  nya_assert(str != nullptr);
+  nya_assert(substr != nullptr);
 
   return _nya_strstrn((NYA_CString)str->items, (NYA_CString)substr->items, str->length, substr->length) != nullptr;
 }
 
 b8 nya_string_ends_with(const NYA_String* str, NYA_ConstCString suffix) {
-  nya_assert(str);
-  nya_assert(suffix);
+  nya_assert(str != nullptr);
+  nya_assert(suffix != nullptr);
 
   u64 str_length    = str->length;
   u64 suffix_length = strlen(suffix);
@@ -42,8 +41,8 @@ b8 nya_string_ends_with(const NYA_String* str, NYA_ConstCString suffix) {
 }
 
 b8 nya_string_equals(NYA_ConstCString str1, NYA_ConstCString str2) __attr_overloaded {
-  nya_assert(str1);
-  nya_assert(str2);
+  nya_assert(str1 != nullptr);
+  nya_assert(str2 != nullptr);
 
   u64 str1_length = strlen(str1);
   u64 str2_length = strlen(str2);
@@ -53,8 +52,8 @@ b8 nya_string_equals(NYA_ConstCString str1, NYA_ConstCString str2) __attr_overlo
 }
 
 b8 nya_string_equals(const NYA_String* str1, NYA_ConstCString str2) __attr_overloaded {
-  nya_assert(str1);
-  nya_assert(str2);
+  nya_assert(str1 != nullptr);
+  nya_assert(str2 != nullptr);
 
   u64 str1_length = str1->length;
   u64 str2_length = strlen(str2);
@@ -64,8 +63,8 @@ b8 nya_string_equals(const NYA_String* str1, NYA_ConstCString str2) __attr_overl
 }
 
 b8 nya_string_equals(const NYA_String* str1, const NYA_String* str2) __attr_overloaded {
-  nya_assert(str1);
-  nya_assert(str2);
+  nya_assert(str1 != nullptr);
+  nya_assert(str2 != nullptr);
 
   if (str1->length != str2->length) return false;
 
@@ -73,14 +72,14 @@ b8 nya_string_equals(const NYA_String* str1, const NYA_String* str2) __attr_over
 }
 
 b8 nya_string_is_empty(const NYA_String* str) {
-  nya_assert(str);
+  nya_assert(str != nullptr);
 
   return str->length == 0;
 }
 
 b8 nya_string_starts_with(const NYA_String* str, NYA_ConstCString prefix) __attr_overloaded {
-  nya_assert(str);
-  nya_assert(prefix);
+  nya_assert(str != nullptr);
+  nya_assert(prefix != nullptr);
 
   u64 str_length    = str->length;
   u64 prefix_length = strlen(prefix);
@@ -91,8 +90,8 @@ b8 nya_string_starts_with(const NYA_String* str, NYA_ConstCString prefix) __attr
 }
 
 b8 nya_string_starts_with(NYA_ConstCString str, NYA_ConstCString prefix) __attr_overloaded {
-  nya_assert(str);
-  nya_assert(prefix);
+  nya_assert(str != nullptr);
+  nya_assert(prefix != nullptr);
 
   u64 str_length    = strlen(str);
   u64 prefix_length = strlen(prefix);
@@ -103,8 +102,8 @@ b8 nya_string_starts_with(NYA_ConstCString str, NYA_ConstCString prefix) __attr_
 }
 
 NYA_String nya_string_clone(NYA_Arena* arena, const NYA_String* str) {
-  nya_assert(arena);
-  nya_assert(str);
+  nya_assert(arena != nullptr);
+  nya_assert(str != nullptr);
 
   NYA_String result = nya_string_create_with_capacity(arena, str->length);
   nya_memcpy(result.items, str->items, str->length);
@@ -114,9 +113,9 @@ NYA_String nya_string_clone(NYA_Arena* arena, const NYA_String* str) {
 }
 
 NYA_String nya_string_concat(NYA_Arena* arena, const NYA_String* str1, const NYA_String* str2) {
-  nya_assert(arena);
-  nya_assert(str1);
-  nya_assert(str2);
+  nya_assert(arena != nullptr);
+  nya_assert(str1 != nullptr);
+  nya_assert(str2 != nullptr);
 
   NYA_String result = nya_string_create_with_capacity(arena, str1->length + str2->length);
   nya_memcpy(result.items, str1->items, str1->length);
@@ -127,8 +126,8 @@ NYA_String nya_string_concat(NYA_Arena* arena, const NYA_String* str1, const NYA
 }
 
 NYA_String nya_string_from(NYA_Arena* arena, NYA_ConstCString cstr) __attr_overloaded {
-  nya_assert(arena);
-  nya_assert(cstr);
+  nya_assert(arena != nullptr);
+  nya_assert(cstr != nullptr);
 
   u64 length = strlen(cstr);
   if (length == 0) return nya_string_create(arena);
@@ -141,11 +140,10 @@ NYA_String nya_string_from(NYA_Arena* arena, NYA_ConstCString cstr) __attr_overl
 }
 
 NYA_String nya_string_join(NYA_Arena* arena, const NYA_StringArray* arr, NYA_ConstCString separator) __attr_overloaded {
-  nya_assert(arena);
-  nya_assert(arr);
-  nya_assert(separator);
+  nya_assert(arena != nullptr);
+  nya_assert(arr != nullptr);
+  nya_assert(separator != nullptr);
 
-  // handle empty array case to avoid underflow
   if (arr->length == 0) return nya_string_create(arena);
 
   u64 separator_length = strlen(separator);
@@ -169,9 +167,9 @@ NYA_String nya_string_join(NYA_Arena* arena, const NYA_StringArray* arr, NYA_Con
 }
 
 NYA_String nya_string_join(NYA_Arena* arena, const NYA_StringArray* arr, const NYA_String* separator) __attr_overloaded {
-  nya_assert(arena);
-  nya_assert(arr);
-  nya_assert(separator);
+  nya_assert(arena != nullptr);
+  nya_assert(arr != nullptr);
+  nya_assert(separator != nullptr);
 
   NYA_CString separator_cstr = nya_alloca(separator->length + 1);
   nya_memmove(separator_cstr, separator->items, separator->length);
@@ -181,20 +179,20 @@ NYA_String nya_string_join(NYA_Arena* arena, const NYA_StringArray* arr, const N
 }
 
 NYA_String nya_string_create(NYA_Arena* arena) {
-  nya_assert(arena);
+  nya_assert(arena != nullptr);
 
   return nya_array_create(arena, u8);
 }
 
 NYA_String nya_string_create_with_capacity(NYA_Arena* arena, u64 capacity) {
-  nya_assert(arena);
+  nya_assert(arena != nullptr);
 
   return nya_array_create_with_capacity(arena, u8, capacity);
 }
 
 NYA_String nya_string_sprintf(NYA_Arena* arena, NYA_ConstCString fmt, ...) __attr_fmt_printf(2, 3) {
-  nya_assert(arena);
-  nya_assert(fmt);
+  nya_assert(arena != nullptr);
+  nya_assert(fmt != nullptr);
 
   va_list args;
   va_start(args, fmt);
@@ -214,8 +212,8 @@ NYA_String nya_string_sprintf(NYA_Arena* arena, NYA_ConstCString fmt, ...) __att
 }
 
 NYA_String nya_string_substring_excld(NYA_Arena* arena, const NYA_String* str, u64 start, u64 end) {
-  nya_assert(arena);
-  nya_assert(str);
+  nya_assert(arena != nullptr);
+  nya_assert(str != nullptr);
   nya_assert(start <= end);
   nya_assert(end <= str->length);
 
@@ -230,8 +228,8 @@ NYA_String nya_string_substring_excld(NYA_Arena* arena, const NYA_String* str, u
 }
 
 NYA_String nya_string_substring_incld(NYA_Arena* arena, const NYA_String* str, u64 start, u64 end) {
-  nya_assert(arena);
-  nya_assert(str);
+  nya_assert(arena != nullptr);
+  nya_assert(str != nullptr);
   nya_assert(start <= end);
   nya_assert(end < str->length);
 
@@ -239,9 +237,9 @@ NYA_String nya_string_substring_incld(NYA_Arena* arena, const NYA_String* str, u
 }
 
 NYA_StringArray nya_string_split(NYA_Arena* arena, const NYA_String* str, NYA_ConstCString separator) __attr_overloaded {
-  nya_assert(arena);
-  nya_assert(str);
-  nya_assert(separator);
+  nya_assert(arena != nullptr);
+  nya_assert(str != nullptr);
+  nya_assert(separator != nullptr);
 
   NYA_StringArray result     = nya_array_create(arena, NYA_String);
   u64             sep_length = strlen(separator);
@@ -270,9 +268,9 @@ NYA_StringArray nya_string_split(NYA_Arena* arena, const NYA_String* str, NYA_Co
 }
 
 NYA_StringArray nya_string_split(NYA_Arena* arena, const NYA_String* str, const NYA_String* separator) __attr_overloaded {
-  nya_assert(arena);
-  nya_assert(str);
-  nya_assert(separator);
+  nya_assert(arena != nullptr);
+  nya_assert(str != nullptr);
+  nya_assert(separator != nullptr);
 
   NYA_CString separator_cstr = nya_alloca(separator->length + 1);
   nya_memmove(separator_cstr, separator->items, separator->length);
@@ -282,15 +280,15 @@ NYA_StringArray nya_string_split(NYA_Arena* arena, const NYA_String* str, const 
 }
 
 NYA_StringArray nya_string_split_lines(NYA_Arena* arena, const NYA_String* str) {
-  nya_assert(arena);
-  nya_assert(str);
+  nya_assert(arena != nullptr);
+  nya_assert(str != nullptr);
 
   return nya_string_split(arena, str, "\n");
 }
 
 NYA_StringArray nya_string_split_words(NYA_Arena* arena, const NYA_String* str) {
-  nya_assert(arena);
-  nya_assert(str);
+  nya_assert(arena != nullptr);
+  nya_assert(str != nullptr);
 
   NYA_StringArray arr    = nya_array_create(arena, NYA_String);
   NYA_String      buffer = nya_string_create(arena);
@@ -313,8 +311,8 @@ NYA_StringArray nya_string_split_words(NYA_Arena* arena, const NYA_String* str) 
 }
 
 u64 nya_string_count(const NYA_String* str, NYA_ConstCString substr) __attr_overloaded {
-  nya_assert(str);
-  nya_assert(substr);
+  nya_assert(str != nullptr);
+  nya_assert(substr != nullptr);
 
   u64 count  = 0;
   u64 length = strlen(substr);
@@ -333,8 +331,8 @@ u64 nya_string_count(const NYA_String* str, NYA_ConstCString substr) __attr_over
 }
 
 u64 nya_string_count(const NYA_String* str, const NYA_String* substr) __attr_overloaded {
-  nya_assert(str);
-  nya_assert(substr);
+  nya_assert(str != nullptr);
+  nya_assert(substr != nullptr);
 
   NYA_CString substr_cstr = nya_alloca(substr->length + 1);
   nya_memmove(substr_cstr, substr->items, substr->length);
@@ -344,14 +342,14 @@ u64 nya_string_count(const NYA_String* str, const NYA_String* substr) __attr_ove
 }
 
 void nya_string_clear(NYA_String* str) {
-  nya_assert(str);
+  nya_assert(str != nullptr);
 
   str->length = 0;
 }
 
 void nya_string_extend(NYA_String* str, NYA_ConstCString extension) __attr_overloaded {
-  nya_assert(str);
-  nya_assert(extension);
+  nya_assert(str != nullptr);
+  nya_assert(extension != nullptr);
 
   u64 extension_length = strlen(extension);
   u64 new_length       = str->length + extension_length;
@@ -362,8 +360,8 @@ void nya_string_extend(NYA_String* str, NYA_ConstCString extension) __attr_overl
 }
 
 void nya_string_extend(NYA_String* str, const NYA_String* extension) __attr_overloaded {
-  nya_assert(str);
-  nya_assert(extension);
+  nya_assert(str != nullptr);
+  nya_assert(extension != nullptr);
 
   u64 new_length = str->length + extension->length;
 
@@ -373,8 +371,8 @@ void nya_string_extend(NYA_String* str, const NYA_String* extension) __attr_over
 }
 
 void nya_string_extend_front(NYA_String* str, NYA_ConstCString extension) __attr_overloaded {
-  nya_assert(str);
-  nya_assert(extension);
+  nya_assert(str != nullptr);
+  nya_assert(extension != nullptr);
 
   u64 extension_length = strlen(extension);
   u64 new_length       = str->length + extension_length;
@@ -386,8 +384,8 @@ void nya_string_extend_front(NYA_String* str, NYA_ConstCString extension) __attr
 }
 
 void nya_string_extend_front(NYA_String* str, const NYA_String* extension) __attr_overloaded {
-  nya_assert(str);
-  nya_assert(extension);
+  nya_assert(str != nullptr);
+  nya_assert(extension != nullptr);
 
   u64 new_length = str->length + extension->length;
 
@@ -402,20 +400,20 @@ void nya_string_destroy(NYA_String* str) {
 }
 
 void nya_string_print(const NYA_String* str) {
-  nya_assert(str);
+  nya_assert(str != nullptr);
 
   printf(NYA_FMT_STRING, NYA_FMT_STRING_ARG(*str));
 }
 
 void nya_string_println(const NYA_String* str) {
-  nya_assert(str);
+  nya_assert(str != nullptr);
 
   printf(NYA_FMT_STRING "\n", NYA_FMT_STRING_ARG(*str));
 }
 
 void nya_string_remove(NYA_String* str, NYA_ConstCString substr) __attr_overloaded {
-  nya_assert(str);
-  nya_assert(substr);
+  nya_assert(str != nullptr);
+  nya_assert(substr != nullptr);
 
   u64 length = strlen(substr);
   if (length == 0 || length > str->length) return;
@@ -432,8 +430,8 @@ void nya_string_remove(NYA_String* str, NYA_ConstCString substr) __attr_overload
 }
 
 void nya_string_remove(NYA_String* str, const NYA_String* substr) __attr_overloaded {
-  nya_assert(str);
-  nya_assert(substr);
+  nya_assert(str != nullptr);
+  nya_assert(substr != nullptr);
 
   if (substr->length == 0 || substr->length > str->length) return;
 
@@ -449,9 +447,9 @@ void nya_string_remove(NYA_String* str, const NYA_String* substr) __attr_overloa
 }
 
 void nya_string_replace(NYA_String* str, NYA_ConstCString old, NYA_ConstCString new) __attr_overloaded {
-  nya_assert(str);
-  nya_assert(old);
-  nya_assert(new);
+  nya_assert(str != nullptr);
+  nya_assert(old != nullptr);
+  nya_assert(new != nullptr);
 
   u64 old_length = strlen(old);
   u64 new_length = strlen(new);
@@ -478,9 +476,9 @@ void nya_string_replace(NYA_String* str, NYA_ConstCString old, NYA_ConstCString 
 }
 
 void nya_string_replace(NYA_String* str, const NYA_String* old, const NYA_String* new) __attr_overloaded {
-  nya_assert(str);
-  nya_assert(old);
-  nya_assert(new);
+  nya_assert(str != nullptr);
+  nya_assert(old != nullptr);
+  nya_assert(new != nullptr);
 
   if (old->length == 0 || old->length > str->length) return;
 
@@ -504,26 +502,26 @@ void nya_string_replace(NYA_String* str, const NYA_String* old, const NYA_String
 }
 
 void nya_string_reserve(NYA_String* str, u64 capacity) {
-  nya_assert(str);
+  nya_assert(str != nullptr);
 
   nya_array_reserve(str, capacity);
 }
 
 void nya_string_reverse(NYA_String* str) {
-  nya_assert(str);
+  nya_assert(str != nullptr);
 
   nya_array_reverse(str);
 }
 
 void nya_string_shrink_to_fit(NYA_String* str) {
-  nya_assert(str);
+  nya_assert(str != nullptr);
 
   nya_array_shrink_to_fit(str);
 }
 
 s32 nya_string_sscanf(NYA_String* str, NYA_ConstCString fmt, ...) __attr_fmt_scanf(2, 3) {
-  nya_assert(str);
-  nya_assert(fmt);
+  nya_assert(str != nullptr);
+  nya_assert(fmt != nullptr);
 
   va_list args;
   va_start(args, fmt);
@@ -535,8 +533,8 @@ s32 nya_string_sscanf(NYA_String* str, NYA_ConstCString fmt, ...) __attr_fmt_sca
 }
 
 void nya_string_strip_prefix(NYA_String* str, NYA_ConstCString prefix) {
-  nya_assert(str);
-  nya_assert(prefix);
+  nya_assert(str != nullptr);
+  nya_assert(prefix != nullptr);
 
   u64 prefix_length = strlen(prefix);
 
@@ -547,8 +545,8 @@ void nya_string_strip_prefix(NYA_String* str, NYA_ConstCString prefix) {
 }
 
 void nya_string_strip_suffix(NYA_String* str, NYA_ConstCString suffix) {
-  nya_assert(str);
-  nya_assert(suffix);
+  nya_assert(str != nullptr);
+  nya_assert(suffix != nullptr);
 
   u64 suffix_length = strlen(suffix);
 
@@ -556,7 +554,7 @@ void nya_string_strip_suffix(NYA_String* str, NYA_ConstCString suffix) {
 }
 
 NYA_CString nya_string_to_cstring(NYA_Arena* arena, const NYA_String* str) {
-  nya_assert(str);
+  nya_assert(str != nullptr);
 
   NYA_CString cstr = nya_arena_alloc(arena, str->length + 1);
   nya_memmove(cstr, str->items, str->length);
@@ -566,19 +564,19 @@ NYA_CString nya_string_to_cstring(NYA_Arena* arena, const NYA_String* str) {
 }
 
 void nya_string_to_lower(NYA_String* str) {
-  nya_assert(str);
+  nya_assert(str != nullptr);
 
   for (u64 i = 0; i < str->length; i++) str->items[i] = tolower(str->items[i]);
 }
 
 void nya_string_to_upper(NYA_String* str) {
-  nya_assert(str);
+  nya_assert(str != nullptr);
 
   for (u64 i = 0; i < str->length; i++) str->items[i] = toupper(str->items[i]);
 }
 
 void nya_string_trim_whitespace(NYA_String* str) {
-  nya_assert(str);
+  nya_assert(str != nullptr);
 
   u64 start = 0;
   u64 end   = str->length;

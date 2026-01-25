@@ -54,7 +54,7 @@ struct NYA_ArgCommand {
 
   /** either handler or build_rule must be set */
 
-  /// bad subcommand, only flags are parsed
+  /** bad subcommand, only flags are parsed */
   b8 incomplete;
   void (*handler)(NYA_ArgCommand* command);
   NYA_BuildRule* build_rule;
@@ -77,5 +77,5 @@ struct NYA_ArgParser {
  */
 
 NYA_API NYA_EXTERN NYA_ArgCommand* nya_args_parse_argv(NYA_ArgParser* parser, s32 argc, NYA_CString* argv);
-NYA_API NYA_EXTERN b8              nya_args_run_command(NYA_ArgCommand* command);
+NYA_API NYA_EXTERN b8              nya_args_run_command(NYA_ArgCommand* command) __attr_no_discard;
 NYA_API NYA_EXTERN void            nya_args_print_usage(NYA_ArgParser* parser, NYA_ArgCommand* command_override);

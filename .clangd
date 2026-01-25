@@ -16,8 +16,6 @@ CompileFlags:
       -Wno-empty-translation-unit,
       -Wno-initializer-overrides,
       -Wno-keyword-macro,
-      -D_POSIX_C_SOURCE=200112L,
-      -D_XOPEN_SOURCE=700,
       -DIS_DEBUG=true,
       -DNYA_ASSET_BACKEND_BLOB,
       -I/home/luca/code/specturm/src/,

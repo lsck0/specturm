@@ -17,7 +17,7 @@ NYA_INTERNAL b8 _nya_build_always(NYA_BuildRule* build_rule);
  */
 
 b8 nya_build(NYA_BuildRule* build_rule) {
-  nya_assert(build_rule);
+  nya_assert(build_rule != nullptr);
 
   switch (build_rule->policy) {
     case NYA_BUILD_ALWAYS: return _nya_build_always(build_rule);
@@ -36,8 +36,10 @@ b8 nya_build(NYA_BuildRule* build_rule) {
 
       u64 input_mod_time  = 0;
       u64 output_mod_time = 0;
-      nya_filesystem_last_modified(build_rule->input_file, &input_mod_time);
-      nya_filesystem_last_modified(build_rule->output_file, &output_mod_time);
+      b8  ok1             = nya_filesystem_last_modified(build_rule->input_file, &input_mod_time);
+      b8  ok2             = nya_filesystem_last_modified(build_rule->output_file, &output_mod_time);
+      nya_assert(ok1, "Failed to get last modified time for input file: %s", build_rule->input_file);
+      nya_assert(ok2, "Failed to get last modified time for output file: %s", build_rule->output_file);
 
       if (input_mod_time > output_mod_time) return _nya_build_always(build_rule);
 
@@ -109,7 +111,7 @@ void nya_rebuild_yourself(s32* argc, NYA_CString* argv, NYA_Command cmd) {
 b8 _nya_build_always(NYA_BuildRule* build_rule) {
   static u64 depth = 0;
 
-  nya_assert(build_rule);
+  nya_assert(build_rule != nullptr);
 
   // build dependencies first
   for (u64 i = 0; i < NYA_BUILD_MAX_DEPENDENCIES; i++) {

@@ -3,14 +3,16 @@
 
 #include "nyangine/nyangine.h"
 
+// TODO: Immediate and deferred event listeners (hashmap event type -> array of listeners)
+
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  * PRIVATE API DECLARATION
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_INTERNAL NYA_Event _nya_event_from_sdl_event(SDL_Event sdl_event);
 NYA_INTERNAL void*     _nya_event_sdl_window_id_to_nya_window_id(SDL_WindowID sdl_window_id);
+NYA_INTERNAL NYA_Event _nya_event_from_sdl_event(SDL_Event sdl_event);
 NYA_INTERNAL void      _nya_event_notify_listeners(NYA_Event* event);
 
 /*
@@ -35,6 +37,8 @@ void nya_system_events_init(void) {
   };
 
   app->event_system.event_queue = nya_array_create(&app->event_system.allocator, NYA_Event);
+
+  nya_info("Event system initialized.");
 }
 
 void nya_system_events_deinit(void) {
@@ -44,6 +48,8 @@ void nya_system_events_deinit(void) {
   nya_array_destroy(&app->event_system.event_queue);
 
   nya_arena_destroy(&app->event_system.allocator);
+
+  nya_info("Event system deinitialized.");
 }
 
 /*
@@ -54,14 +60,12 @@ void nya_system_events_deinit(void) {
 
 void nya_event_drain_sdl_events(void) {
   SDL_Event event;
-  while (SDL_PollEvent(&event)) nya_event_register_sdl_event(event);
-}
+  while (SDL_PollEvent(&event)) {
+    NYA_Event nya_event = _nya_event_from_sdl_event(event);
+    if (nya_event.type == NYA_EVENT_INVALID) continue;
 
-void nya_event_register_sdl_event(SDL_Event event) {
-  NYA_Event nya_event = _nya_event_from_sdl_event(event);
-  if (nya_event.type == NYA_EVENT_INVALID) return;
-
-  nya_event_dispatch(nya_event);
+    nya_event_dispatch(nya_event);
+  }
 }
 
 void nya_event_dispatch(NYA_Event event) {
@@ -73,7 +77,8 @@ void nya_event_dispatch(NYA_Event event) {
   nya_array_push_back(&app->event_system.event_queue, event);
   SDL_UnlockMutex(app->event_system.event_queue_mutex);
 
-  _nya_event_notify_listeners(&event);
+  if (NYA_EVENT_LIFECYCLE_EVENTS_BEGIN <= event.type && event.type <= NYA_EVENT_LIFECYCLE_EVENTS_END) return;
+  nya_trace("Event dispatched: %s", NYA_EVENT_NAME_MAP[event.type]);
 }
 
 b8 nya_event_poll(OUT NYA_Event* out_event) {
@@ -95,6 +100,8 @@ b8 nya_event_poll(OUT NYA_Event* out_event) {
   app->event_system.event_queue_read_index++;
   SDL_UnlockMutex(app->event_system.event_queue_mutex);
 
+  _nya_event_notify_listeners(out_event);
+
   return true;
 }
 
@@ -108,6 +115,16 @@ void nya_event_listen(NYA_EventHook hook) {
  * PRIVATE API IMPLEMENTATION
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
+
+NYA_INTERNAL void* _nya_event_sdl_window_id_to_nya_window_id(SDL_WindowID sdl_window_id) {
+  NYA_App* app = nya_app_get_instance();
+
+  nya_array_foreach (&app->window_system.windows, nya_window) {
+    if (SDL_GetWindowID(nya_window->sdl_window) == sdl_window_id) return nya_window->id;
+  }
+
+  return nullptr;
+}
 
 NYA_INTERNAL NYA_Event _nya_event_from_sdl_event(SDL_Event sdl_event) {
   nya_unused(sdl_event);
@@ -273,16 +290,6 @@ NYA_INTERNAL NYA_Event _nya_event_from_sdl_event(SDL_Event sdl_event) {
   }
 
   return event;
-}
-
-NYA_INTERNAL void* _nya_event_sdl_window_id_to_nya_window_id(SDL_WindowID sdl_window_id) {
-  NYA_App* app = nya_app_get_instance();
-
-  nya_array_foreach (&app->window_system.windows, nya_window) {
-    if (SDL_GetWindowID(nya_window->sdl_window) == sdl_window_id) return nya_window->id;
-  }
-
-  return nullptr;
 }
 
 NYA_INTERNAL void _nya_event_notify_listeners(NYA_Event* event) {

@@ -632,7 +632,7 @@ void _nya_arena_action_insert(NYA_MemoryAction action) {
     array->capacity *= 2;
 
     void* new_items = nya_realloc(array->items, sizeof(NYA_MemoryAction) * array->capacity);
-    nya_assert(new_items);
+    nya_assert(new_items != nullptr);
     array->items = (NYA_MemoryAction*)new_items;
   }
 

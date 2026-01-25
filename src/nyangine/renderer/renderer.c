@@ -2,6 +2,12 @@
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * PRIVATE API DECLARATION
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  * PUBLIC API IMPLEMENTATION
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
@@ -22,6 +28,8 @@ void nya_system_render_init(void) {
   app->render_system = (NYA_RenderSystem){
     .gpu_device = gpu_device,
   };
+
+  nya_info("Render system initialized.");
 }
 
 void nya_system_render_deinit(void) {
@@ -29,10 +37,12 @@ void nya_system_render_deinit(void) {
 
   SDL_WaitForGPUIdle(app->render_system.gpu_device);
   SDL_DestroyGPUDevice(app->render_system.gpu_device);
+
+  nya_info("Render system deinitialized.");
 }
 
 void nya_system_render_for_window_init(NYA_Window* window) {
-  nya_assert(window);
+  nya_assert(window != nullptr);
 
   NYA_App* app = nya_app_get_instance();
 
@@ -50,15 +60,19 @@ void nya_system_render_for_window_init(NYA_Window* window) {
   nya_assert(ok, "SDL_SetGPUSwapchainParameters() failed: %s", SDL_GetError());
 
   window->render_system = (NYA_RenderSystemWindow){ 0 };
+
+  nya_info("Render system initialized for window '%s' (id: %p).", window->title, window->id);
 }
 
 void nya_system_render_for_window_deinit(NYA_Window* window) {
-  nya_assert(window);
+  nya_assert(window != nullptr);
 
   NYA_App* app = nya_app_get_instance();
 
   SDL_WaitForGPUIdle(app->render_system.gpu_device);
   SDL_ReleaseWindowFromGPUDevice(app->render_system.gpu_device, window->sdl_window);
+
+  nya_info("Render system deinitialized for window '%s' (id: %p).", window->title, window->id);
 }
 
 void nya_system_render_handle_event(NYA_Event* event) {
@@ -88,7 +102,7 @@ void nya_render_set_vsync(b8 enabled) {
 }
 
 void nya_render_begin(NYA_Window* window) {
-  nya_assert(window);
+  nya_assert(window != nullptr);
 
   NYA_App* app = nya_app_get_instance();
 
@@ -112,8 +126,14 @@ void nya_render_begin(NYA_Window* window) {
 }
 
 void nya_render_end(NYA_Window* window) {
-  nya_assert(window);
+  nya_assert(window != nullptr);
 
   SDL_EndGPURenderPass(window->render_system.render_pass);
   SDL_SubmitGPUCommandBuffer(window->render_system.command_buffer);
 }
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * PRIVATE API IMPLEMENTATION
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */

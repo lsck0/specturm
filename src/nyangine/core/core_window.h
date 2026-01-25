@@ -3,6 +3,7 @@
 #include "SDL3/SDL_gpu.h"
 
 #include "nyangine/base/base_array.h"
+#include "nyangine/base/base_string.h"
 #include "nyangine/core/core_event.h"
 #include "nyangine/renderer/renderer.h"
 
@@ -42,8 +43,9 @@ typedef enum {
 } NYA_WindowFlags;
 
 struct NYA_Window {
-  void*       id;
-  SDL_Window* sdl_window;
+  void*            id;
+  NYA_ConstCString title;
+  SDL_Window*      sdl_window;
 
   // controlled by NYA_WINDOW_RESIZE events
   u32 width;
@@ -73,6 +75,10 @@ struct NYA_Layer {
   void (*on_update)(NYA_Window* window, f32 delta_time);
   void (*on_event)(NYA_Window* window, NYA_Event* event);
   void (*on_render)(NYA_Window* window);
+
+  /** Set by nya_layer_push. */
+
+  void* window_id;
 };
 
 /*
@@ -97,7 +103,7 @@ NYA_API NYA_EXTERN void nya_system_window_handle_event(NYA_Event* event);
  * ─────────────────────────────────────────────────────────
  */
 
-NYA_API NYA_EXTERN void*       nya_window_create(const char* title, u32 initial_width, u32 initial_height, NYA_WindowFlags flags, void* id);
+NYA_API NYA_EXTERN void*       nya_window_create(NYA_ConstCString title, u32 initial_width, u32 initial_height, NYA_WindowFlags flags, void* id);
 NYA_API NYA_EXTERN void        nya_window_destroy(void* window_id);
 NYA_API NYA_EXTERN NYA_Window* nya_window_get(void* window_id);
 

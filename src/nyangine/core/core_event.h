@@ -6,6 +6,7 @@
 
 #include "nyangine/base/base_arena.h"
 #include "nyangine/base/base_array.h"
+#include "nyangine/base/base_attributes.h"
 #include "nyangine/base/base_keys.h"
 #include "nyangine/base/base_mouse.h"
 #include "nyangine/base/base_types.h"
@@ -50,12 +51,18 @@ struct NYA_EventSystem {
  */
 
 typedef enum {
-  NYA_EVENT_INVALID = 0,
+  NYA_EVENT_INVALID,
 
-  NYA_EVENT_ASSET_LOADED,
-  NYA_EVENT_ASSET_UPDATED,
-
-  NYA_EVENT_NEW_TICK,
+  NYA_EVENT_LIFECYCLE_EVENTS_BEGIN,
+  NYA_EVENT_FRAME_STARTED,
+  NYA_EVENT_FRAME_ENDED,
+  NYA_EVENT_HANDLING_STARTED,
+  NYA_EVENT_HANDLING_ENDED,
+  NYA_EVENT_UPDATING_STARTED,
+  NYA_EVENT_UPDATING_ENDED,
+  NYA_EVENT_RENDERING_STARTED,
+  NYA_EVENT_RENDERING_ENDED,
+  NYA_EVENT_LIFECYCLE_EVENTS_END,
 
   NYA_EVENT_KEY_DOWN,
   NYA_EVENT_KEY_UP,
@@ -87,14 +94,44 @@ typedef enum {
   NYA_EVENT_COUNT,
 } NYA_EventType;
 
-/*
- * ─────────────────────────────────────────────────────────
- * ASSET EVENT STRUCT
- * ─────────────────────────────────────────────────────────
- */
+__attr_unused static NYA_ConstCString NYA_EVENT_NAME_MAP[] = {
+  [NYA_EVENT_INVALID] = "INVALID",
 
-struct NYA_AssetEvent {
-  NYA_ConstCString path;
+  [NYA_EVENT_FRAME_STARTED]     = "FRAME_STARTED",
+  [NYA_EVENT_FRAME_ENDED]       = "FRAME_ENDED",
+  [NYA_EVENT_HANDLING_STARTED]  = "HANDLING_STARTED",
+  [NYA_EVENT_HANDLING_ENDED]    = "HANDLING_ENDED",
+  [NYA_EVENT_UPDATING_STARTED]  = "UPDATING_STARTED",
+  [NYA_EVENT_UPDATING_ENDED]    = "UPDATING_ENDED",
+  [NYA_EVENT_RENDERING_STARTED] = "RENDERING_STARTED",
+  [NYA_EVENT_RENDERING_ENDED]   = "RENDERING_ENDED",
+
+  [NYA_EVENT_KEY_DOWN] = "KEY_DOWN",
+  [NYA_EVENT_KEY_UP]   = "KEY_UP",
+
+  [NYA_EVENT_MOUSE_BUTTON_DOWN] = "MOUSE_BUTTON_DOWN",
+  [NYA_EVENT_MOUSE_BUTTON_UP]   = "MOUSE_BUTTON_UP",
+  [NYA_EVENT_MOUSE_MOVED]       = "MOUSE_MOVED",
+  [NYA_EVENT_MOUSE_WHEEL_MOVED] = "MOUSE_WHEEL_MOVED",
+
+  [NYA_EVENT_QUIT] = "QUIT",
+
+  [NYA_EVENT_WINDOW_CLOSE_REQUESTED]  = "WINDOW_CLOSE_REQUESTED",
+  [NYA_EVENT_WINDOW_DESTROYED]        = "WINDOW_DESTROYED",
+  [NYA_EVENT_WINDOW_ENTER_FULLSCREEN] = "WINDOW_ENTER_FULLSCREEN",
+  [NYA_EVENT_WINDOW_FOCUS_GAINED]     = "WINDOW_FOCUS_GAINED",
+  [NYA_EVENT_WINDOW_FOCUS_LOST]       = "WINDOW_FOCUS_LOST",
+  [NYA_EVENT_WINDOW_HIDDEN]           = "WINDOW_HIDDEN",
+  [NYA_EVENT_WINDOW_LEAVE_FULLSCREEN] = "WINDOW_LEAVE_FULLSCREEN",
+  [NYA_EVENT_WINDOW_MAXIMIZED]        = "WINDOW_MAXIMIZED",
+  [NYA_EVENT_WINDOW_MINIMIZED]        = "WINDOW_MINIMIZED",
+  [NYA_EVENT_WINDOW_MOUSE_ENTER]      = "WINDOW_MOUSE_ENTER",
+  [NYA_EVENT_WINDOW_MOUSE_LEAVE]      = "WINDOW_MOUSE_LEAVE",
+  [NYA_EVENT_WINDOW_MOVED]            = "WINDOW_MOVED",
+  [NYA_EVENT_WINDOW_OCCLUDED]         = "WINDOW_OCCLUDED",
+  [NYA_EVENT_WINDOW_RESIZED]          = "WINDOW_RESIZED",
+  [NYA_EVENT_WINDOW_RESTORED]         = "WINDOW_RESTORED",
+  [NYA_EVENT_WINDOW_SHOWN]            = "WINDOW_SHOWN",
 };
 
 /*
@@ -118,11 +155,6 @@ struct NYA_KeyEvent {
  * MOUSE EVENT STRUCTS
  * ─────────────────────────────────────────────────────────
  */
-
-typedef enum {
-  NYA_MOUSE_WHEEL_DIRECTION_NORMAL  = SDL_MOUSEWHEEL_NORMAL,
-  NYA_MOUSE_WHEEL_DIRECTION_FLIPPED = SDL_MOUSEWHEEL_FLIPPED,
-} NYA_MouseWheelDirection;
 
 struct NYA_MouseButtonEvent {
   void*           window_id;
@@ -187,7 +219,6 @@ struct NYA_Event {
   u64           timestamp;
 
   union {
-    NYA_AssetEvent         as_asset_event;
     NYA_KeyEvent           as_key_event;
     NYA_MouseButtonEvent   as_mouse_button_event;
     NYA_MouseMovedEvent    as_mouse_moved_event;
@@ -199,8 +230,9 @@ struct NYA_Event {
 };
 
 struct NYA_EventHook {
+  NYA_EventType type;
   void (*fn)(NYA_Event*);
-  bool (*condition)(NYA_Event*);
+  b8 (*condition)(NYA_Event*);
 };
 
 /*
@@ -225,7 +257,6 @@ NYA_API NYA_EXTERN void nya_system_events_deinit(void);
  */
 
 NYA_API NYA_EXTERN void nya_event_drain_sdl_events(void);
-NYA_API NYA_EXTERN void nya_event_register_sdl_event(SDL_Event event);
 NYA_API NYA_EXTERN void nya_event_dispatch(NYA_Event event);
 NYA_API NYA_EXTERN b8   nya_event_poll(OUT NYA_Event* out_event);
 NYA_API NYA_EXTERN void nya_event_listen(NYA_EventHook hook);

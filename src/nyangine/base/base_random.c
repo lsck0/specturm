@@ -24,6 +24,8 @@ NYA_INTERNAL void _nya_rng_fill_buffer(NYA_RNG* rng);
  */
 
 NYA_INTERNAL void _nya_rng_fill_buffer(NYA_RNG* rng) {
+  nya_assert(rng != nullptr);
+
   __m256i o0 = rng->output[0];
   __m256i o1 = rng->output[1];
   __m256i o2 = rng->output[2];
@@ -136,12 +138,12 @@ NYA_RNG nya_rng_create_with_options(NYA_RNGOptions options) {
     u64 cursor = 0;
     while (options.seed[cursor] != '\0' && cursor <= 64) {
       char ch = options.seed[cursor];
-      if (!((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'F'))) {
-        nya_panic("Invalid seed: must be an uppercase hex string, got '%c' at position " FMTu64, ch, cursor);
+      if (!(('0' <= ch && ch <= '9') || ('A' <= ch && ch <= 'F'))) {
+        nya_panic("Invalid seed: Must be an uppercase hex string, got '%c' at position " FMTu64 ".", ch, cursor);
       }
       cursor++;
     }
-    if (cursor > 64) nya_panic("Invalid seed: must be at most 64 characters, got " FMTu64, cursor);
+    if (cursor > 64) nya_panic("Invalid seed: Must be at most 64 characters, got " FMTu64 " characters.", cursor);
     u64 padding = 64 - cursor;
 
     for (u64 s = 0; s < 4; s++) {
@@ -151,7 +153,7 @@ NYA_RNG nya_rng_create_with_options(NYA_RNGOptions options) {
         u64 v   = 0;
         if (idx >= padding) {
           char ch = options.seed[idx - padding];
-          v       = (ch >= '0' && ch <= '9') ? (u64)(ch - '0') : (u64)(ch - 'A' + 10);
+          v       = ('0' <= ch && ch <= '9') ? (u64)(ch - '0') : (u64)(ch - 'A' + 10);
         }
         seed[s] = (seed[s] << 4) | v;
       }
@@ -185,6 +187,8 @@ NYA_RNG nya_rng_create_with_options(NYA_RNGOptions options) {
 }
 
 void nya_rng_gen_bytes(NYA_RNG* rng, u8 buffer[], u64 size) {
+  nya_assert(rng != nullptr);
+
   u64 remaining_bytes   = size;
   u64 rng_buffer_offset = 0;
 
@@ -265,12 +269,14 @@ f32 nya_rng_sample_f32(NYA_RNG* rng, NYA_RNGDistribution distribution) {
 }
 
 f64 nya_rng_sample_f64(NYA_RNG* rng, NYA_RNGDistribution distribution) {
+  nya_assert(rng != nullptr);
+
   switch (distribution.type) {
     // clamping and moving
     case NYA_RNG_DISTRIBUTION_UNIFORM: {
       f64 min = distribution.uniform.min;
       f64 max = distribution.uniform.max;
-      nya_assert(min <= max);
+      nya_assert(min <= max, "Malformed uniform distribution: min (" FMTf64 ") must be <= max (" FMTf64 ").", min, max);
 
       u64 r;
       nya_rng_gen_bytes(rng, (u8*)&r, sizeof(u64));
@@ -283,7 +289,7 @@ f64 nya_rng_sample_f64(NYA_RNG* rng, NYA_RNGDistribution distribution) {
     case NYA_RNG_DISTRIBUTION_NORMAL: {
       f64 mean   = distribution.normal.mean;
       f64 stddev = distribution.normal.stddev;
-      nya_assert(stddev > 0.0);
+      nya_assert(stddev > 0.0, "Malformed normal distribution: stddev (" FMTf64 ") must be > 0.", stddev);
 
       u64 r1;
       u64 r2;
@@ -301,6 +307,7 @@ f64 nya_rng_sample_f64(NYA_RNG* rng, NYA_RNGDistribution distribution) {
     // Inverse transform sampling: X = -ln(1-u) / lambda
     case NYA_RNG_DISTRIBUTION_EXPONENTIAL: {
       f64 lambda = distribution.exponential.lambda;
+      nya_assert(lambda > 0.0, "Malformed exponential distribution: lambda (" FMTf64 ") must be > 0.", lambda);
 
       u64 r;
       nya_rng_gen_bytes(rng, (u8*)&r, sizeof(u64));
@@ -313,7 +320,7 @@ f64 nya_rng_sample_f64(NYA_RNG* rng, NYA_RNGDistribution distribution) {
     // Knuth algorithm for small lambda
     case NYA_RNG_DISTRIBUTION_POISSON: {
       f64 lambda = distribution.poisson.lambda;
-      nya_assert(lambda > 0.0);
+      nya_assert(lambda > 0.0, "Malformed poisson distribution: lambda (" FMTf64 ") must be > 0.", lambda);
 
       f64 L = exp(-lambda);
       f64 p = 1.0;
@@ -334,7 +341,7 @@ f64 nya_rng_sample_f64(NYA_RNG* rng, NYA_RNGDistribution distribution) {
     case NYA_RNG_DISTRIBUTION_BINOMIAL: {
       u64 n = distribution.binomial.n;
       f64 p = distribution.binomial.p;
-      nya_assert(p >= 0.0 && p <= 1.0);
+      nya_assert(0.0 <= p && p <= 1.0, "Malformed binomial distribution: p (" FMTf64 ") must be in [0, 1].", p);
 
       u64 successes = 0;
       for (u64 i = 0; i < n; i++) {
@@ -350,7 +357,7 @@ f64 nya_rng_sample_f64(NYA_RNG* rng, NYA_RNGDistribution distribution) {
     // Inverse transform: number of trials until first success
     case NYA_RNG_DISTRIBUTION_GEOMETRIC: {
       f64 p = distribution.geometric.p;
-      nya_assert(p > 0.0 && p <= 1.0);
+      nya_assert(p > 0.0 && p <= 1.0, "Malformed geometric distribution: p (" FMTf64 ") must be in (0, 1].", p);
 
       u64 r;
       nya_rng_gen_bytes(rng, (u8*)&r, sizeof(u64));
@@ -365,7 +372,8 @@ f64 nya_rng_sample_f64(NYA_RNG* rng, NYA_RNGDistribution distribution) {
 }
 
 b8 nya_rng_gen_bool(NYA_RNG* rng, f32 true_chance) {
-  nya_assert(true_chance >= 0.0F && true_chance <= 1.0F);
+  nya_assert(rng != nullptr);
+  nya_assert(true_chance >= 0.0F && true_chance <= 1.0F, "true_chance (" FMTf32 ") must be in [0.0, 1.0].", true_chance);
 
   u64 r;
   nya_rng_gen_bytes(rng, (u8*)&r, sizeof(u64));

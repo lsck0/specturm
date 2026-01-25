@@ -13,6 +13,8 @@ s32 main(void) {
   NYA_String       copied_file_content  = nya_string_create(&nya_arena_global);
   NYA_String       moved_file_content   = nya_string_create(&nya_arena_global);
 
+  b8 ok;
+
   // ─────────────────────────────────────────────────────────────────────────────
   // TEST: Files should not exist initially
   // ─────────────────────────────────────────────────────────────────────────────
@@ -32,7 +34,8 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   // TEST: Append to file
   // ─────────────────────────────────────────────────────────────────────────────
-  nya_file_append(test_file_path, " Appended text.");
+  ok = nya_file_append(test_file_path, " Appended text.");
+  nya_assert(ok);
   nya_assert(nya_file_read(test_file_path, &file_content));
   nya_assert(nya_string_equals(&file_content, "Hello, Nyangine! Appended text."));
   nya_string_clear(&file_content);
@@ -40,7 +43,8 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   // TEST: Copy file
   // ─────────────────────────────────────────────────────────────────────────────
-  nya_filesystem_copy(test_file_path, "test_file_copy.txt");
+  ok = nya_filesystem_copy(test_file_path, "test_file_copy.txt");
+  nya_assert(ok);
   nya_assert(nya_filesystem_exists(test_file_copy_path));
   nya_assert(nya_file_read(test_file_copy_path, &copied_file_content));
   nya_assert(nya_string_equals(&copied_file_content, "Hello, Nyangine! Appended text."));
@@ -48,7 +52,8 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   // TEST: Move/rename file
   // ─────────────────────────────────────────────────────────────────────────────
-  nya_filesystem_move(test_file_copy_path, test_file_moved_path);
+  ok = nya_filesystem_move(test_file_copy_path, test_file_moved_path);
+  nya_assert(ok);
   nya_assert(!nya_filesystem_exists(test_file_copy_path));
   nya_assert(nya_filesystem_exists(test_file_moved_path));
   nya_assert(nya_file_read(test_file_moved_path, &moved_file_content));
@@ -111,8 +116,10 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   NYA_ConstCString append_path = "test_multi_append.txt";
   nya_assert(nya_file_write(append_path, "Start"));
-  nya_file_append(append_path, " Middle");
-  nya_file_append(append_path, " End");
+  ok = nya_file_append(append_path, " Middle");
+  nya_assert(ok);
+  ok = nya_file_append(append_path, " End");
+  nya_assert(ok);
   NYA_String append_content = nya_string_create(&nya_arena_global);
   nya_assert(nya_file_read(append_path, &append_content));
   nya_assert(nya_string_equals(&append_content, "Start Middle End"));

@@ -1,9 +1,11 @@
 #pragma once
 
-/*
+/**
+ * @file base_keys.h
+ *
  * Those are from:
- *  - https://github.com/libsdl-org/NYA/blob/main/include/NYA3/NYA_scancode.h
- *  - https://github.com/libsdl-org/NYA/blob/main/include/NYA3/NYA_keycode.h
+ *  - https://github.com/libsdl-org/NYA/blob/main/include/SDL3/SDL_scancode.h
+ *  - https://github.com/libsdl-org/NYA/blob/main/include/SDL3/SDL_keycode.h
  * */
 
 #include "nyangine/base/base_string.h"

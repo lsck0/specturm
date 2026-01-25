@@ -1,6 +1,8 @@
 #pragma once
 
 /**
+ * @file base_dll.h
+ *
  * To use those macros:
  * - the dll structure needs to have 'head' and 'tail' pointers
  * - the node structure needs to have 'prev' and 'next' pointers

@@ -9,6 +9,14 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
+/**
+ * Used to create the cleanup functions to be used with NYA_GUARDED_BY.
+ *
+ * EXAMPLE USAGE:
+ * ```c
+ * NYA_DEFINE_CLEANUP_FN(nya_arena_destroy, NYA_Arena, arena, nya_arena_destroy(&arena))
+ * ```
+ * */
 #define NYA_DEFINE_CLEANUP_FN(name, type, var_name, code)                                                                                            \
   __attr_unused void __cleanup_##name(type const* p) {                                                                                               \
     if (!p) return;                                                                                                                                  \
@@ -20,7 +28,7 @@
  * This is essentially poor mans RAII / defer for C.
  *
  * EXAMPLE USAGE:
- *
+ * ```c
  * NYA_GUARDED_BY(close) s32 source_fd = open(source, O_RDONLY);
  * if (source_fd < 0) return false;
  *
@@ -39,6 +47,7 @@
  * if (!ok) return false;
  *
  * return true;
+ * ```
  * */
 #define NYA_GUARDED_BY(cleanup_fn) __attr_cleanup(__cleanup_##cleanup_fn)
 

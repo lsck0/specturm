@@ -1,6 +1,6 @@
 #pragma once
 
-// TODO: abandoned until the rest of the code is threadsafe.
+// TODO: wait for real usecases before implementing
 
 #include "SDL3/SDL_mutex.h"
 #include "SDL3/SDL_thread.h"
@@ -30,9 +30,9 @@ typedef void (*job_fn)(void* data);
  */
 
 struct NYA_JobSystem {
-  SDL_Mutex* allocator_mutex;
-  NYA_Arena  allocator;
+  NYA_Arena allocator;
 
+  SDL_Mutex*   job_queue_mutex;
   NYA_JobArray job_queue;
 };
 
@@ -45,6 +45,7 @@ struct NYA_JobSystem {
 struct NYA_Job {
   job_fn job;
   void*  data;
+  u64    size;
 };
 
 /*
@@ -68,4 +69,4 @@ NYA_API NYA_EXTERN void nya_system_job_deinit(void);
  * ─────────────────────────────────────────────────────────
  */
 
-NYA_API NYA_EXTERN void nya_job_submit(job_fn function, void* data);
+NYA_API NYA_EXTERN void nya_job_submit(job_fn function, void* data, u64 size);

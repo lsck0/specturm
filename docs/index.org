@@ -1,7 +1,8 @@
 * PLAN
 
+- [ ] event hooks
+- [ ] more asset system work (CPU / GPU resources, async)
 - [ ] render primitives + gpu resource management (does this make sense in the asset system?)
-- [ ] focus on other todos below before moving on
 - [ ] ui system: widgets, layout, styling
 - [ ] debug ui: profiling, memory, console
 - [ ] entity system
@@ -11,15 +12,8 @@
 
 * OTHER TODOs
 
-- [ ] (in-code / doxygen) documentation for core nyangine structs / functions
-- [ ] add logging to the subsystems
-- [ ] add perf markers to code
 - [ ] buffered logging to file
-- [ ] descriptions for non-trivial asserts
-- [ ] make the arena, loggin, etc thread-safe
 - [ ] job system / task / multithreadding scheduler
-- [ ] asset system async loading
+- [ ] more datastructures: heap, ring buffer, maybe graphs/trees
 - [ ] basic nn library: tensors, layers, autograd --> NEAT implementation
-- [ ] increase test coverage of base layer
-- [ ] can we test core somehow?
 - [ ] CI

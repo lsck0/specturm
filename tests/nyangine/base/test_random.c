@@ -28,8 +28,7 @@ s32 main(void) {
     (void)bad_rng;
   });
   nya_assert_panic({
-    NYA_RNG bad_rng =
-        nya_rng_create(.seed = "AAasd786hgfasPOAISDnAAAAAAAAAAAaafsdsdsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+    NYA_RNG bad_rng = nya_rng_create(.seed = "AAasd786hgfasPOAISDnAAAAAAAAAAAaafsdsdsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
     (void)bad_rng;
   });
   nya_assert_panic({
@@ -41,28 +40,28 @@ s32 main(void) {
   // TEST: Distribution definitions
   // ─────────────────────────────────────────────────────────────────────────────
   NYA_RNGDistribution dist_uniform = {
-      .type    = NYA_RNG_DISTRIBUTION_UNIFORM,
-      .uniform = {.min = 10.0, .max = 20.0},
+    .type    = NYA_RNG_DISTRIBUTION_UNIFORM,
+    .uniform = { .min = 10.0, .max = 20.0 },
   };
   NYA_RNGDistribution dist_normal = {
-      .type   = NYA_RNG_DISTRIBUTION_NORMAL,
-      .normal = {.mean = 50.0, .stddev = 10.0},
+    .type   = NYA_RNG_DISTRIBUTION_NORMAL,
+    .normal = { .mean = 50.0, .stddev = 10.0 },
   };
   NYA_RNGDistribution dist_exponential = {
-      .type        = NYA_RNG_DISTRIBUTION_EXPONENTIAL,
-      .exponential = {.lambda = 0.5},
+    .type        = NYA_RNG_DISTRIBUTION_EXPONENTIAL,
+    .exponential = { .lambda = 0.5 },
   };
   NYA_RNGDistribution dist_poisson = {
-      .type    = NYA_RNG_DISTRIBUTION_POISSON,
-      .poisson = {.lambda = 4.0},
+    .type    = NYA_RNG_DISTRIBUTION_POISSON,
+    .poisson = { .lambda = 4.0 },
   };
   NYA_RNGDistribution dist_binomial = {
-      .type     = NYA_RNG_DISTRIBUTION_BINOMIAL,
-      .binomial = {.n = 10, .p = 0.5},
+    .type     = NYA_RNG_DISTRIBUTION_BINOMIAL,
+    .binomial = { .n = 10, .p = 0.5 },
   };
   NYA_RNGDistribution dist_geometric = {
-      .type      = NYA_RNG_DISTRIBUTION_GEOMETRIC,
-      .geometric = {.p = 0.3},
+    .type      = NYA_RNG_DISTRIBUTION_GEOMETRIC,
+    .geometric = { .p = 0.3 },
   };
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -82,8 +81,8 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   NYA_RNG             range_rng  = nya_rng_create(.seed = "ABCD1234");
   NYA_RNGDistribution range_dist = {
-      .type    = NYA_RNG_DISTRIBUTION_UNIFORM,
-      .uniform = {.min = 0.0, .max = 100.0},
+    .type    = NYA_RNG_DISTRIBUTION_UNIFORM,
+    .uniform = { .min = 0.0, .max = 100.0 },
   };
   for (u32 i = 0; i < 10000; ++i) {
     f64 val = nya_rng_sample_f64(&range_rng, range_dist);
@@ -94,8 +93,8 @@ s32 main(void) {
   // TEST: Uniform integer distribution
   // ─────────────────────────────────────────────────────────────────────────────
   NYA_RNGDistribution int_dist = {
-      .type    = NYA_RNG_DISTRIBUTION_UNIFORM,
-      .uniform = {.min = 0, .max = 255},
+    .type    = NYA_RNG_DISTRIBUTION_UNIFORM,
+    .uniform = { .min = 0, .max = 255 },
   };
   for (u32 i = 0; i < 1000; ++i) {
     u8 val = nya_rng_sample_u8(&range_rng, int_dist);
@@ -114,8 +113,8 @@ s32 main(void) {
   // TEST: Signed integer sampling
   // ─────────────────────────────────────────────────────────────────────────────
   NYA_RNGDistribution signed_dist = {
-      .type    = NYA_RNG_DISTRIBUTION_UNIFORM,
-      .uniform = {.min = -50, .max = 50},
+    .type    = NYA_RNG_DISTRIBUTION_UNIFORM,
+    .uniform = { .min = -50, .max = 50 },
   };
   for (u32 i = 0; i < 1000; ++i) {
     s32 val = nya_rng_sample_s32(&range_rng, signed_dist);
@@ -149,8 +148,8 @@ s32 main(void) {
   // TEST: Byte buffer generation
   // ─────────────────────────────────────────────────────────────────────────────
   NYA_RNG byte_rng    = nya_rng_create(.seed = "B0E0C123");
-  u8      buffer1[64] = {0};
-  u8      buffer2[64] = {0};
+  u8      buffer1[64] = { 0 };
+  u8      buffer2[64] = { 0 };
   nya_rng_gen_bytes(&byte_rng, buffer1, 64);
   // Verify buffer was filled (extremely unlikely to be all zeros)
   b8 has_nonzero = false;
@@ -179,8 +178,8 @@ s32 main(void) {
   NYA_RNG             diff_rng1   = nya_rng_create(.seed = "AAAA");
   NYA_RNG             diff_rng2   = nya_rng_create(.seed = "BBBB");
   NYA_RNGDistribution simple_dist = {
-      .type    = NYA_RNG_DISTRIBUTION_UNIFORM,
-      .uniform = {.min = 0, .max = 1000000},
+    .type    = NYA_RNG_DISTRIBUTION_UNIFORM,
+    .uniform = { .min = 0, .max = 1000000 },
   };
   b8 found_difference = false;
   for (u32 i = 0; i < 100; ++i) {
@@ -196,8 +195,8 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   NYA_RNG             binom_rng  = nya_rng_create(.seed = "B1A0CD00");
   NYA_RNGDistribution binom_dist = {
-      .type     = NYA_RNG_DISTRIBUTION_BINOMIAL,
-      .binomial = {.n = 20, .p = 0.5},
+    .type     = NYA_RNG_DISTRIBUTION_BINOMIAL,
+    .binomial = { .n = 20, .p = 0.5 },
   };
   for (u32 i = 0; i < 1000; ++i) {
     u32 val = nya_rng_sample_u32(&binom_rng, binom_dist);
@@ -209,8 +208,8 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   NYA_RNG             exp_rng  = nya_rng_create(.seed = "E0F00000");
   NYA_RNGDistribution exp_dist = {
-      .type        = NYA_RNG_DISTRIBUTION_EXPONENTIAL,
-      .exponential = {.lambda = 1.0},
+    .type        = NYA_RNG_DISTRIBUTION_EXPONENTIAL,
+    .exponential = { .lambda = 1.0 },
   };
   for (u32 i = 0; i < 1000; ++i) {
     f64 val = nya_rng_sample_f64(&exp_rng, exp_dist);
@@ -222,8 +221,8 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   NYA_RNG             geo_rng  = nya_rng_create(.seed = "AE0E00AA");
   NYA_RNGDistribution geo_dist = {
-      .type      = NYA_RNG_DISTRIBUTION_GEOMETRIC,
-      .geometric = {.p = 0.5},
+    .type      = NYA_RNG_DISTRIBUTION_GEOMETRIC,
+    .geometric = { .p = 0.5 },
   };
   for (u32 i = 0; i < 1000; ++i) {
     u32 val = nya_rng_sample_u32(&geo_rng, geo_dist);
@@ -235,8 +234,8 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   NYA_RNG             float_rng  = nya_rng_create(.seed = "F10A0000");
   NYA_RNGDistribution float_dist = {
-      .type    = NYA_RNG_DISTRIBUTION_UNIFORM,
-      .uniform = {.min = -1.0, .max = 1.0},
+    .type    = NYA_RNG_DISTRIBUTION_UNIFORM,
+    .uniform = { .min = -1.0, .max = 1.0 },
   };
   for (u32 i = 0; i < 100; ++i) {
     f32 val32 = nya_rng_sample_f32(&float_rng, float_dist);

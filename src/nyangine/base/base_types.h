@@ -62,7 +62,7 @@ typedef wchar_t wchar;
  */
 
 typedef enum {
-  NYA_TYPE_NULL = 0,
+  NYA_TYPE_NULL,
 
   NYA_TYPE_VOID,
   NYA_TYPE_VOID_POINTER,
@@ -258,8 +258,8 @@ typedef struct {
 #define S128_MAX ((s128)(U128_MAX >> 1))
 #define S128_MIN ((s128)(-S128_MAX - 1))
 
-#define F16_MIN  (-65504.0f)
-#define F16_MAX  (65504.0f)
+#define F16_MIN  (-65504.0F)
+#define F16_MAX  (65504.0F)
 #define F32_MIN  (-__FLT_MAX__)
 #define F32_MAX  (__FLT_MAX__)
 #define F64_MIN  (-__DBL_MAX__)

@@ -1,3 +1,4 @@
+#define _POSIX_C_SOURCE 200809L
 #include <fcntl.h>
 #include <sys/stat.h>
 
@@ -20,7 +21,9 @@ b8 nya_filesystem_last_modified(NYA_ConstCString path, OUT u64* out_timestamp) {
   ok = stat(path, &path_stat) == 0;
   if (!ok) return false;
 
-  if (out_timestamp) { *out_timestamp = (u64)path_stat.st_mtim.tv_sec * 1000ULL + (u64)(path_stat.st_mtim.tv_nsec / 1000000ULL); }
+  if (out_timestamp) { /**/
+    *out_timestamp = (u64)path_stat.st_mtim.tv_sec * 1000ULL + (u64)(path_stat.st_mtim.tv_nsec / 1000000ULL);
+  }
 
   return true;
 }

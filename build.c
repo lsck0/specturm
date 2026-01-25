@@ -463,17 +463,19 @@ NYA_BuildRule update_submodules = {
  */
 
 NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
-  nya_assert(rule);
+  nya_assert(rule != nullptr);
 
-  NYA_Command find_source_shaders = {
+  b8 ok;
+
+  NYA_Command find_source_shaders_command = {
     .arena     = &nya_arena_global,
     .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
     .program   = "find",
     .arguments = { "./assets/shaders/source/", "-name", "*.hlsl", },
   };
-  nya_command_run(&find_source_shaders);
-  nya_assert(find_source_shaders.exit_code == 0, "Failed to find source shaders.");
-  NYA_StringArray shaders = nya_string_split_lines(&nya_arena_global, &find_source_shaders.stdout_content);
+  nya_command_run(&find_source_shaders_command);
+  nya_assert(find_source_shaders_command.exit_code == 0, "Failed to find source shaders.");
+  NYA_StringArray shaders = nya_string_split_lines(&nya_arena_global, &find_source_shaders_command.stdout_content);
 
   nya_array_foreach (&shaders, shader) {
     NYA_CString source = nya_string_to_cstring(&nya_arena_global, shader);
@@ -498,7 +500,7 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
     nya_string_strip_suffix(shader, ".spv");
     nya_string_strip_prefix(shader, "./assets/shaders/compiled/SPIRV/");
 
-    NYA_Command create_dirs = {
+    NYA_Command create_dirs_command = {
         .program   = "mkdir",
         .arguments = {
             "-p",
@@ -507,12 +509,12 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
             "./assets/shaders/compiled/SPIRV/",
         },
     };
-    nya_command_run(&create_dirs);
-    nya_assert(create_dirs.exit_code == 0, "Failed to create shader output directories.");
+    nya_command_run(&create_dirs_command);
+    nya_assert(create_dirs_command.exit_code == 0, "Failed to create shader output directories.");
 
     // compile to DXIL
     NYA_String compile_to_dxil_name = nya_string_sprintf(&nya_arena_global, "%s -> %s", source, target_dxil);
-    NYA_BuildRule compile_to_dxil      = {
+    NYA_BuildRule compile_to_dxil_rule      = {
         .name        = nya_string_to_cstring(&nya_arena_global, &compile_to_dxil_name),
         .policy      = NYA_BUILD_IF_OUTDATED,
         .input_file  = source,
@@ -527,11 +529,12 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
             },
         },
     };
-    nya_build(&compile_to_dxil);
+    ok = nya_build(&compile_to_dxil_rule);
+    nya_assert(ok, "Failed to compile shader to DXIL: %s", source);
 
     // compile to Metal
     NYA_String compile_to_metal_name = nya_string_sprintf(&nya_arena_global, "%s -> %s", source, target_metal);
-    NYA_BuildRule compile_to_metal      = {
+    NYA_BuildRule compile_to_metal_rule      = {
         .name        = nya_string_to_cstring(&nya_arena_global, &compile_to_metal_name),
         .policy      = NYA_BUILD_IF_OUTDATED,
         .input_file  = source,
@@ -546,12 +549,12 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
             },
         },
     };
-
-    nya_build(&compile_to_metal);
+    ok = nya_build(&compile_to_metal_rule);
+    nya_assert(ok, "Failed to compile shader to Metal: %s", source);
 
     // compile to SPIR-V
     NYA_String compile_to_spirv_name = nya_string_sprintf(&nya_arena_global, "%s -> %s", source, target_spirv);
-    NYA_BuildRule compile_to_spirv      = {
+    NYA_BuildRule compile_to_spirv_rule      = {
         .name        = nya_string_to_cstring(&nya_arena_global, &compile_to_spirv_name),
         .policy      = NYA_BUILD_IF_OUTDATED,
         .input_file  = source,
@@ -566,12 +569,13 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
             },
         },
     };
-    nya_build(&compile_to_spirv);
+    ok = nya_build(&compile_to_spirv_rule);
+    nya_assert(ok, "Failed to compile shader to SPIR-V: %s", source);
   }
 }
 
 NYA_INTERNAL void hook_index_assets(NYA_BuildRule* rule) {
-  nya_assert(rule);
+  nya_assert(rule != nullptr);
 
   NYA_ConstCString asset_directory = "./assets/";
   NYA_ConstCString output_file     = "./assets/assets.h";
@@ -580,7 +584,7 @@ NYA_INTERNAL void hook_index_assets(NYA_BuildRule* rule) {
 }
 
 NYA_INTERNAL void hook_bundle_assets(NYA_BuildRule* rule) {
-  nya_assert(rule);
+  nya_assert(rule != nullptr);
 
   NYA_ConstCString asset_directory = "./assets/";
   NYA_ConstCString output_file     = "./assets/assets.c";
@@ -589,7 +593,7 @@ NYA_INTERNAL void hook_bundle_assets(NYA_BuildRule* rule) {
 }
 
 NYA_INTERNAL void hook_add_version_flag_and_git_hash(NYA_BuildRule* rule) {
-  nya_assert(rule);
+  nya_assert(rule != nullptr);
 
   static b8          initialized = false;
   static NYA_CString GIT_HASH_FLAG;
@@ -623,80 +627,82 @@ skip_initialization:
 }
 
 NYA_INTERNAL void hook_convert_perf_data_to_plain(NYA_BuildRule* rule) {
-  nya_assert(rule);
+  nya_assert(rule != nullptr);
 
-  NYA_Command command = {
+  NYA_Command convert_command = {
     .arena     = &nya_arena_global,
     .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
     .program   = "perf",
     .arguments = { "script", "-i", "./perf.data" },
   };
-  nya_command_run(&command);
-  nya_assert(command.exit_code == 0, "Failed to convert perf data to plain text.");
+  nya_command_run(&convert_command);
+  nya_assert(convert_command.exit_code == 0, "Failed to convert perf data to plain text.");
 
-  nya_file_write("./perf.data.txt", &command.stdout_content);
+  b8 ok = nya_file_write("./perf.data.txt", &convert_command.stdout_content);
+  nya_assert(ok, "Failed to write perf data to text file.");
 }
 
 NYA_INTERNAL void hook_remove_output_file(NYA_BuildRule* rule) {
-  nya_assert(rule);
+  nya_assert(rule != nullptr);
   nya_assert(rule->output_file);
 
-  nya_filesystem_delete(rule->output_file);
+  b8 ok = nya_filesystem_delete(rule->output_file);
+  nya_assert(ok, "Failed to remove output file: %s", rule->output_file);
 }
 
 // we just need to move everything into the right place
 NYA_INTERNAL void hook_bundle_project(NYA_BuildRule* rule) {
-  nya_assert(rule);
+  nya_assert(rule != nullptr);
 
   NYA_ConstCString dist_path    = "./dist/";
   NYA_ConstCString linux_path   = "./dist/" PROJECT_NAME "." VERSION ".linux-x86_64/";
   NYA_ConstCString windows_path = "./dist/" PROJECT_NAME "." VERSION ".windows-x86_64/";
 
-  NYA_Command clean_dist = {
+  NYA_Command clean_dist_command = {
     .program   = "rm",
     .arguments = { "-rf", dist_path },
   };
-  nya_command_run(&clean_dist);
-  nya_assert(clean_dist.exit_code == 0, "Failed to clean dist directory.");
+  nya_command_run(&clean_dist_command);
+  nya_assert(clean_dist_command.exit_code == 0, "Failed to clean dist directory.");
 
-  NYA_Command create_dirs = {
+  NYA_Command create_dirs_command = {
     .program   = "mkdir",
     .arguments = { "-p", linux_path, windows_path, },
   };
-  nya_command_run(&create_dirs);
-  nya_assert(create_dirs.exit_code == 0, "Failed to create dist directories.");
+  nya_command_run(&create_dirs_command);
+  nya_assert(create_dirs_command.exit_code == 0, "Failed to create dist directories.");
 
   // LINUX
 
-  NYA_Command copy_linux_binary = {
+  NYA_Command copy_linux_binary_command = {
     .program   = "cp",
     .arguments = { LINUX_X86_64_BINARY, linux_path, },
   };
-  nya_command_run(&copy_linux_binary);
-  nya_assert(copy_linux_binary.exit_code == 0, "Failed to copy linux binary.");
+  nya_command_run(&copy_linux_binary_command);
+  nya_assert(copy_linux_binary_command.exit_code == 0, "Failed to copy linux binary.");
 
-  NYA_Command copy_steam_sdk_linux = {
+  NYA_Command copy_steam_sdk_linux_command = {
     .program   = "cp",
     .arguments = { "./vendor/steam/redistributable_bin/linux64/libsteam_api.so", linux_path, },
   };
-  nya_command_run(&copy_steam_sdk_linux);
-  nya_assert(copy_steam_sdk_linux.exit_code == 0, "Failed to copy steam sdk for linux.");
+  nya_command_run(&copy_steam_sdk_linux_command);
+  nya_assert(copy_steam_sdk_linux_command.exit_code == 0, "Failed to copy steam sdk for linux.");
 
   // WINDOWS
 
-  NYA_Command copy_windows_binary = {
+  NYA_Command copy_windows_binary_command = {
     .program   = "cp",
-    .arguments = { WINDOWS_X86_64_BINARY, windows_path },
+    .arguments = { WINDOWS_X86_64_BINARY, windows_path, },
   };
-  nya_command_run(&copy_windows_binary);
-  nya_assert(copy_windows_binary.exit_code == 0, "Failed to copy windows binary.");
+  nya_command_run(&copy_windows_binary_command);
+  nya_assert(copy_windows_binary_command.exit_code == 0, "Failed to copy windows binary.");
 
-  NYA_Command copy_steam_sdk_windows = {
+  NYA_Command copy_steam_sdk_windows_command = {
     .program   = "cp",
     .arguments = { "./vendor/steam/redistributable_bin/win64/steam_api64.dll", windows_path, },
   };
-  nya_command_run(&copy_steam_sdk_windows);
-  nya_assert(copy_steam_sdk_windows.exit_code == 0, "Failed to copy steam sdk for windows.");
+  nya_command_run(&copy_steam_sdk_windows_command);
+  nya_assert(copy_steam_sdk_windows_command.exit_code == 0, "Failed to copy steam sdk for windows.");
 }
 
 /*
@@ -706,17 +712,17 @@ NYA_INTERNAL void hook_bundle_project(NYA_BuildRule* rule) {
  */
 
 NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
-  nya_assert(command);
+  nya_assert(command != nullptr);
 
   NYA_ArgParameter* test_files = command->parameters[0];
-  nya_assert(test_files);
+  nya_assert(test_files != nullptr);
   nya_assert(nya_string_equals(test_files->name, "tests"));
 
   NYA_Command find_tests_command = {
     .arena     = &nya_arena_global,
     .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
     .program   = "find",
-    .arguments = { "./tests/", "-name", "*.c" },
+    .arguments = { "./tests/", "-name", "*.c", },
   };
   nya_command_run(&find_tests_command);
   NYA_StringArray tests = nya_string_split_lines(&nya_arena_global, &find_tests_command.stdout_content);
@@ -739,7 +745,7 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
     NYA_CString test_binary = nya_string_to_cstring(&nya_arena_global, test);
 
     NYA_String build_test_name = nya_string_sprintf(&nya_arena_global, "build_test:%s", test_binary);
-    NYA_BuildRule build_test = {
+    NYA_BuildRule build_test_rule = {
         .name        = nya_string_to_cstring(&nya_arena_global, &build_test_name),
         .policy      = NYA_BUILD_ALWAYS,
         .output_file = test_binary,
@@ -764,7 +770,7 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
     };
 
     NYA_String run_test_name = nya_string_sprintf(&nya_arena_global, "run_test:%s", test_binary);
-    NYA_BuildRule run_test = {
+    NYA_BuildRule run_test_rule = {
         .name        = nya_string_to_cstring(&nya_arena_global, &run_test_name),
         .policy      = NYA_BUILD_ALWAYS,
         .output_file = test_binary,
@@ -779,12 +785,12 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
             },
         },
 
-        .dependencies      = { &build_test, },
+        .dependencies      = { &build_test_rule, },
         .post_build_hooks  = { &hook_remove_output_file, },
     };
 
-    b8 ok = nya_build(&run_test);
-    if (!ok) nya_panic("TEST FAILED: %s", test_binary);
+    b8 ok = nya_build(&run_test_rule);
+    nya_assert(ok, "Failed to build and run test: %s", test_binary);
   }
 }
 
