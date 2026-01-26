@@ -13,15 +13,16 @@
 #define NYA_ARG_MAX_COMMANDS   64
 #define NYA_ARG_MAX_PARAMETERS 128
 
-typedef struct NYA_ArgParser    NYA_ArgParser;
-typedef struct NYA_ArgCommand   NYA_ArgCommand;
-typedef struct NYA_ArgParameter NYA_ArgParameter;
+typedef enum NYA_ArgParameterKind NYA_ArgParameterKind;
+typedef struct NYA_ArgParser      NYA_ArgParser;
+typedef struct NYA_ArgCommand     NYA_ArgCommand;
+typedef struct NYA_ArgParameter   NYA_ArgParameter;
 
-typedef enum {
+enum NYA_ArgParameterKind {
   NYA_ARG_PARAMETER_KIND_FLAG,
   NYA_ARG_PARAMETER_KIND_POSITIONAL,
   NYA_ARG_PARAMETER_KIND_COUNT,
-} NYA_ArgParameterKind;
+};
 
 struct NYA_ArgParameter {
   NYA_ArgParameterKind kind;

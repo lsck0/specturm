@@ -10,11 +10,12 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-typedef struct NYA_Token NYA_Token;
-typedef struct NYA_Lexer NYA_Lexer;
+typedef enum NYA_TokenType NYA_TokenType;
+typedef struct NYA_Token   NYA_Token;
+typedef struct NYA_Lexer   NYA_Lexer;
 nya_derive_array(NYA_Token);
 
-typedef enum {
+enum NYA_TokenType {
   NYA_TOKEN_INVALID,
 
   NYA_TOKEN_EOF,
@@ -24,7 +25,7 @@ typedef enum {
   NYA_TOKEN_NUMBER_FLOAT,
 
   NYA_TOKEN_COUNT,
-} NYA_TokenType;
+};
 
 struct NYA_Token {
   NYA_TokenType type;

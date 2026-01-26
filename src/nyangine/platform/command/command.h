@@ -11,15 +11,16 @@
 #define NYA_COMMAND_MAX_ARGUMENTS 128
 #define NYA_COMMAND_MAX_ENV_VARS  128
 
-typedef struct NYA_Command NYA_Command;
+typedef enum NYA_CommandFlags NYA_CommandFlags;
+typedef struct NYA_Command    NYA_Command;
 
-typedef enum {
+enum NYA_CommandFlags {
   NYA_COMMAND_FLAG_NONE            = 0,
   NYA_COMMAND_FLAG_OUTPUT_SUPPRESS = (1 << 0),
   NYA_COMMAND_FLAG_OUTPUT_SHOW     = (1 << 1),
   NYA_COMMAND_FLAG_OUTPUT_CAPTURE  = (1 << 2),
   NYA_COMMAND_FLAG_DEFAULT         = NYA_COMMAND_FLAG_OUTPUT_SHOW,
-} NYA_CommandFlags;
+};
 
 struct NYA_Command {
   NYA_CommandFlags flags;

@@ -12,11 +12,12 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
+typedef enum NYA_MemoryActionType    NYA_MemoryActionType;
 typedef struct NYA_Arena             NYA_Arena;
-typedef struct NYA_ArenaOptions      NYA_ArenaOptions;
-typedef struct NYA_ArenaRegion       NYA_ArenaRegion;
 typedef struct NYA_ArenaFreeList     NYA_ArenaFreeList;
 typedef struct NYA_ArenaFreeListNode NYA_ArenaFreeListNode;
+typedef struct NYA_ArenaOptions      NYA_ArenaOptions;
+typedef struct NYA_ArenaRegion       NYA_ArenaRegion;
 typedef struct NYA_MemoryAction      NYA_MemoryAction;
 typedef struct NYA_MemoryActionArray NYA_MemoryActionArray;
 
@@ -74,7 +75,7 @@ struct NYA_ArenaFreeListNode {
   NYA_ArenaFreeListNode *prev, *next;
 };
 
-typedef enum {
+enum NYA_MemoryActionType {
   NYA_MEMORY_ACTION_ARENA_NEW,
   NYA_MEMORY_ACTION_ALLOC,
   NYA_MEMORY_ACTION_REALLOC,
@@ -85,7 +86,7 @@ typedef enum {
   NYA_MEMORY_ACTION_COPY,
   NYA_MEMORY_ACTION_MOVE,
   NYA_MEMORY_ACTION_COUNT,
-} NYA_MemoryActionType;
+};
 
 struct NYA_MemoryAction {
   NYA_MemoryActionType type;

@@ -7,6 +7,7 @@
 #include "nyangine/base/base_arena.h"
 #include "nyangine/base/base_array.h"
 #include "nyangine/base/base_attributes.h"
+#include "nyangine/base/base_hmap.h"
 #include "nyangine/base/base_keys.h"
 #include "nyangine/base/base_mouse.h"
 #include "nyangine/base/base_types.h"
@@ -17,6 +18,8 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
+typedef enum NYA_EventType            NYA_EventType;
+typedef enum NYA_EventHookType        NYA_EventHookType;
 typedef struct NYA_AssetEvent         NYA_AssetEvent;
 typedef struct NYA_Event              NYA_Event;
 typedef struct NYA_EventHook          NYA_EventHook;
@@ -29,6 +32,8 @@ typedef struct NYA_WindowEvent        NYA_WindowEvent;
 typedef struct NYA_WindowMovedEvent   NYA_WindowMovedEvent;
 typedef struct NYA_WindowResizedEvent NYA_WindowResizedEvent;
 nya_derive_array(NYA_Event);
+nya_derive_array(NYA_EventHook);
+nya_derive_hmap(NYA_EventType, NYA_EventHookArray);
 
 /*
  * ─────────────────────────────────────────────────────────
@@ -42,6 +47,9 @@ struct NYA_EventSystem {
   SDL_Mutex*     event_queue_mutex;
   NYA_EventArray event_queue;
   u64            event_queue_read_index;
+
+  NYA_EventType_NYA_EventHookArray_HMap deferred_event_hooks;
+  NYA_EventType_NYA_EventHookArray_HMap immediate_event_hooks;
 };
 
 /*
@@ -50,7 +58,7 @@ struct NYA_EventSystem {
  * ─────────────────────────────────────────────────────────
  */
 
-typedef enum {
+enum NYA_EventType {
   NYA_EVENT_INVALID,
 
   NYA_EVENT_LIFECYCLE_EVENTS_BEGIN,
@@ -92,7 +100,7 @@ typedef enum {
   NYA_EVENT_WINDOW_SHOWN,
 
   NYA_EVENT_COUNT,
-} NYA_EventType;
+};
 
 __attr_unused static NYA_ConstCString NYA_EVENT_NAME_MAP[] = {
   [NYA_EVENT_INVALID] = "INVALID",
@@ -229,8 +237,15 @@ struct NYA_Event {
   };
 };
 
+enum NYA_EventHookType {
+  NYA_EVENT_HOOK_TYPE_DEFERRED,
+  NYA_EVENT_HOOK_TYPE_IMMEDIATE,
+  NYA_EVENT_HOOK_TYPE_COUNT,
+};
+
 struct NYA_EventHook {
-  NYA_EventType type;
+  NYA_EventType     event_type;
+  NYA_EventHookType hook_type;
   void (*fn)(NYA_Event*);
   b8 (*condition)(NYA_Event*);
 };
@@ -249,6 +264,8 @@ struct NYA_EventHook {
 
 NYA_API NYA_EXTERN void nya_system_events_init(void);
 NYA_API NYA_EXTERN void nya_system_events_deinit(void);
+NYA_API NYA_EXTERN void nya_system_event_drain_sdl_events(void);
+NYA_API NYA_EXTERN b8   nya_system_event_poll(OUT NYA_Event* out_event);
 
 /*
  * ─────────────────────────────────────────────────────────
@@ -256,7 +273,6 @@ NYA_API NYA_EXTERN void nya_system_events_deinit(void);
  * ─────────────────────────────────────────────────────────
  */
 
-NYA_API NYA_EXTERN void nya_event_drain_sdl_events(void);
 NYA_API NYA_EXTERN void nya_event_dispatch(NYA_Event event);
-NYA_API NYA_EXTERN b8   nya_event_poll(OUT NYA_Event* out_event);
-NYA_API NYA_EXTERN void nya_event_listen(NYA_EventHook hook);
+NYA_API NYA_EXTERN void nya_event_hook_register(NYA_EventHook hook);
+NYA_API NYA_EXTERN void nya_event_hook_unregister(NYA_EventHook hook);

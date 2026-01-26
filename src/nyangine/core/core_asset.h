@@ -20,6 +20,8 @@
  */
 
 typedef NYA_CString                NYA_AssetHandle;
+typedef enum NYA_AssetStatus       NYA_AssetStatus;
+typedef enum NYA_AssetType         NYA_AssetType;
 typedef struct NYA_Asset           NYA_Asset;
 typedef struct NYA_AssetBlobHeader NYA_AssetBlobHeader;
 typedef struct NYA_AssetLoadParams NYA_AssetLoadParams;
@@ -56,7 +58,7 @@ struct NYA_AssetBlobHeader {
   u64              size;
 };
 
-typedef enum {
+enum NYA_AssetType {
   NYA_ASSET_TYPE_UNKNOWN,
   NYA_ASSET_TYPE_TEXT,
   NYA_ASSET_TYPE_TEXTURE,
@@ -68,7 +70,7 @@ typedef enum {
   NYA_ASSET_TYPE_BUFFER_UNIFORM,
   NYA_ASSET_TYPE_GRAPHICS_PIPELINE,
   NYA_ASSET_TYPE_COUNT,
-} NYA_AssetType;
+};
 
 struct NYA_AssetLoadParams {
   NYA_AssetHandle handle;
@@ -92,11 +94,11 @@ struct NYA_AssetLoadParams {
   };
 };
 
-typedef enum {
+enum NYA_AssetStatus {
   NYA_ASSET_STATUS_UNLOADED,
   NYA_ASSET_STATUS_LOADED,
   NYA_ASSET_STATUS_COUNT,
-} NYA_AssetStatus;
+};
 
 struct NYA_Asset {
   NYA_AssetType   type;

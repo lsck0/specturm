@@ -47,9 +47,10 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-typedef struct NYA_RNG             NYA_RNG;
-typedef struct NYA_RNGOptions      NYA_RNGOptions;
-typedef struct NYA_RNGDistribution NYA_RNGDistribution;
+typedef enum NYA_RNGDistributionType NYA_RNGDistributionType;
+typedef struct NYA_RNG               NYA_RNG;
+typedef struct NYA_RNGOptions        NYA_RNGOptions;
+typedef struct NYA_RNGDistribution   NYA_RNGDistribution;
 
 #define _NYA_RNG_BUFFER_SIZE     1024
 #define _NYA_RNG_INIT_ROUNDS     16
@@ -72,7 +73,7 @@ struct NYA_RNG {
   u64 cursor;
 };
 
-typedef enum {
+enum NYA_RNGDistributionType {
   NYA_RNG_DISTRIBUTION_UNIFORM,
   NYA_RNG_DISTRIBUTION_NORMAL,
   NYA_RNG_DISTRIBUTION_EXPONENTIAL,
@@ -80,7 +81,7 @@ typedef enum {
   NYA_RNG_DISTRIBUTION_BINOMIAL,
   NYA_RNG_DISTRIBUTION_GEOMETRIC,
   NYA_RNG_DISTRIBUTION_COUNT,
-} NYA_RNGDistributionType;
+};
 
 struct NYA_RNGDistribution {
   NYA_RNGDistributionType type;

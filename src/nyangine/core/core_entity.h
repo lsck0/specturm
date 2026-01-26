@@ -8,6 +8,7 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
+typedef enum NYA_EntityFlag     NYA_EntityFlag;
 typedef struct NYA_Entity       NYA_Entity;
 typedef struct NYA_EntitySystem NYA_EntitySystem;
 
@@ -27,9 +28,9 @@ struct NYA_EntitySystem {
  * ─────────────────────────────────────────────────────────
  */
 
-typedef enum NYA_EntityFlag {
+enum NYA_EntityFlag {
   NYA_ENTITY_FLAG_NONE = 0,
-} NYA_EntityFlag;
+};
 
 struct NYA_Entity {
   NYA_EntityFlag flags;

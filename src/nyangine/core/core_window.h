@@ -13,6 +13,7 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
+typedef enum NYA_WindowFlags    NYA_WindowFlags;
 typedef struct NYA_Layer        NYA_Layer;
 typedef struct NYA_Window       NYA_Window;
 typedef struct NYA_WindowSystem NYA_WindowSystem;
@@ -37,10 +38,10 @@ struct NYA_WindowSystem {
  * ─────────────────────────────────────────────────────────
  */
 
-typedef enum {
+enum NYA_WindowFlags {
   NYA_WINDOW_NONE      = 0,
   NYA_WINDOW_RESIZABLE = SDL_WINDOW_RESIZABLE,
-} NYA_WindowFlags;
+};
 
 struct NYA_Window {
   void*            id;

@@ -2,6 +2,7 @@
 #include "SDL3/SDL_init.h"
 #include "SDL3/SDL_timer.h"
 
+#include "nyangine/core/core_event.h"
 #include "nyangine/nyangine.h"
 
 /*
@@ -99,15 +100,22 @@ void nya_app_run(void) {
           .type = NYA_EVENT_HANDLING_STARTED,
       });
 
-      nya_event_drain_sdl_events();
+      nya_system_event_drain_sdl_events();
 
       NYA_Event event;
-      while (nya_event_poll(&event)) {
-        nya_system_window_handle_event(&event);
-        nya_system_input_handle_event(&event);
-        nya_system_asset_handle_event(&event);
-        nya_system_render_handle_event(&event);
+      while (nya_system_event_poll(&event)) {
+        if (event.was_handled) continue;
 
+        nya_system_window_handle_event(&event);
+        if (event.was_handled) continue;
+
+        nya_system_input_handle_event(&event);
+        if (event.was_handled) continue;
+
+        nya_system_asset_handle_event(&event);
+        if (event.was_handled) continue;
+
+        nya_system_render_handle_event(&event);
         if (event.was_handled) continue;
 
         nya_array_foreach (&app->window_system.windows, window) {

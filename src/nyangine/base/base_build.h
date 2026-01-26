@@ -11,14 +11,15 @@
 
 #define NYA_BUILD_MAX_DEPENDENCIES 64
 
-typedef struct NYA_BuildRule NYA_BuildRule;
+typedef enum NYA_BuildRulePolicy NYA_BuildRulePolicy;
+typedef struct NYA_BuildRule     NYA_BuildRule;
 
-typedef enum {
+enum NYA_BuildRulePolicy {
   NYA_BUILD_ALWAYS,
   NYA_BUILD_ONCE,
   NYA_BUILD_IF_OUTDATED,
   NYA_BUILD_COUNT,
-} NYA_BuildRulePolicy;
+};
 
 struct NYA_BuildRule {
   NYA_ConstCString    name;
