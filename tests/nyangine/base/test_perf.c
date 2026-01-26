@@ -6,11 +6,13 @@
 #include "nyangine/nyangine.h"
 
 static void sleep_ms(s64 ms) {
-  struct timespec ts = {.tv_sec = ms / 1000, .tv_nsec = (ms % 1000L) * 1000000L};
+  struct timespec ts = { .tv_sec = ms / 1000, .tv_nsec = (ms % 1000L) * 1000000L };
   nanosleep(&ts, nullptr);
 }
 
 s32 main(void) {
+  nya_perf_time_this_function();
+
   // ─────────────────────────────────────────────────────────────────────────────
   // TEST: Timer creation and retrieval
   // ─────────────────────────────────────────────────────────────────────────────
@@ -114,8 +116,8 @@ s32 main(void) {
   NYA_PerfMeasurement* conc_a = nya_perf_timer_get("concurrent_a");
   NYA_PerfMeasurement* conc_b = nya_perf_timer_get("concurrent_b");
   nya_assert(conc_a != nullptr && conc_b != nullptr);
-  nya_assert(conc_a->elapsed_ms[0] >= 9);  // ran for ~10ms
-  nya_assert(conc_b->elapsed_ms[0] >= 9);  // ran for ~10ms
+  nya_assert(conc_a->elapsed_ms[0] >= 9); // ran for ~10ms
+  nya_assert(conc_b->elapsed_ms[0] >= 9); // ran for ~10ms
   // A started before B, so A should have ended before B finished
   nya_assert(conc_a->elapsed_ms[0] < conc_b->elapsed_ms[0] + 5);
 

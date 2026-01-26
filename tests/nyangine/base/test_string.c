@@ -341,7 +341,7 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   NYA_String scanf_str = nya_string_from(&arena, "42 hello 3.14");
   s32        num       = 0;
-  char       word[16]  = {0};
+  char       word[16]  = { 0 };
   f32        fval      = 0.0F;
   s32        ret       = nya_string_sscanf(&scanf_str, "%d %15s %f", &num, word, &fval);
   nya_assert(ret == 3);
@@ -393,7 +393,7 @@ s32 main(void) {
   // TEST: edge cases - nya_string_join with empty array (potential underflow)
   // ─────────────────────────────────────────────────────────────────────────────
   {
-    NYA_StringArray empty_arr = nya_array_create(&arena, NYA_String);
+    NYA_StringArray empty_arr    = nya_array_create(&arena, NYA_String);
     NYA_String      joined_empty = nya_string_join(&arena, &empty_arr, ",");
     nya_assert(nya_string_is_empty(&joined_empty) == true);
   }
@@ -403,7 +403,7 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   {
     NYA_StringArray single_arr = nya_array_create(&arena, NYA_String);
-    NYA_String      elem = nya_string_from(&arena, "only");
+    NYA_String      elem       = nya_string_from(&arena, "only");
     nya_array_push_back(&single_arr, elem);
     NYA_String joined_single = nya_string_join(&arena, &single_arr, ",");
     nya_assert(nya_string_equals(&joined_single, "only") == true);
@@ -413,7 +413,7 @@ s32 main(void) {
   // TEST: edge cases - nya_string_split with empty string
   // ─────────────────────────────────────────────────────────────────────────────
   {
-    NYA_String      empty_split = nya_string_from(&arena, "");
+    NYA_String      empty_split  = nya_string_from(&arena, "");
     NYA_StringArray split_result = nya_string_split(&arena, &empty_split, ",");
     nya_assert(split_result.length == 0);
   }
@@ -423,7 +423,7 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   {
     // separator at start
-    NYA_String      sep_start = nya_string_from(&arena, ",a,b");
+    NYA_String      sep_start   = nya_string_from(&arena, ",a,b");
     NYA_StringArray parts_start = nya_string_split(&arena, &sep_start, ",");
     nya_assert(parts_start.length == 3);
     nya_assert(nya_string_is_empty(&parts_start.items[0]) == true);
@@ -431,14 +431,15 @@ s32 main(void) {
     nya_assert(nya_string_equals(&parts_start.items[2], "b") == true);
 
     // separator at end
-    NYA_String      sep_end = nya_string_from(&arena, "a,b,");
+    NYA_String      sep_end   = nya_string_from(&arena, "a,b,");
     NYA_StringArray parts_end = nya_string_split(&arena, &sep_end, ",");
     nya_assert(parts_end.length == 2);
     nya_assert(nya_string_equals(&parts_end.items[0], "a") == true);
     nya_assert(nya_string_equals(&parts_end.items[1], "b") == true);
+    nya_assert(nya_string_is_empty(&parts_end.items[2]) == true);
 
     // consecutive separators
-    NYA_String      consec_sep = nya_string_from(&arena, "a,,b");
+    NYA_String      consec_sep   = nya_string_from(&arena, "a,,b");
     NYA_StringArray parts_consec = nya_string_split(&arena, &consec_sep, ",");
     nya_assert(parts_consec.length == 3);
     nya_assert(nya_string_equals(&parts_consec.items[0], "a") == true);
@@ -451,14 +452,14 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   {
     // multi-char separator near end (potential buffer over-read)
-    NYA_String      near_end = nya_string_from(&arena, "abc::d");
+    NYA_String      near_end   = nya_string_from(&arena, "abc::d");
     NYA_StringArray parts_near = nya_string_split(&arena, &near_end, "::");
     nya_assert(parts_near.length == 2);
     nya_assert(nya_string_equals(&parts_near.items[0], "abc") == true);
     nya_assert(nya_string_equals(&parts_near.items[1], "d") == true);
 
     // string shorter than separator
-    NYA_String      short_str = nya_string_from(&arena, "a");
+    NYA_String      short_str   = nya_string_from(&arena, "a");
     NYA_StringArray parts_short = nya_string_split(&arena, &short_str, "::");
     nya_assert(parts_short.length == 1);
     nya_assert(nya_string_equals(&parts_short.items[0], "a") == true);

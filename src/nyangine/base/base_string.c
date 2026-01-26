@@ -171,9 +171,7 @@ NYA_String nya_string_join(NYA_Arena* arena, const NYA_StringArray* arr, const N
   nya_assert(arr != nullptr);
   nya_assert(separator != nullptr);
 
-  NYA_CString separator_cstr = nya_alloca(separator->length + 1);
-  nya_memmove(separator_cstr, separator->items, separator->length);
-  separator_cstr[separator->length] = '\0';
+  NYA_CString separator_cstr = nya_string_to_cstring(arena, separator);
 
   return nya_string_join(arena, arr, separator_cstr);
 }
@@ -240,6 +238,7 @@ NYA_StringArray nya_string_split(NYA_Arena* arena, const NYA_String* str, NYA_Co
   nya_assert(arena != nullptr);
   nya_assert(str != nullptr);
   nya_assert(separator != nullptr);
+  nya_assert(strlen(separator) > 0);
 
   NYA_StringArray result     = nya_array_create(arena, NYA_String);
   u64             sep_length = strlen(separator);
@@ -259,7 +258,7 @@ NYA_StringArray nya_string_split(NYA_Arena* arena, const NYA_String* str, NYA_Co
     }
   }
 
-  if (start < str->length) {
+  if (start <= str->length) {
     NYA_String substr = nya_string_substring_excld(arena, str, start, end);
     nya_array_push_back(&result, substr);
   }

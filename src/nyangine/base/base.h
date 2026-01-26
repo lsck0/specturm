@@ -9,6 +9,7 @@
 #define _POSIX_C_SOURCE 200809L
 #define _XOPEN_SOURCE   700
 
+#include <complex.h>
 #include <ctype.h>
 #include <errno.h>
 #include <immintrin.h>

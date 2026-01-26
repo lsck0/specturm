@@ -9,7 +9,7 @@
 __attr_unused NYA_INTERNAL NYA_Arena                _nya_perf_arena         = { 0 };
 __attr_unused NYA_INTERNAL NYA_PerfMeasurementArray _nya_perf_measurements  = { 0 };
 __attr_unused NYA_INTERNAL u64                      _nya_perf_start_time_ms = 0;
-__attr_unused NYA_INTERNAL u64                      _nya_perf_start_cylces  = 0;
+__attr_unused NYA_INTERNAL u64                      _nya_perf_start_cycles  = 0;
 
 __attr_unused NYA_INTERNAL void _nya_perf_init(void);
 __attr_unused NYA_INTERNAL void _nya_perf_shutdown(void);
@@ -89,14 +89,13 @@ NYA_PerfMeasurementArray* _nya_perf_timer_get_all(void) {
 
 #if NYA_IS_DEBUG
 __attr_constructor NYA_INTERNAL void _nya_perf_init(void) {
-  // nya_assert(nya_is_zeroed(_nya_perf_arena));
   nya_assert(nya_is_zeroed(_nya_perf_measurements));
 
   _nya_perf_arena        = nya_arena_create(.name = "Perf Arena");
   _nya_perf_measurements = nya_array_create(&_nya_perf_arena, NYA_PerfMeasurement);
 
   _nya_perf_start_time_ms = nya_clock_get_timestamp_ms();
-  _nya_perf_start_cylces  = __rdtsc();
+  _nya_perf_start_cycles  = __rdtsc();
 }
 
 __attr_destructor NYA_INTERNAL void _nya_perf_shutdown(void) {
@@ -109,5 +108,5 @@ NYA_INTERNAL u64 _nya_perf_time_since_start_ms(void) {
 }
 
 NYA_INTERNAL u64 _nya_perf_cycles_since_start(void) {
-  return __rdtsc() - _nya_perf_start_cylces;
+  return __rdtsc() - _nya_perf_start_cycles;
 }
