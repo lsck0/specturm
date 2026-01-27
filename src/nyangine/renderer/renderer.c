@@ -75,10 +75,6 @@ void nya_system_render_for_window_deinit(NYA_Window* window) {
   nya_info("Render system deinitialized for window '%s' (id: %p).", window->title, window->id);
 }
 
-void nya_system_render_handle_event(NYA_Event* event) {
-  nya_unused(event);
-}
-
 /*
  * ─────────────────────────────────────────────────────────
  * RENDERING FUNCTIONS

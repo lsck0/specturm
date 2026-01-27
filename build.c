@@ -59,6 +59,7 @@ NYA_Command build_rebuild_command = {
         LINKER_FLAGS,
         FLAGS_DEBUG,
         FLAGS_LINUX_X86_64,
+        FLAGS_SANITIZE,
     },
 };
 
@@ -478,6 +479,8 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
   NYA_StringArray shaders = nya_string_split_lines(&nya_arena_global, &find_source_shaders_command.stdout_content);
 
   nya_array_foreach (&shaders, shader) {
+    if (nya_string_is_empty(shader)) continue;
+
     NYA_CString source = nya_string_to_cstring(&nya_arena_global, shader);
     nya_string_strip_prefix(shader, "./assets/shaders/source/");
     nya_string_strip_suffix(shader, ".hlsl");

@@ -112,12 +112,6 @@ void nya_app_run(void) {
         nya_system_input_handle_event(&event);
         if (event.was_handled) continue;
 
-        nya_system_asset_handle_event(&event);
-        if (event.was_handled) continue;
-
-        nya_system_render_handle_event(&event);
-        if (event.was_handled) continue;
-
         nya_array_foreach (&app->window_system.windows, window) {
           nya_array_foreach_reverse (&window->layer_stack, layer) {
             if (layer->enabled && layer->on_event != nullptr) {

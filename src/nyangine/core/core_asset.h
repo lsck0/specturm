@@ -1,9 +1,8 @@
 #pragma once
 
-#include "SDL3/SDL_gpu.h"
-
 #include "nyangine/base/base.h"
 #include "nyangine/base/base_arena.h"
+#include "nyangine/base/base_array.h"
 #include "nyangine/base/base_hmap.h"
 #include "nyangine/base/base_hset.h"
 #include "nyangine/base/base_string.h"
@@ -19,19 +18,20 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-typedef NYA_CString                NYA_AssetHandle;
-typedef enum NYA_AssetStatus       NYA_AssetStatus;
-typedef enum NYA_AssetType         NYA_AssetType;
-typedef struct NYA_Asset           NYA_Asset;
-typedef struct NYA_AssetBlobHeader NYA_AssetBlobHeader;
-typedef struct NYA_AssetLoadParams NYA_AssetLoadParams;
-typedef struct NYA_AssetSystem     NYA_AssetSystem;
-nya_derive_array(NYA_AssetLoadParams);
+typedef NYA_CString                    NYA_AssetHandle;
+typedef enum NYA_AssetLoadStatus       NYA_AssetStatus;
+typedef enum NYA_AssetType             NYA_AssetType;
+typedef struct NYA_Asset               NYA_Asset;
+typedef struct NYA_AssetBlobHeader     NYA_AssetBlobHeader;
+typedef struct NYA_AssetLoadParameters NYA_AssetLoadParameters;
+typedef struct NYA_AssetSystem         NYA_AssetSystem;
+nya_derive_array(NYA_AssetHandle);
+nya_derive_array(NYA_AssetLoadParameters);
 nya_derive_hmap(NYA_AssetHandle, NYA_Asset);
 
 /*
  * ─────────────────────────────────────────────────────────
- * SYSTEM TYPES
+ * SYSTEM STRUCT
  * ─────────────────────────────────────────────────────────
  */
 
@@ -39,28 +39,34 @@ struct NYA_AssetSystem {
   NYA_Arena allocator;
 
   NYA_AssetHandle_NYA_Asset_HMap assets;
-  NYA_CStringArray               changed_assets;
+  NYA_AssetLoadParametersArray   loading_queue;
+  NYA_AssetHandleArray           unloading_queue;
 
-  b8                       batch_active;
-  u32Array                 batch_types;
-  NYA_AssetLoadParamsArray batch_requests;
+#ifdef NYA_ASSET_BACKEND_FS
+  NYA_AssetHandleArray reload_queue;
+#endif // NYA_ASSET_BACKEND_FS
 };
 
 /*
  * ─────────────────────────────────────────────────────────
- * ASSET TYPES
+ * ASSET STRUCTS
  * ─────────────────────────────────────────────────────────
  */
 
 struct NYA_AssetBlobHeader {
-  NYA_ConstCString handle;
+  NYA_ConstCString path;
   u64              start;
   u64              size;
 };
 
 enum NYA_AssetType {
-  NYA_ASSET_TYPE_UNKNOWN,
+  // raw data
   NYA_ASSET_TYPE_TEXT,
+
+  // processed data on cpu ram
+  NYA_ASSET_TYPE_SOUND,
+
+  // processed data on gpu vram
   NYA_ASSET_TYPE_TEXTURE,
   NYA_ASSET_TYPE_SHADER_VERTEX,
   NYA_ASSET_TYPE_SHADER_FRAGMENT,
@@ -68,54 +74,51 @@ enum NYA_AssetType {
   NYA_ASSET_TYPE_BUFFER_VERTEX,
   NYA_ASSET_TYPE_BUFFER_INDEX,
   NYA_ASSET_TYPE_BUFFER_UNIFORM,
+
+  // meta assets ? things that are made up of other assets
   NYA_ASSET_TYPE_GRAPHICS_PIPELINE,
+
   NYA_ASSET_TYPE_COUNT,
 };
 
-struct NYA_AssetLoadParams {
-  NYA_AssetHandle handle;
-
-  union {
-    struct {
-      u32                     size;
-      SDL_GPUBufferUsageFlags usage;
-    } buffer;
-    struct {
-      u32 num_samplers;
-      u32 num_storage_textures;
-      u32 num_storage_buffers;
-      u32 num_uniform_buffers;
-    } shader;
-    struct {
-      NYA_CString                       vertex_shader_path;
-      NYA_CString                       fragment_shader_path;
-      SDL_GPUGraphicsPipelineCreateInfo create_info;
-    } pipeline;
-  };
-};
-
-enum NYA_AssetStatus {
+enum NYA_AssetLoadStatus {
   NYA_ASSET_STATUS_UNLOADED,
+  NYA_ASSET_STATUS_LOADING,
   NYA_ASSET_STATUS_LOADED,
   NYA_ASSET_STATUS_COUNT,
 };
 
-struct NYA_Asset {
+struct NYA_AssetLoadParameters {
   NYA_AssetType   type;
-  NYA_AssetStatus status;
   NYA_AssetHandle handle;
-  u8*             data;
-  u64             size;
-  u64             source_timestamp;
 
   union {
-    SDL_GPUTexture*          texture;
-    SDL_GPUShader*           shader;
-    SDL_GPUBuffer*           buffer;
-    SDL_GPUGraphicsPipeline* graphics_pipeline;
-  } gpu_resource;
+    struct {
+    } as_sound;
+  };
+};
 
-  atomic u32 reference_count;
+struct NYA_Asset {
+  NYA_AssetType           type;
+  NYA_AssetHandle         handle;
+  NYA_AssetStatus         status;
+  NYA_AssetLoadParameters load_parameters;
+
+  union {
+    struct {
+      u8* data;
+      u64 size;
+    } as_text;
+
+    struct {
+    } as_sound;
+  };
+
+  atomic u64 reference_count;
+
+#ifdef NYA_ASSET_BACKEND_FS
+  u64 source_modification_time;
+#endif // NYA_ASSET_BACKEND_FS
 };
 
 /*
@@ -132,7 +135,6 @@ struct NYA_Asset {
 
 NYA_API NYA_EXTERN void nya_system_asset_init(void);
 NYA_API NYA_EXTERN void nya_system_asset_deinit(void);
-NYA_API NYA_EXTERN void nya_system_asset_handle_event(NYA_Event* event);
 
 /*
  * ─────────────────────────────────────────────────────────
@@ -140,16 +142,12 @@ NYA_API NYA_EXTERN void nya_system_asset_handle_event(NYA_Event* event);
  * ─────────────────────────────────────────────────────────
  */
 
-// this is used in the build system
+/// this is used in the build system
 NYA_API NYA_EXTERN void nya_asset_generate_manifest(NYA_ConstCString asset_directory, NYA_ConstCString output_file);
 NYA_API NYA_EXTERN void nya_asset_generate_embedding(NYA_ConstCString asset_directory, NYA_ConstCString output_file);
 
-NYA_API NYA_EXTERN void       nya_asset_load(NYA_AssetType type, NYA_AssetHandle handle, NYA_AssetLoadParams params);
-NYA_API NYA_EXTERN void       nya_asset_unload(NYA_AssetHandle handle);
-NYA_API NYA_EXTERN NYA_Asset* nya_asset_acquire(NYA_AssetHandle handle);
+NYA_API NYA_EXTERN NYA_Asset* nya_asset_get(NYA_AssetHandle handle);
+NYA_API NYA_EXTERN void       nya_asset_acquire(NYA_AssetHandle handle);
 NYA_API NYA_EXTERN void       nya_asset_release(NYA_AssetHandle handle);
-NYA_API NYA_EXTERN NYA_Asset* nya_asset_load_and_acquire(NYA_AssetType type, NYA_AssetHandle handle, NYA_AssetLoadParams params);
-
-NYA_API NYA_EXTERN void nya_asset_load_batch_begin(void);
-NYA_API NYA_EXTERN void nya_asset_load_batch_add(NYA_AssetType type, NYA_AssetLoadParams params);
-NYA_API NYA_EXTERN void nya_asset_load_batch_submit(void);
+NYA_API NYA_EXTERN void       nya_asset_load(NYA_AssetLoadParameters parameters);
+NYA_API NYA_EXTERN void       nya_asset_unload(NYA_Asset* asset);

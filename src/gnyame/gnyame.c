@@ -49,6 +49,21 @@ void gnyame_deinit(void) {
 void on_update(NYA_Window* window, f32 delta_time) {
   nya_unused(window);
   nya_unused(delta_time);
+
+  if (nya_input_is_key_just_pressed(NYA_KEY_A)) { nya_asset_release(NYA_ASSETS_TEXTS_HELLO_TXT); }
+
+  if (nya_input_is_key_just_pressed(NYA_KEY_B)) {
+    nya_asset_load((NYA_AssetLoadParameters){
+        .type   = NYA_ASSET_TYPE_TEXT,
+        .handle = NYA_ASSETS_TEXTS_HELLO_TXT,
+    });
+    nya_asset_acquire(NYA_ASSETS_TEXTS_HELLO_TXT);
+  }
+
+  NYA_Asset* hello_txt_asset = nya_asset_get(NYA_ASSETS_TEXTS_HELLO_TXT);
+  if (hello_txt_asset && hello_txt_asset->status == NYA_ASSET_STATUS_LOADED) {
+    nya_info("hello.txt content: %.*s", (s32)hello_txt_asset->as_text.size, (char*)hello_txt_asset->as_text.data);
+  }
 }
 
 void on_event(NYA_Window* window, NYA_Event* event) {

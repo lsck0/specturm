@@ -1,5 +1,6 @@
 * PLAN
 
+- [ ] MAKE DYNAMIC DATASTRUCTES HEAP ALLOCATED PLEASE.
 - [ ] more asset system work (CPU / GPU resources, async)
 - [ ] render primitives + gpu resource management (does this make sense in the asset system?)
 - [ ] ui system: widgets, layout, styling
@@ -13,6 +14,5 @@
 
 - [ ] buffered logging to file
 - [ ] job system / task / multithreadding scheduler
-- [ ] more datastructures: heap, ring buffer, maybe graphs/trees
 - [ ] basic nn library: tensors, layers, autograd --> NEAT implementation
 - [ ] CI
