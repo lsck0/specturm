@@ -63,8 +63,10 @@ Diagnostics:
         readability-function-size,
         readability-identifier-length,
         readability-implicit-bool-conversion,
+        readability-isolate-declaration,
         readability-magic-numbers,
         readability-math-missing-parentheses,
         readability-non-const-parameter,
         readability-redundant-control-flow,
+        readability-suspicious-call-argument,
       ]
