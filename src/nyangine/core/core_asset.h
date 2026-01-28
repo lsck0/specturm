@@ -31,6 +31,8 @@
  * */
 #pragma once
 
+#include "SDL3/SDL_gpu.h"
+
 #include "nyangine/base/base.h"
 #include "nyangine/base/base_arena.h"
 #include "nyangine/base/base_array.h"
@@ -125,7 +127,11 @@ struct NYA_AssetLoadParameters {
 
   union {
     struct {
-    } as_sound;
+      u32 num_samplers;
+      u32 num_storage_textures;
+      u32 num_storage_buffers;
+      u32 num_uniform_buffers;
+    } as_shader;
   };
 };
 
@@ -142,7 +148,10 @@ struct NYA_Asset {
     } as_text;
 
     struct {
-    } as_sound;
+      NYA_AssetHandle     compiled_handle;
+      SDL_GPUShaderFormat format;
+      SDL_GPUShader*      shader;
+    } as_shader;
   };
 
   atomic u64 reference_count;

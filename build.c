@@ -484,32 +484,25 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
     NYA_CString source = nya_string_to_cstring(nya_arena_global, shader);
     nya_string_strip_prefix(shader, "./assets/shaders/source/");
     nya_string_strip_suffix(shader, ".hlsl");
+    nya_string_extend_front(shader, "./assets/shaders/compiled/");
 
-    nya_string_extend_front(shader, "./assets/shaders/compiled/DXIL/");
     nya_string_extend(shader, ".dxil");
     NYA_CString target_dxil = nya_string_to_cstring(nya_arena_global, shader);
-    nya_string_strip_prefix(shader, "./assets/shaders/compiled/DXIL/");
     nya_string_strip_suffix(shader, ".dxil");
 
-    nya_string_extend_front(shader, "./assets/shaders/compiled/MSL/");
     nya_string_extend(shader, ".msl");
     NYA_CString target_metal = nya_string_to_cstring(nya_arena_global, shader);
     nya_string_strip_suffix(shader, ".msl");
-    nya_string_strip_prefix(shader, "./assets/shaders/compiled/MSL/");
 
-    nya_string_extend_front(shader, "./assets/shaders/compiled/SPIRV/");
     nya_string_extend(shader, ".spv");
     NYA_CString target_spirv = nya_string_to_cstring(nya_arena_global, shader);
     nya_string_strip_suffix(shader, ".spv");
-    nya_string_strip_prefix(shader, "./assets/shaders/compiled/SPIRV/");
 
     NYA_Command create_dirs_command = {
         .program   = "mkdir",
         .arguments = {
             "-p",
-            "./assets/shaders/compiled/DXIL/",
-            "./assets/shaders/compiled/MSL/",
-            "./assets/shaders/compiled/SPIRV/",
+            "./assets/shaders/compiled/",
         },
     };
     nya_command_run(&create_dirs_command);
@@ -882,6 +875,11 @@ NYA_ArgCommand build = {
             .name        = "windows",
             .description = "Build the windows release executable.",
             .build_rule  = &build_project_windows_x86_64,
+        },
+        &(NYA_ArgCommand){
+            .name        = "shaders",
+            .description = "Build the shaders.",
+            .build_rule  = &build_shaders,
         },
     },
 };

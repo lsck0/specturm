@@ -32,6 +32,7 @@ nya_derive_array(NYA_ConstCString);
 
 NYA_API NYA_EXTERN b8               nya_string_contains(const NYA_String* str, NYA_ConstCString substr) __attr_overloaded;
 NYA_API NYA_EXTERN b8               nya_string_contains(const NYA_String* str, const NYA_String* substr) __attr_overloaded;
+NYA_API NYA_EXTERN b8               nya_string_contains(NYA_ConstCString str, NYA_ConstCString substr) __attr_overloaded;
 NYA_API NYA_EXTERN NYA_String*      nya_string_create(NYA_Arena* arena);
 NYA_API NYA_EXTERN NYA_String*      nya_string_create_with_capacity(NYA_Arena* arena, u64 capacity);
 NYA_API NYA_EXTERN b8               nya_string_ends_with(const NYA_String* str, NYA_ConstCString suffix);

@@ -30,6 +30,16 @@ void gnyame_init(s32 argc, NYA_CString* argv) {
           .on_render = on_render,
       }
   );
+
+  nya_asset_load((NYA_AssetLoadParameters){
+      .type   = NYA_ASSET_TYPE_SHADER_VERTEX,
+      .handle = NYA_ASSETS_SHADERS_SOURCE_SAMPLE_VERT_HLSL,
+  });
+
+  nya_asset_load((NYA_AssetLoadParameters){
+      .type   = NYA_ASSET_TYPE_SHADER_FRAGMENT,
+      .handle = NYA_ASSETS_SHADERS_SOURCE_SAMPLE_FRAG_HLSL,
+  });
 }
 
 void gnyame_run(void) {
@@ -62,8 +72,12 @@ void on_update(NYA_Window* window, f32 delta_time) {
 
   NYA_Asset* hello_txt_asset = nya_asset_get(NYA_ASSETS_TEXTS_HELLO_TXT);
   if (hello_txt_asset && hello_txt_asset->status == NYA_ASSET_STATUS_LOADED) {
-    nya_info("hello.txt content: %.*s", (s32)hello_txt_asset->as_text.size, (char*)hello_txt_asset->as_text.data);
+    nya_info("hello.txt: %.*s", (s32)hello_txt_asset->as_text.size, (char*)hello_txt_asset->as_text.data);
   }
+
+  NYA_Asset* vertex_shader_asset   = nya_asset_get(NYA_ASSETS_SHADERS_SOURCE_SAMPLE_VERT_HLSL);
+  NYA_Asset* fragment_shader_asset = nya_asset_get(NYA_ASSETS_SHADERS_SOURCE_SAMPLE_FRAG_HLSL);
+  nya_unused(vertex_shader_asset, fragment_shader_asset);
 }
 
 void on_event(NYA_Window* window, NYA_Event* event) {

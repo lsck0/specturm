@@ -28,6 +28,13 @@ b8 nya_string_contains(const NYA_String* str, const NYA_String* substr) __attr_o
   return _nya_strstrn((NYA_CString)str->items, (NYA_CString)substr->items, str->length, substr->length) != nullptr;
 }
 
+b8 nya_string_contains(NYA_ConstCString str, NYA_ConstCString substr) __attr_overloaded {
+  nya_assert(str != nullptr);
+  nya_assert(substr != nullptr);
+
+  return _nya_strstrn(str, substr, strlen(str), strlen(substr)) != nullptr;
+}
+
 b8 nya_string_ends_with(const NYA_String* str, NYA_ConstCString suffix) {
   nya_assert(str != nullptr);
   nya_assert(suffix != nullptr);

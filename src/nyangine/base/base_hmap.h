@@ -259,11 +259,9 @@
 #define nya_hmap_foreach_key(hmap_ptr, key_name)                                                                                                     \
   for (u64 _nya_hmap_foreach_index = 0; _nya_hmap_foreach_index < (hmap_ptr)->capacity; _nya_hmap_foreach_index++)                                   \
     if ((hmap_ptr)->occupied[_nya_hmap_foreach_index])                                                                                               \
-      for (typeof((hmap_ptr)->keys[0]) key_name = (hmap_ptr)->keys[_nya_hmap_foreach_index]; _nya_hmap_foreach_index < (hmap_ptr)->capacity;         \
-           _nya_hmap_foreach_index              = (hmap_ptr)->capacity)
+      for (typeof((hmap_ptr)->keys[0])* key_name = &(hmap_ptr)->keys[_nya_hmap_foreach_index]; key_name != NULL; key_name = NULL)
 
 #define nya_hmap_foreach_value(hmap_ptr, value_name)                                                                                                 \
   for (u64 _nya_hmap_foreach_index = 0; _nya_hmap_foreach_index < (hmap_ptr)->capacity; _nya_hmap_foreach_index++)                                   \
     if ((hmap_ptr)->occupied[_nya_hmap_foreach_index])                                                                                               \
-      for (typeof((hmap_ptr)->values[0]) value_name = (hmap_ptr)->values[_nya_hmap_foreach_index]; _nya_hmap_foreach_index < (hmap_ptr)->capacity;   \
-           _nya_hmap_foreach_index                  = (hmap_ptr)->capacity)
+      for (typeof((hmap_ptr)->values[0])* value_name = &(hmap_ptr)->values[_nya_hmap_foreach_index]; value_name != NULL; value_name = NULL)
