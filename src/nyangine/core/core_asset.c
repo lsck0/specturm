@@ -19,16 +19,14 @@ NYA_INTERNAL NYA_Asset _nya_asset_load_raw_from_blob(NYA_AssetHandle path);
 #endif // NYA_ASSET_BACKEND_BLOB
 
 #ifdef NYA_ASSET_BACKEND_FS
-NYA_INTERNAL NYA_Asset _nya_asset_load_from_filesystem(NYA_AssetHandle path);
-NYA_INTERNAL void      _nya_asset_unload_from_filesystem(NYA_Asset* asset);
+NYA_INTERNAL NYA_Asset _nya_asset_load_raw_from_filesystem(NYA_AssetHandle path);
+NYA_INTERNAL void      _nya_asset_unload_raw_from_filesystem(NYA_Asset* asset);
+
+NYA_INTERNAL void _nya_asset_reload_process(NYA_Event* event);
 #endif // NYA_ASSET_BACKEND_FS
 
 NYA_INTERNAL void _nya_asset_loading_process(NYA_Event* event);
 NYA_INTERNAL void _nya_asset_unloading_process(NYA_Event* event);
-
-#ifdef NYA_ASSET_BACKEND_FS
-NYA_INTERNAL void _nya_asset_reload_process(NYA_Event* event);
-#endif // NYA_ASSET_BACKEND_FS
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────

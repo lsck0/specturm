@@ -21,7 +21,6 @@
 #include "nyangine/base/base_build.h"
 #include "nyangine/base/base_dll.h"
 #include "nyangine/base/base_file.h"
-#include "nyangine/base/base_graph.h"
 #include "nyangine/base/base_guard.h"
 #include "nyangine/base/base_hash.h"
 #include "nyangine/base/base_heap.h"

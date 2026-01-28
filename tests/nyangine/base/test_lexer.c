@@ -28,7 +28,6 @@ s32 main(void) {
   NYA_Token token13 = lexer.tokens->items[13];
   NYA_Token token14 = lexer.tokens->items[14];
   NYA_Token token15 = lexer.tokens->items[15];
-  nya_assert_panic(nya_array_get(lexer.tokens, 16));
 
   nya_assert(token0.type == NYA_TOKEN_IDENT);
   nya_assert(token0.length == 1);

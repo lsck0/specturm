@@ -106,7 +106,7 @@ NYA_String* nya_string_clone(NYA_Arena* arena, const NYA_String* str) {
   nya_assert(str != nullptr);
 
   NYA_String* result = nya_string_create_with_capacity(arena, str->length);
-  nya_memcpy(result->items, str->items, str->length);
+  if (str->length > 0) { nya_memcpy(result->items, str->items, str->length); }
   result->length = str->length;
 
   return result;
@@ -239,6 +239,8 @@ NYA_StringArray* nya_string_split(NYA_Arena* arena, const NYA_String* str, NYA_C
   nya_assert(str != nullptr);
   nya_assert(separator != nullptr);
   nya_assert(strlen(separator) > 0);
+
+  if (str->length == 0) return nya_array_create(arena, NYA_String);
 
   NYA_StringArray* result     = nya_array_create(arena, NYA_String);
   u64              sep_length = strlen(separator);
@@ -548,6 +550,7 @@ void nya_string_strip_suffix(NYA_String* str, NYA_ConstCString suffix) {
   nya_assert(suffix != nullptr);
 
   u64 suffix_length = strlen(suffix);
+  if (suffix_length > str->length) return;
 
   if (nya_memcmp(str->items + str->length - suffix_length, suffix, suffix_length) == 0) { str->length -= suffix_length; }
 }
@@ -556,7 +559,7 @@ NYA_CString nya_string_to_cstring(NYA_Arena* arena, const NYA_String* str) {
   nya_assert(str != nullptr);
 
   NYA_CString cstr = nya_arena_alloc(arena, str->length + 1);
-  nya_memmove(cstr, str->items, str->length);
+  if (str->length > 0) { nya_memmove(cstr, str->items, str->length); }
   cstr[str->length] = '\0';
 
   return cstr;

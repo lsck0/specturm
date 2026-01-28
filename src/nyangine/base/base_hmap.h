@@ -20,7 +20,8 @@
     value_type* values;                                                                                                                              \
     b8*         occupied;                                                                                                                            \
     NYA_Arena*  arena;                                                                                                                               \
-  } key_type##_##value_type##_HMap
+  } key_type##_##value_type##_HMap;                                                                                                                  \
+  typedef key_type##_##value_type##_HMap* key_type##_##value_type##_HMapPtr
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────

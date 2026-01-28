@@ -19,7 +19,8 @@
     item_type* items;                                                                                                                                \
     b8*        occupied;                                                                                                                             \
     NYA_Arena* arena;                                                                                                                                \
-  } item_type##HSet
+  } item_type##HSet;                                                                                                                                 \
+  typedef item_type##HSet* item_type##_HSetPtr
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -30,7 +31,7 @@
 #define nya_hset_create(arena_ptr, item_type) nya_hset_create_with_capacity(arena_ptr, item_type, _NYA_HASHSET_DEFAULT_CAPACITY)
 #define nya_hset_create_with_capacity(arena_ptr, item_type, initial_capacity)                                                                        \
   ({                                                                                                                                                 \
-    item_type##HSet* _hset_ptr = (item_type##HSet*)nya_heap_alloc(sizeof(item_type##HSet));                                                          \
+    item_type##HSet* _hset_ptr = (item_type##HSet*)nya_arena_alloc(arena_ptr, sizeof(item_type##HSet));                                              \
     *_hset_ptr                 = (item_type##HSet){                                                                                                  \
                       .length   = 0,                                                                                                                 \
                       .capacity = (initial_capacity),                                                                                                \

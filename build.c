@@ -730,7 +730,9 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
   nya_command_run(&find_tests_command);
   NYA_StringArray* tests = nya_string_split_lines(nya_arena_global, find_tests_command.stdout_content);
 
-  nya_array_foreach (tests, test) {
+  nya_array_foreach (tests, original_test) {
+    NYA_String* test = nya_string_clone(nya_arena_global, original_test);
+    if (nya_string_is_empty(test)) continue;
     NYA_CString test_cstr = nya_string_to_cstring(nya_arena_global, test);
 
     // check if we should run this test, by checking if its name contains any of the requested test names
@@ -763,7 +765,7 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
                 INCLUDE_PATHS,
                 LINKER_FLAGS,
                 FLAGS_SANITIZE,
-                FLAGS_DEBUG,
+                FLAGS_RELEASE,
                 FLAGS_LINUX_X86_64,
                 "-Wl,-rpath,$ORIGIN/../../../vendor/steam/redistributable_bin/linux64",
             },

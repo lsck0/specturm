@@ -107,7 +107,7 @@ nya_derive_array(f128_4x4);
     nya_assert_type_match(arena_ptr, (NYA_Arena*)0);                                                                                                 \
     item_type##Array* arr_ptr = nya_arena_alloc(arena_ptr, sizeof(item_type##Array));                                                                \
     *arr_ptr                  = (item_type##Array){                                                                                                  \
-                       .items    = nya_arena_alloc(arena_ptr, (initial_capacity) * sizeof(item_type)),                                               \
+                       .items    = (initial_capacity) == 0 ? nullptr : nya_arena_alloc(arena_ptr, (initial_capacity) * sizeof(item_type)),           \
                        .length   = 0,                                                                                                                \
                        .capacity = (initial_capacity),                                                                                               \
                        .arena    = (arena_ptr),                                                                                                      \

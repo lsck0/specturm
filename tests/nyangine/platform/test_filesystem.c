@@ -9,9 +9,9 @@ s32 main(void) {
   NYA_ConstCString test_file_path       = "test_file.txt";
   NYA_ConstCString test_file_copy_path  = "test_file_copy.txt";
   NYA_ConstCString test_file_moved_path = "test_file_moved.txt";
-  NYA_String       file_content         = nya_string_create(nya_arena_global);
-  NYA_String       copied_file_content  = nya_string_create(nya_arena_global);
-  NYA_String       moved_file_content   = nya_string_create(nya_arena_global);
+  NYA_String       file_content         = *nya_string_create(nya_arena_global);
+  NYA_String       copied_file_content  = *nya_string_create(nya_arena_global);
+  NYA_String       moved_file_content   = *nya_string_create(nya_arena_global);
 
   b8 ok;
 
@@ -73,7 +73,7 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   nya_assert(!nya_filesystem_exists("nonexistent_file_12345.txt"));
 
-  NYA_String nonexistent_content = nya_string_create(nya_arena_global);
+  NYA_String nonexistent_content = *nya_string_create(nya_arena_global);
   b8         read_result         = nya_file_read("nonexistent_file_12345.txt", &nonexistent_content);
   nya_assert(!read_result);
 
@@ -83,7 +83,7 @@ s32 main(void) {
   NYA_ConstCString empty_file_path = "test_empty_file.txt";
   nya_assert(nya_file_write(empty_file_path, ""));
   nya_assert(nya_filesystem_exists(empty_file_path));
-  NYA_String empty_content = nya_string_create(nya_arena_global);
+  NYA_String empty_content = *nya_string_create(nya_arena_global);
   nya_assert(nya_file_read(empty_file_path, &empty_content));
   nya_assert(nya_string_is_empty(&empty_content));
   nya_assert(nya_filesystem_delete(empty_file_path));
@@ -93,7 +93,7 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   NYA_ConstCString binary_file_path = "test_binary_file.txt";
   nya_assert(nya_file_write(binary_file_path, "Line1\nLine2\nLine3\tTabbed"));
-  NYA_String binary_content = nya_string_create(nya_arena_global);
+  NYA_String binary_content = *nya_string_create(nya_arena_global);
   nya_assert(nya_file_read(binary_file_path, &binary_content));
   nya_assert(nya_string_contains(&binary_content, "Line1"));
   nya_assert(nya_string_contains(&binary_content, "\n"));
@@ -106,7 +106,7 @@ s32 main(void) {
   NYA_ConstCString overwrite_path = "test_overwrite.txt";
   nya_assert(nya_file_write(overwrite_path, "Original content"));
   nya_assert(nya_file_write(overwrite_path, "New content"));
-  NYA_String overwrite_content = nya_string_create(nya_arena_global);
+  NYA_String overwrite_content = *nya_string_create(nya_arena_global);
   nya_assert(nya_file_read(overwrite_path, &overwrite_content));
   nya_assert(nya_string_equals(&overwrite_content, "New content"));
   nya_assert(nya_filesystem_delete(overwrite_path));
@@ -120,7 +120,7 @@ s32 main(void) {
   nya_assert(ok);
   ok = nya_file_append(append_path, " End");
   nya_assert(ok);
-  NYA_String append_content = nya_string_create(nya_arena_global);
+  NYA_String append_content = *nya_string_create(nya_arena_global);
   nya_assert(nya_file_read(append_path, &append_content));
   nya_assert(nya_string_equals(&append_content, "Start Middle End"));
   nya_assert(nya_filesystem_delete(append_path));
@@ -150,11 +150,11 @@ s32 main(void) {
   // TEST: Large file content
   // ─────────────────────────────────────────────────────────────────────────────
   NYA_ConstCString large_file_path = "test_large_file.txt";
-  NYA_String       large_content   = nya_string_create_with_capacity(nya_arena_global, 40000);
+  NYA_String       large_content   = *nya_string_create_with_capacity(nya_arena_global, 40000);
   for (u32 i = 0; i < 1000; ++i) { nya_string_extend(&large_content, "Line of content with some data. "); }
   nya_assert(nya_file_write(large_file_path, nya_string_to_cstring(nya_arena_global, &large_content)));
 
-  NYA_String read_large = nya_string_create(nya_arena_global);
+  NYA_String read_large = *nya_string_create(nya_arena_global);
   nya_assert(nya_file_read(large_file_path, &read_large));
   nya_assert(read_large.length == large_content.length);
   nya_assert(nya_filesystem_delete(large_file_path));

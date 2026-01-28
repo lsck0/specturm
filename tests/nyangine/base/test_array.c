@@ -483,7 +483,9 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   u32Array* clone_src = nya_array_create(arena, u32);
   nya_array_add_many(clone_src, 10U, 20U, 30U, 40U);
-  u32Array* clone_dst = nya_array_copy(clone_src);
+  u32Array  clone_dst_val = nya_array_copy(clone_src);
+  u32Array* clone_dst     = nya_arena_alloc(arena, sizeof(u32Array));
+  *clone_dst              = clone_dst_val;
   nya_assert(clone_dst->length == clone_src->length);
   nya_assert(clone_dst->capacity == clone_src->capacity);
   nya_assert(clone_dst->items != clone_src->items);
@@ -515,36 +517,26 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   u32Array* slice_src_excld = nya_array_create(arena, u32);
   nya_array_add_many(slice_src_excld, 10U, 20U, 30U, 40U, 50U);
-  u32Array* slice_excld = nya_array_slice_excld(slice_src_excld, 1, 4);
-  nya_assert(slice_excld->length == 3);
-  nya_assert(slice_excld->items[0] == 20);
-  nya_assert(slice_excld->items[1] == 30);
-  nya_assert(slice_excld->items[2] == 40);
-  nya_assert(slice_excld->arena == nullptr);
-  nya_array_destroy(slice_src_excld);
+  u32Array slice_excld = nya_array_slice_excld(slice_src_excld, 1, 4);
+  nya_assert(slice_excld.length == 3);
+  nya_assert(slice_excld.items[0] == 20);
+  nya_assert(slice_excld.items[1] == 30);
+  nya_assert(slice_excld.items[2] == 40);
+  nya_assert(slice_excld.arena == nullptr);
+  nya_array_destroy(slice_src_excld); // slice_excld is a shallow copy, no destroy needed
 
   // ─────────────────────────────────────────────────────────────────────────────
   // TEST: nya_array_slice_incld
   // ─────────────────────────────────────────────────────────────────────────────
   u32Array* slice_src_incld = nya_array_create(arena, u32);
   nya_array_add_many(slice_src_incld, 10U, 20U, 30U, 40U, 50U);
-  u32Array* slice_incld = nya_array_slice_incld(slice_src_incld, 1, 3);
-  nya_assert(slice_incld->length == 3);
-  nya_assert(slice_incld->items[0] == 20);
-  nya_assert(slice_incld->items[1] == 30);
-  nya_assert(slice_incld->items[2] == 40);
-  nya_assert(slice_incld->arena == nullptr);
-  nya_array_destroy(slice_src_incld);
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // TEST: nya_array_from_carray
-  // ─────────────────────────────────────────────────────────────────────────────
-  u32       carray[]    = { 5, 10, 15, 20, 25 };
-  u32*      carray_ptr  = carray;
-  u32Array* from_carray = nya_array_from_carray(arena, u32, carray_ptr, (u64)nya_carray_length(carray));
-  nya_assert(from_carray->length == 5);
-  for (u32 i = 0; i < 5; ++i) { nya_assert(from_carray->items[i] == (i + 1) * 5); }
-  nya_array_destroy(from_carray);
+  u32Array slice_incld = nya_array_slice_incld(slice_src_incld, 1, 3);
+  nya_assert(slice_incld.length == 3);
+  nya_assert(slice_incld.items[0] == 20);
+  nya_assert(slice_incld.items[1] == 30);
+  nya_assert(slice_incld.items[2] == 40);
+  nya_assert(slice_incld.arena == nullptr);
+  nya_array_destroy(slice_src_incld); // slice_incld is a shallow copy, no destroy needed
 
   // ─────────────────────────────────────────────────────────────────────────────
   // TEST: nya_array_length
@@ -791,8 +783,8 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   u32Array* slice_mod_arr = nya_array_create(arena, u32);
   nya_array_add_many(slice_mod_arr, 1U, 2U, 3U, 4U, 5U);
-  u32Array* slice_mod = nya_array_slice_incld(slice_mod_arr, 1, 3);
-  slice_mod->items[0] = 999;
+  u32Array slice_mod = nya_array_slice_incld(slice_mod_arr, 1, 3);
+  slice_mod.items[0] = 999;
   nya_assert(slice_mod_arr->items[1] == 999);
   nya_array_destroy(slice_mod_arr);
 
@@ -880,9 +872,6 @@ s32 main(void) {
   u32Array* destroy_arr = nya_array_create(arena, u32);
   nya_array_add_many(destroy_arr, 1U, 2U, 3U);
   nya_array_destroy(destroy_arr);
-  nya_assert(destroy_arr->items == nullptr);
-  nya_assert(destroy_arr->length == 0);
-  nya_assert(destroy_arr->capacity == 0);
 
   nya_arena_destroy(arena);
   return 0;

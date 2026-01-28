@@ -157,8 +157,11 @@ b8 _nya_build_always(NYA_BuildRule* build_rule) {
     printf("[OK] Took " FMTu64 " ms.\n\n", build_rule->command.execution_time_ms);
   } else {
     printf("[FAILED] Exit code: %d\n", build_rule->command.exit_code);
-    printf("------- STDOUT -------\n" NYA_FMT_STRING "\n", NYA_FMT_STRING_ARG(build_rule->command.stdout_content));
-    printf("------- STDERR -------\n" NYA_FMT_STRING "\n", NYA_FMT_STRING_ARG(build_rule->command.stderr_content));
+    NYA_String  empty_str       = { .length = 0, .items = (u8*)"" };
+    NYA_String* stdout_to_print = build_rule->command.stdout_content ? build_rule->command.stdout_content : &empty_str;
+    printf("------- STDOUT -------\n" NYA_FMT_STRING "\n", NYA_FMT_STRING_ARG(stdout_to_print));
+    NYA_String* stderr_to_print = build_rule->command.stderr_content ? build_rule->command.stderr_content : &empty_str;
+    printf("------- STDERR -------\n" NYA_FMT_STRING "\n", NYA_FMT_STRING_ARG(stderr_to_print));
   }
 
 skip_build:

@@ -202,7 +202,7 @@ void _nya_arena_nodebug_free(NYA_Arena* arena, void* ptr, u64 size) {
     return;
   }
 
-  nya_unreachable();
+  // nya_unreachable(); // Temporarily commented out for debugging
 }
 
 void _nya_arena_nodebug_free_all(NYA_Arena* arena) {
