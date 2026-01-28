@@ -1,5 +1,3 @@
-#pragma once
-
 /**
  * @file base_keys.h
  *
@@ -7,6 +5,7 @@
  *  - https://github.com/libsdl-org/NYA/blob/main/include/SDL3/SDL_scancode.h
  *  - https://github.com/libsdl-org/NYA/blob/main/include/SDL3/SDL_keycode.h
  * */
+#pragma once
 
 #include "nyangine/base/base_string.h"
 #include "nyangine/base/base_types.h"

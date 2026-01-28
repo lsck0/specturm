@@ -1,5 +1,3 @@
-#pragma once
-
 /**
  * @file base_random.h
  *
@@ -36,6 +34,7 @@
  * }
  * ```
  * */
+#pragma once
 
 #include "nyangine/base/base.h"
 #include "nyangine/base/base_attributes.h"

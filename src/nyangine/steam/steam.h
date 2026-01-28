@@ -1,5 +1,3 @@
-#pragma once
-
 /**
  * @file steam.h
  *
@@ -15,6 +13,7 @@
  * "-L./vendor/steam/redistributable_bin/win64/", "-Wl,-rpath,$ORIGIN/vendor/steam/redistributable_bin/win64",
  * "-lsteam_api64"
  */
+#pragma once
 
 #include "nyangine/base/base_attributes.h"
 #include "nyangine/base/base_string.h"

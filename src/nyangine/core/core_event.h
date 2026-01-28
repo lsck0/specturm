@@ -238,7 +238,12 @@ struct NYA_Event {
 };
 
 enum NYA_EventHookType {
+  /** Deferred hooks are executed when the event is polled. */
   NYA_EVENT_HOOK_TYPE_DEFERRED,
+  /**
+   * Immediate hooks are executed when the event is dispatched.
+   * Used to dynamically run code in different stages of the frame.
+   * */
   NYA_EVENT_HOOK_TYPE_IMMEDIATE,
   NYA_EVENT_HOOK_TYPE_COUNT,
 };

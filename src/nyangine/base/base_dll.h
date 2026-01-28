@@ -1,5 +1,3 @@
-#pragma once
-
 /**
  * @file base_dll.h
  *
@@ -7,6 +5,7 @@
  * - the dll structure needs to have 'head' and 'tail' pointers
  * - the node structure needs to have 'prev' and 'next' pointers
  * */
+#pragma once
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
