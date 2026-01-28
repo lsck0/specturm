@@ -85,7 +85,7 @@ void nya_render_set_vsync(b8 enabled) {
   NYA_App* app = nya_app_get_instance();
 
   if (app->config.vsync_enabled != enabled) {
-    nya_array_foreach (&app->window_system.windows, window) {
+    nya_array_foreach (app->window_system.windows, window) {
       b8 ok = SDL_SetGPUSwapchainParameters(
           app->render_system.gpu_device,
           window->sdl_window,

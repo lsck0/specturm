@@ -28,7 +28,7 @@ void nya_system_job_init(void) {
     .job_queue_mutex = SDL_CreateMutex(),
   };
 
-  app->job_system.job_queue = nya_array_create(&app->job_system.allocator, NYA_Job);
+  app->job_system.job_queue = nya_array_create(app->job_system.allocator, NYA_Job);
 
   // SDL_Thread* scheduler_thread = SDL_CreateThread(_nya_job_scheduler, "Job Scheduler", nullptr);
   // nya_assert(scheduler_thread != nullptr);
@@ -41,9 +41,9 @@ void nya_system_job_deinit(void) {
   NYA_App* app = nya_app_get_instance();
 
   SDL_DestroyMutex(app->job_system.job_queue_mutex);
-  nya_array_destroy(&app->job_system.job_queue);
+  nya_array_destroy(app->job_system.job_queue);
 
-  nya_arena_destroy(&app->job_system.allocator);
+  nya_arena_destroy(app->job_system.allocator);
 
   nya_info("Job system deinitialized.");
 }
@@ -67,7 +67,7 @@ void nya_job_submit(job_fn function, void* data, u64 size) {
   };
 
   SDL_LockMutex(app->job_system.job_queue_mutex);
-  nya_array_push_back(&app->job_system.job_queue, job);
+  nya_array_push_back(app->job_system.job_queue, job);
   SDL_UnlockMutex(app->job_system.job_queue_mutex);
 }
 

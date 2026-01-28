@@ -32,8 +32,8 @@ struct NYA_App {
   /** use `nya_app_options_update` to change config */
   NYA_AppConfig config;
 
-  NYA_Arena global_allocator;
-  NYA_Arena frame_allocator;
+  NYA_Arena* global_allocator;
+  NYA_Arena* frame_allocator;
 
   NYA_AssetSystem  asset_system;
   NYA_EventSystem  event_system;

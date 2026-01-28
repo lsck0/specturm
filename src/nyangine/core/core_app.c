@@ -65,8 +65,8 @@ void nya_app_deinit(void) {
 
   nya_info("Subsystems deinitialized successfully. Good Bye.");
 
-  nya_arena_destroy(&app->global_allocator);
-  nya_arena_destroy(&app->frame_allocator);
+  nya_arena_destroy(app->global_allocator);
+  nya_arena_destroy(app->frame_allocator);
 
   app->initialized = false;
 }
@@ -112,8 +112,8 @@ void nya_app_run(void) {
         nya_system_input_handle_event(&event);
         if (event.was_handled) continue;
 
-        nya_array_foreach (&app->window_system.windows, window) {
-          nya_array_foreach_reverse (&window->layer_stack, layer) {
+        nya_array_foreach (app->window_system.windows, window) {
+          nya_array_foreach_reverse (window->layer_stack, layer) {
             if (layer->enabled && layer->on_event != nullptr) {
               layer->on_event(window, &event);
               if (event.was_handled) break;
@@ -136,8 +136,8 @@ void nya_app_run(void) {
             .type = NYA_EVENT_UPDATING_STARTED,
         });
 
-        nya_array_foreach (&app->window_system.windows, window) {
-          nya_array_foreach (&window->layer_stack, layer) {
+        nya_array_foreach (app->window_system.windows, window) {
+          nya_array_foreach (window->layer_stack, layer) {
             if (layer->enabled && layer->on_update != nullptr) { /**/
               layer->on_update(window, (f32)(app->config.time_step_ms) / 1000.0F);
             }
@@ -158,9 +158,9 @@ void nya_app_run(void) {
           .type = NYA_EVENT_RENDERING_STARTED,
       });
 
-      nya_array_foreach (&app->window_system.windows, window) {
+      nya_array_foreach (app->window_system.windows, window) {
         nya_render_begin(window);
-        nya_array_foreach (&window->layer_stack, layer) {
+        nya_array_foreach (window->layer_stack, layer) {
           if (layer->enabled && layer->on_render != nullptr) layer->on_render(window);
         }
         nya_render_end(window);

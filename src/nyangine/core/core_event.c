@@ -37,9 +37,9 @@ void nya_system_events_init(void) {
     .event_queue_read_index = 0,
   };
 
-  app->event_system.event_queue           = nya_array_create(&app->event_system.allocator, NYA_Event);
-  app->event_system.deferred_event_hooks  = nya_hmap_create(&app->event_system.allocator, NYA_EventType, NYA_EventHookArray);
-  app->event_system.immediate_event_hooks = nya_hmap_create(&app->event_system.allocator, NYA_EventType, NYA_EventHookArray);
+  app->event_system.event_queue           = nya_array_create(app->event_system.allocator, NYA_Event);
+  app->event_system.deferred_event_hooks  = nya_hmap_create(app->event_system.allocator, NYA_EventType, NYA_EventHookArrayPtr);
+  app->event_system.immediate_event_hooks = nya_hmap_create(app->event_system.allocator, NYA_EventType, NYA_EventHookArrayPtr);
 
   nya_info("Event system initialized.");
 }
@@ -48,12 +48,12 @@ void nya_system_events_deinit(void) {
   NYA_App* app = nya_app_get_instance();
 
   SDL_DestroyMutex(app->event_system.event_queue_mutex);
-  nya_array_destroy(&app->event_system.event_queue);
+  nya_array_destroy(app->event_system.event_queue);
 
-  nya_hmap_destroy(&app->event_system.deferred_event_hooks);
-  nya_hmap_destroy(&app->event_system.immediate_event_hooks);
+  nya_hmap_destroy(app->event_system.deferred_event_hooks);
+  nya_hmap_destroy(app->event_system.immediate_event_hooks);
 
-  nya_arena_destroy(&app->event_system.allocator);
+  nya_arena_destroy(app->event_system.allocator);
 
   nya_info("Event system deinitialized.");
 }
@@ -74,7 +74,7 @@ b8 nya_system_event_poll(OUT NYA_Event* out_event) {
   NYA_App* app = nya_app_get_instance();
 
   SDL_LockMutex(app->event_system.event_queue_mutex);
-  NYA_EventArray* nya_array = &app->event_system.event_queue;
+  NYA_EventArray* nya_array = app->event_system.event_queue;
 
   if (app->event_system.event_queue_read_index >= nya_array->length) {
     nya_array_clear(nya_array);
@@ -104,7 +104,7 @@ void nya_event_dispatch(NYA_Event event) {
   event.timestamp = nya_clock_get_timestamp_ms();
 
   SDL_LockMutex(app->event_system.event_queue_mutex);
-  nya_array_push_back(&app->event_system.event_queue, event);
+  nya_array_push_back(app->event_system.event_queue, event);
   SDL_UnlockMutex(app->event_system.event_queue_mutex);
 
   _nya_event_notify_immediate_listeners(&event);
@@ -116,25 +116,25 @@ void nya_event_dispatch(NYA_Event event) {
 void nya_event_hook_register(NYA_EventHook hook) {
   NYA_App* app = nya_app_get_instance();
 
-  NYA_EventHookArray* hook_array = nullptr;
+  NYA_EventHookArray** hook_array = nullptr;
   switch (hook.hook_type) {
     case NYA_EVENT_HOOK_TYPE_DEFERRED: {
-      hook_array = nya_hmap_get(&app->event_system.deferred_event_hooks, hook.event_type);
+      hook_array = nya_hmap_get(app->event_system.deferred_event_hooks, hook.event_type);
 
       if (!hook_array) {
-        NYA_EventHookArray new_hook_array = nya_array_create(&app->event_system.allocator, NYA_EventHook);
-        nya_hmap_set(&app->event_system.deferred_event_hooks, hook.event_type, new_hook_array);
-        hook_array = nya_hmap_get(&app->event_system.deferred_event_hooks, hook.event_type);
+        NYA_EventHookArray* new_hook_array = nya_array_create(app->event_system.allocator, NYA_EventHook);
+        nya_hmap_set(app->event_system.deferred_event_hooks, hook.event_type, new_hook_array);
+        hook_array = nya_hmap_get(app->event_system.deferred_event_hooks, hook.event_type);
       }
     } break;
 
     case NYA_EVENT_HOOK_TYPE_IMMEDIATE: {
-      hook_array = nya_hmap_get(&app->event_system.immediate_event_hooks, hook.event_type);
+      hook_array = nya_hmap_get(app->event_system.immediate_event_hooks, hook.event_type);
 
       if (!hook_array) {
-        NYA_EventHookArray new_hook_array = nya_array_create(&app->event_system.allocator, NYA_EventHook);
-        nya_hmap_set(&app->event_system.immediate_event_hooks, hook.event_type, new_hook_array);
-        hook_array = nya_hmap_get(&app->event_system.immediate_event_hooks, hook.event_type);
+        NYA_EventHookArray* new_hook_array = nya_array_create(app->event_system.allocator, NYA_EventHook);
+        nya_hmap_set(app->event_system.immediate_event_hooks, hook.event_type, new_hook_array);
+        hook_array = nya_hmap_get(app->event_system.immediate_event_hooks, hook.event_type);
       }
     } break;
 
@@ -142,20 +142,20 @@ void nya_event_hook_register(NYA_EventHook hook) {
   }
   static_assert(NYA_EVENT_HOOK_TYPE_COUNT == 2, "Unhandled NYA_EventHookType enum value.");
 
-  nya_array_push_back(hook_array, hook);
+  nya_array_push_back(*hook_array, hook);
 }
 
 void nya_event_hook_unregister(NYA_EventHook hook) {
   NYA_App* app = nya_app_get_instance();
 
-  NYA_EventHookArray* hook_array = nullptr;
+  NYA_EventHookArray** hook_array = nullptr;
   switch (hook.hook_type) {
     case NYA_EVENT_HOOK_TYPE_DEFERRED: {
-      hook_array = nya_hmap_get(&app->event_system.deferred_event_hooks, hook.event_type);
+      hook_array = nya_hmap_get(app->event_system.deferred_event_hooks, hook.event_type);
     } break;
 
     case NYA_EVENT_HOOK_TYPE_IMMEDIATE: {
-      hook_array = nya_hmap_get(&app->event_system.immediate_event_hooks, hook.event_type);
+      hook_array = nya_hmap_get(app->event_system.immediate_event_hooks, hook.event_type);
     } break;
 
     default: nya_unreachable();
@@ -163,7 +163,7 @@ void nya_event_hook_unregister(NYA_EventHook hook) {
   static_assert(NYA_EVENT_HOOK_TYPE_COUNT == 2, "Unhandled NYA_EventHookType enum value.");
   nya_assert(hook_array != nullptr, "Cannot unregister hook that was not registered.");
 
-  nya_array_remove_item(hook_array, hook);
+  nya_array_remove_item(*hook_array, hook);
 }
 
 /*
@@ -175,7 +175,7 @@ void nya_event_hook_unregister(NYA_EventHook hook) {
 NYA_INTERNAL void* _nya_event_sdl_window_id_to_nya_window_id(SDL_WindowID sdl_window_id) {
   NYA_App* app = nya_app_get_instance();
 
-  nya_array_foreach (&app->window_system.windows, nya_window) {
+  nya_array_foreach (app->window_system.windows, nya_window) {
     if (SDL_GetWindowID(nya_window->sdl_window) == sdl_window_id) return nya_window->id;
   }
 
@@ -353,10 +353,10 @@ NYA_INTERNAL void _nya_event_notify_deferred_listeners(NYA_Event* event) {
 
   NYA_App* app = nya_app_get_instance();
 
-  NYA_EventHookArray* hook_array = nya_hmap_get(&app->event_system.deferred_event_hooks, event->type);
+  NYA_EventHookArray** hook_array = nya_hmap_get(app->event_system.deferred_event_hooks, event->type);
   if (!hook_array) return;
 
-  nya_array_foreach (hook_array, hook) {
+  nya_array_foreach (*hook_array, hook) {
     if (hook->condition && !hook->condition(event)) continue;
     hook->fn(event);
     if (event->was_handled) break;
@@ -368,10 +368,10 @@ NYA_INTERNAL void _nya_event_notify_immediate_listeners(NYA_Event* event) {
 
   NYA_App* app = nya_app_get_instance();
 
-  NYA_EventHookArray* hook_array = nya_hmap_get(&app->event_system.immediate_event_hooks, event->type);
+  NYA_EventHookArray** hook_array = nya_hmap_get(app->event_system.immediate_event_hooks, event->type);
   if (!hook_array) return;
 
-  nya_array_foreach (hook_array, hook) {
+  nya_array_foreach (*hook_array, hook) {
     if (hook->condition && !hook->condition(event)) continue;
     hook->fn(event);
     if (event->was_handled) break;

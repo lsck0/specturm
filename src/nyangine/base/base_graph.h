@@ -40,14 +40,21 @@
  */
 
 #define nya_graph_create(arena_ptr, node_type, edge_type)                                                                                            \
-  (node_type##Graph) {                                                                                                                               \
-    .nodes = nya_array_create(arena_ptr, node_type##GraphNode), .arena = (arena_ptr),                                                                \
-  }
+  ({                                                                                                                                                 \
+    (node_type##Graph*)graph_ptr = nya_arena_alloc(arena_ptr, sizeof(node_type##Graph));                                                             \
+    *graph_ptr                   = (node_type##Graph){                                                                                               \
+                        .nodes = nya_array_create(arena_ptr, node_type##GraphNode),                                                                  \
+                        .arena = (arena_ptr),                                                                                                        \
+    };                                                                                                                                               \
+    graph_ptr;                                                                                                                                       \
+  })
 
 #define nya_graph_destroy(graph_ptr)                                                                                                                 \
   ({                                                                                                                                                 \
     for (u64 _nya_i = 0; _nya_i < (graph_ptr)->nodes.length; ++_nya_i) { nya_array_destroy(&(graph_ptr)->nodes.items[_nya_i].edges); }               \
     nya_array_destroy(&(graph_ptr)->nodes);                                                                                                          \
+    nya_arena_free((graph_ptr)->arena, graph_ptr, sizeof(*(graph_ptr)));                                                                             \
+    (graph_ptr) = nullptr;                                                                                                                           \
   })
 
 /*

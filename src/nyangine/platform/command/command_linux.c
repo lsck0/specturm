@@ -84,8 +84,8 @@ void nya_command_run(NYA_Command* command) {
 
   // read stdout and stderr
   if (nya_flag_check(command->flags, NYA_COMMAND_FLAG_OUTPUT_CAPTURE)) {
-    b8 ok1 = nya_fd_read(stdout_pipe[0], &command->stdout_content);
-    b8 ok2 = nya_fd_read(stderr_pipe[0], &command->stderr_content);
+    b8 ok1 = nya_fd_read(stdout_pipe[0], command->stdout_content);
+    b8 ok2 = nya_fd_read(stderr_pipe[0], command->stderr_content);
 
     nya_assert(ok1, "Failed to read stdout from command.");
     nya_assert(ok2, "Failed to read stderr from command.");
@@ -110,7 +110,7 @@ void nya_command_destroy(NYA_Command* command) {
   nya_assert(command != nullptr);
 
   if (nya_flag_check(command->flags, NYA_COMMAND_FLAG_OUTPUT_CAPTURE)) {
-    nya_string_destroy(&command->stdout_content);
-    nya_string_destroy(&command->stderr_content);
+    nya_string_destroy(command->stdout_content);
+    nya_string_destroy(command->stderr_content);
   }
 }

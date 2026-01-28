@@ -35,10 +35,17 @@
  * */
 #define nya_heap_create(arena_ptr, item_type, compare_fn) nya_heap_create_with_capacity(arena_ptr, item_type, compare_fn, _NYA_HEAP_DEFAULT_CAPACITY)
 #define nya_heap_create_with_capacity(arena_ptr, item_type, compare_fn, initial_capacity)                                                            \
-  (item_type##Heap) {                                                                                                                                \
-    .items = nya_arena_alloc(arena_ptr, (initial_capacity) * sizeof(item_type)), .length = 0, .capacity = (initial_capacity), .arena = (arena_ptr),  \
-    .compare = (compare_fn),                                                                                                                         \
-  }
+  ({                                                                                                                                                 \
+    item_type##Heap* heap_ptr = nya_arena_alloc(arena_ptr, sizeof(item_type##Heap));                                                                 \
+    *heap_ptr                 = (item_type##Heap){                                                                                                   \
+                      .items    = nya_arena_alloc(arena_ptr, (initial_capacity) * sizeof(item_type)),                                                \
+                      .length   = 0,                                                                                                                 \
+                      .capacity = (initial_capacity),                                                                                                \
+                      .arena    = (arena_ptr),                                                                                                       \
+                      .compare  = (compare_fn),                                                                                                      \
+    };                                                                                                                                               \
+    heap_ptr;                                                                                                                                        \
+  })
 
 #define nya_heap_from_carray(arena_ptr, item_type, carray, carray_length, compare_fn)                                                                \
   ({                                                                                                                                                 \
@@ -73,9 +80,8 @@
 #define nya_heap_destroy(heap_ptr)                                                                                                                   \
   ({                                                                                                                                                 \
     nya_arena_free((heap_ptr)->arena, (heap_ptr)->items, sizeof(*(heap_ptr)->items) * (heap_ptr)->capacity);                                         \
-    (heap_ptr)->items    = nullptr;                                                                                                                  \
-    (heap_ptr)->length   = 0;                                                                                                                        \
-    (heap_ptr)->capacity = 0;                                                                                                                        \
+    nya_arena_free((heap_ptr)->arena, heap_ptr, sizeof(*(heap_ptr)));                                                                                \
+    (heap_ptr) = nullptr;                                                                                                                            \
   })
 
 /*

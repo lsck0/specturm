@@ -31,15 +31,16 @@
 #define nya_hmap_create(arena_ptr, key_type, value_type) nya_hmap_create_with_capacity(arena_ptr, key_type, value_type, _NYA_HASHMAP_DEFAULT_CAPACITY)
 #define nya_hmap_create_with_capacity(arena_ptr, key_type, value_type, initial_capacity)                                                             \
   ({                                                                                                                                                 \
-    key_type##_##value_type##_HMap _hmap = {                                                                                                         \
-      .length   = 0,                                                                                                                                 \
-      .capacity = (initial_capacity),                                                                                                                \
-      .arena    = (arena_ptr),                                                                                                                       \
-      .keys     = nya_arena_alloc(arena_ptr, (initial_capacity) * sizeof(key_type)),                                                                 \
-      .values   = nya_arena_alloc(arena_ptr, (initial_capacity) * sizeof(value_type)),                                                               \
-      .occupied = nya_arena_alloc(arena_ptr, (initial_capacity) * sizeof(b8)),                                                                       \
+    key_type##_##value_type##_HMap* _hmap = nya_arena_alloc(arena_ptr, sizeof(key_type##_##value_type##_HMap));                                      \
+    *_hmap                                = (key_type##_##value_type##_HMap){                                                                        \
+                                     .length   = 0,                                                                                                  \
+                                     .capacity = (initial_capacity),                                                                                 \
+                                     .arena    = (arena_ptr),                                                                                        \
+                                     .keys     = nya_arena_alloc(arena_ptr, (initial_capacity) * sizeof(key_type)),                                  \
+                                     .values   = nya_arena_alloc(arena_ptr, (initial_capacity) * sizeof(value_type)),                                \
+                                     .occupied = nya_arena_alloc(arena_ptr, (initial_capacity) * sizeof(b8)),                                        \
     };                                                                                                                                               \
-    nya_memset(_hmap.occupied, 0, (initial_capacity) * sizeof(b8));                                                                                  \
+    nya_memset(_hmap->occupied, 0, (initial_capacity) * sizeof(b8));                                                                                 \
     _hmap;                                                                                                                                           \
   })
 
@@ -54,11 +55,8 @@
     nya_arena_free((hmap_ptr)->arena, (hmap_ptr)->keys, sizeof(*(hmap_ptr)->keys) * (hmap_ptr)->capacity);                                           \
     nya_arena_free((hmap_ptr)->arena, (hmap_ptr)->values, sizeof(*(hmap_ptr)->values) * (hmap_ptr)->capacity);                                       \
     nya_arena_free((hmap_ptr)->arena, (hmap_ptr)->occupied, sizeof(*(hmap_ptr)->occupied) * (hmap_ptr)->capacity);                                   \
-    (hmap_ptr)->keys     = nullptr;                                                                                                                  \
-    (hmap_ptr)->values   = nullptr;                                                                                                                  \
-    (hmap_ptr)->occupied = nullptr;                                                                                                                  \
-    (hmap_ptr)->length   = 0;                                                                                                                        \
-    (hmap_ptr)->capacity = 0;                                                                                                                        \
+    nya_arena_free((hmap_ptr)->arena, hmap_ptr, sizeof(*(hmap_ptr)));                                                                                \
+    (hmap_ptr) = nullptr;                                                                                                                            \
   })
 
 /*

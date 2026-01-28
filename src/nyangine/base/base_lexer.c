@@ -16,7 +16,7 @@ NYA_Lexer nya_lexer_create(NYA_ConstCString source) {
     .current_line_number = 1,
     .current_char_number = 1,
   };
-  lexer.tokens = nya_array_create(&lexer.arena, NYA_Token);
+  lexer.tokens = nya_array_create(lexer.arena, NYA_Token);
 
   return lexer;
 }
@@ -36,7 +36,7 @@ void nya_lexer_run(NYA_Lexer* lexer) {
         .line_number     = lexer->current_line_number,
         .char_number     = lexer->current_char_number,
       };
-      nya_array_push_back(&lexer->tokens, token);
+      nya_array_push_back(lexer->tokens, token);
       return;
     }
 
@@ -76,7 +76,7 @@ void nya_lexer_run(NYA_Lexer* lexer) {
         .line_number     = start_line_number,
         .char_number     = start_char_number,
       };
-      nya_array_push_back(&lexer->tokens, token);
+      nya_array_push_back(lexer->tokens, token);
 
       continue;
     }
@@ -119,7 +119,7 @@ void nya_lexer_run(NYA_Lexer* lexer) {
         .line_number     = start_line_number,
         .char_number     = start_char_number,
       };
-      nya_array_push_back(&lexer->tokens, token);
+      nya_array_push_back(lexer->tokens, token);
 
       continue;
     }
@@ -134,7 +134,7 @@ void nya_lexer_run(NYA_Lexer* lexer) {
         .char_number     = lexer->current_char_number,
         .symbol          = current_char,
       };
-      nya_array_push_back(&lexer->tokens, token);
+      nya_array_push_back(lexer->tokens, token);
       lexer->cursor              += 1;
       lexer->current_char_number += 1;
 
@@ -149,7 +149,7 @@ void nya_lexer_run(NYA_Lexer* lexer) {
       .line_number     = lexer->current_line_number,
       .char_number     = lexer->current_char_number,
     };
-    nya_array_push_back(&lexer->tokens, token);
+    nya_array_push_back(lexer->tokens, token);
     lexer->cursor              += 1;
     lexer->current_char_number += 1;
   }
@@ -158,6 +158,6 @@ void nya_lexer_run(NYA_Lexer* lexer) {
 void nya_lexer_destroy(NYA_Lexer* lexer) {
   nya_assert(lexer != nullptr);
 
-  nya_array_destroy(&lexer->tokens);
-  nya_arena_destroy(&lexer->arena);
+  nya_array_destroy(lexer->tokens);
+  nya_arena_destroy(lexer->arena);
 }

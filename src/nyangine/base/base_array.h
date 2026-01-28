@@ -18,7 +18,8 @@
     u64        capacity;                                                                                                                             \
     type*      items;                                                                                                                                \
     NYA_Arena* arena;                                                                                                                                \
-  } type##Array
+  } type##Array;                                                                                                                                     \
+  typedef type##Array* type##ArrayPtr;
 
 nya_derive_array(b8);
 nya_derive_array(b16);
@@ -102,18 +103,16 @@ nya_derive_array(f128_4x4);
 
 #define nya_array_create(arena_ptr, item_type) nya_array_create_with_capacity(arena_ptr, item_type, _NYA_ARRAY_DEFAULT_CAPACITY)
 #define nya_array_create_with_capacity(arena_ptr, item_type, initial_capacity)                                                                       \
-  (item_type##Array) {                                                                                                                               \
-    .items = nya_arena_alloc(arena_ptr, (initial_capacity) * sizeof(item_type)), .length = 0, .capacity = (initial_capacity), .arena = (arena_ptr),  \
-  }
-
-#define nya_array_from_carray(arena_ptr, item_type, carray, carray_length)                                                                           \
   ({                                                                                                                                                 \
     nya_assert_type_match(arena_ptr, (NYA_Arena*)0);                                                                                                 \
-    nya_assert_type_match(carray, (item_type*)0);                                                                                                    \
-    nya_assert_type_match(carray_length, (u64)0);                                                                                                    \
-    item_type##Array arr = nya_array_create_with_capacity(arena_ptr, item_type, carray_length);                                                      \
-    nya_range_for_t (u64, idx, 0, carray_length) nya_array_push_back(&arr, (carray)[idx]);                                                           \
-    arr;                                                                                                                                             \
+    item_type##Array* arr_ptr = nya_arena_alloc(arena_ptr, sizeof(item_type##Array));                                                                \
+    *arr_ptr                  = (item_type##Array){                                                                                                  \
+                       .items    = nya_arena_alloc(arena_ptr, (initial_capacity) * sizeof(item_type)),                                               \
+                       .length   = 0,                                                                                                                \
+                       .capacity = (initial_capacity),                                                                                               \
+                       .arena    = (arena_ptr),                                                                                                      \
+    };                                                                                                                                               \
+    arr_ptr;                                                                                                                                         \
   })
 
 #define nya_array_from_argv(arena_ptr, argc, argv)                                                                                                   \
@@ -146,9 +145,8 @@ nya_derive_array(f128_4x4);
 #define nya_array_destroy(arr_ptr)                                                                                                                   \
   ({                                                                                                                                                 \
     nya_arena_free((arr_ptr)->arena, (arr_ptr)->items, sizeof(*(arr_ptr)->items) * (arr_ptr)->capacity);                                             \
-    (arr_ptr)->items    = nullptr;                                                                                                                   \
-    (arr_ptr)->length   = 0;                                                                                                                         \
-    (arr_ptr)->capacity = 0;                                                                                                                         \
+    nya_arena_free((arr_ptr)->arena, arr_ptr, sizeof(*(arr_ptr)));                                                                                   \
+    (arr_ptr) = nullptr;                                                                                                                             \
   })
 
 /*

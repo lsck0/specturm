@@ -18,8 +18,8 @@ typedef struct {
 nya_derive_graph(City, Road);
 
 s32 main(void) {
-  NYA_Arena arena = nya_arena_create(.name = "test_graph");
-  CityGraph graph = nya_graph_create(&arena, City, Road);
+  NYA_Arena* arena = nya_arena_create(.name = "test_graph");
+  CityGraph  graph = nya_graph_create(arena, City, Road);
 
   // Test basic functionality
   City node1    = { .value = 42 };
@@ -78,7 +78,7 @@ s32 main(void) {
   printf("Simple graph test passed!\n");
 
   nya_graph_destroy(&graph);
-  nya_arena_destroy(&arena);
+  nya_arena_destroy(arena);
 
   return 0;
 }

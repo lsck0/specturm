@@ -30,10 +30,10 @@ typedef void (*job_fn)(void* data);
  */
 
 struct NYA_JobSystem {
-  NYA_Arena allocator;
+  NYA_Arena* allocator;
 
-  SDL_Mutex*   job_queue_mutex;
-  NYA_JobArray job_queue;
+  SDL_Mutex*    job_queue_mutex;
+  NYA_JobArray* job_queue;
 };
 
 /*

@@ -6,10 +6,10 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-__attr_unused NYA_INTERNAL NYA_Arena                _nya_perf_arena         = { 0 };
-__attr_unused NYA_INTERNAL NYA_PerfMeasurementArray _nya_perf_measurements  = { 0 };
-__attr_unused NYA_INTERNAL u64                      _nya_perf_start_time_ms = 0;
-__attr_unused NYA_INTERNAL u64                      _nya_perf_start_cycles  = 0;
+__attr_unused NYA_INTERNAL NYA_Arena*                _nya_perf_arena         = nullptr;
+__attr_unused NYA_INTERNAL NYA_PerfMeasurementArray* _nya_perf_measurements  = nullptr;
+__attr_unused NYA_INTERNAL u64                       _nya_perf_start_time_ms = 0;
+__attr_unused NYA_INTERNAL u64                       _nya_perf_start_cycles  = 0;
 
 __attr_unused NYA_INTERNAL void _nya_perf_init(void);
 __attr_unused NYA_INTERNAL void _nya_perf_shutdown(void);
@@ -25,7 +25,7 @@ __attr_unused NYA_INTERNAL u64  _nya_perf_cycles_since_start(void);
 NYA_PerfMeasurement* _nya_perf_timer_get(NYA_ConstCString name) {
   nya_assert(name);
 
-  nya_array_foreach (&_nya_perf_measurements, measurement) {
+  nya_array_foreach (_nya_perf_measurements, measurement) {
     if (nya_string_equals(measurement->name, name)) return measurement;
   }
 
@@ -60,7 +60,7 @@ void _nya_perf_timer_start(NYA_ConstCString name) {
     .elapsed_cycles = { 0 },
     .current        = 0,
   };
-  nya_array_push_back(&_nya_perf_measurements, new_measurement);
+  nya_array_push_back(_nya_perf_measurements, new_measurement);
 }
 
 void _nya_perf_timer_stop(NYA_ConstCString name) {
@@ -78,7 +78,7 @@ void _nya_perf_timer_stop(NYA_ConstCString name) {
 }
 
 NYA_PerfMeasurementArray* _nya_perf_timer_get_all(void) {
-  return &_nya_perf_measurements;
+  return _nya_perf_measurements;
 }
 
 /*
@@ -89,17 +89,17 @@ NYA_PerfMeasurementArray* _nya_perf_timer_get_all(void) {
 
 #if NYA_IS_DEBUG
 __attr_constructor NYA_INTERNAL void _nya_perf_init(void) {
-  nya_assert(nya_is_zeroed(_nya_perf_measurements));
+  nya_assert(_nya_perf_measurements == nullptr);
 
   _nya_perf_arena        = nya_arena_create(.name = "Perf Arena");
-  _nya_perf_measurements = nya_array_create(&_nya_perf_arena, NYA_PerfMeasurement);
+  _nya_perf_measurements = nya_array_create(_nya_perf_arena, NYA_PerfMeasurement);
 
   _nya_perf_start_time_ms = nya_clock_get_timestamp_ms();
   _nya_perf_start_cycles  = __rdtsc();
 }
 
 __attr_destructor NYA_INTERNAL void _nya_perf_shutdown(void) {
-  nya_arena_destroy(&_nya_perf_arena);
+  nya_arena_destroy(_nya_perf_arena);
 }
 #endif // NYA_IS_DEBUG
 

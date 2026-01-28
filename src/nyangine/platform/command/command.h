@@ -33,10 +33,10 @@ struct NYA_Command {
   NYA_Arena* arena;
 
   /** will be filled after execution */
-  s32        exit_code;
-  NYA_String stdout_content;
-  NYA_String stderr_content;
-  u64        execution_time_ms;
+  s32         exit_code;
+  NYA_String* stdout_content;
+  NYA_String* stderr_content;
+  u64         execution_time_ms;
 };
 
 /*

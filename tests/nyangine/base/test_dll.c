@@ -18,14 +18,14 @@ typedef struct {
 } TestDLL;
 
 s32 main(void) {
-  NYA_Arena arena = nya_arena_create(.name = "test_dll");
+  NYA_Arena* arena = nya_arena_create(.name = "test_dll");
 
   // ─────────────────────────────────────────────────────────────────────────────
   // TEST: nya_dll_node_push_back on empty list
   // ─────────────────────────────────────────────────────────────────────────────
   {
-    TestDLL   dll = {0};
-    TestNode* n1  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
+    TestDLL   dll = { 0 };
+    TestNode* n1  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
     n1->value     = 1;
 
     nya_dll_node_push_back(&dll, n1);
@@ -39,10 +39,10 @@ s32 main(void) {
   // TEST: nya_dll_node_push_back multiple nodes
   // ─────────────────────────────────────────────────────────────────────────────
   {
-    TestDLL   dll = {0};
-    TestNode* n1  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
-    TestNode* n2  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
-    TestNode* n3  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
+    TestDLL   dll = { 0 };
+    TestNode* n1  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
+    TestNode* n2  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
+    TestNode* n3  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
     n1->value     = 1;
     n2->value     = 2;
     n3->value     = 3;
@@ -65,8 +65,8 @@ s32 main(void) {
   // TEST: nya_dll_node_push_front on empty list
   // ─────────────────────────────────────────────────────────────────────────────
   {
-    TestDLL   dll = {0};
-    TestNode* n1  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
+    TestDLL   dll = { 0 };
+    TestNode* n1  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
     n1->value     = 1;
 
     nya_dll_node_push_front(&dll, n1);
@@ -80,10 +80,10 @@ s32 main(void) {
   // TEST: nya_dll_node_push_front multiple nodes
   // ─────────────────────────────────────────────────────────────────────────────
   {
-    TestDLL   dll = {0};
-    TestNode* n1  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
-    TestNode* n2  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
-    TestNode* n3  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
+    TestDLL   dll = { 0 };
+    TestNode* n1  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
+    TestNode* n2  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
+    TestNode* n3  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
     n1->value     = 1;
     n2->value     = 2;
     n3->value     = 3;
@@ -107,10 +107,10 @@ s32 main(void) {
   // TEST: nya_dll_node_pop_back
   // ─────────────────────────────────────────────────────────────────────────────
   {
-    TestDLL   dll = {0};
-    TestNode* n1  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
-    TestNode* n2  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
-    TestNode* n3  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
+    TestDLL   dll = { 0 };
+    TestNode* n1  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
+    TestNode* n2  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
+    TestNode* n3  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
     n1->value     = 1;
     n2->value     = 2;
     n3->value     = 3;
@@ -141,10 +141,10 @@ s32 main(void) {
   // TEST: nya_dll_node_pop_front
   // ─────────────────────────────────────────────────────────────────────────────
   {
-    TestDLL   dll = {0};
-    TestNode* n1  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
-    TestNode* n2  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
-    TestNode* n3  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
+    TestDLL   dll = { 0 };
+    TestNode* n1  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
+    TestNode* n2  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
+    TestNode* n3  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
     n1->value     = 1;
     n2->value     = 2;
     n3->value     = 3;
@@ -175,10 +175,10 @@ s32 main(void) {
   // TEST: nya_dll_node_link in the middle
   // ─────────────────────────────────────────────────────────────────────────────
   {
-    TestDLL   dll = {0};
-    TestNode* n1  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
-    TestNode* n2  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
-    TestNode* n3  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
+    TestDLL   dll = { 0 };
+    TestNode* n1  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
+    TestNode* n2  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
+    TestNode* n3  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
     n1->value     = 1;
     n2->value     = 2;
     n3->value     = 3;
@@ -201,10 +201,10 @@ s32 main(void) {
   // TEST: nya_dll_node_unlink from middle
   // ─────────────────────────────────────────────────────────────────────────────
   {
-    TestDLL   dll = {0};
-    TestNode* n1  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
-    TestNode* n2  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
-    TestNode* n3  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
+    TestDLL   dll = { 0 };
+    TestNode* n1  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
+    TestNode* n2  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
+    TestNode* n3  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
     n1->value     = 1;
     n2->value     = 2;
     n3->value     = 3;
@@ -227,9 +227,9 @@ s32 main(void) {
   // TEST: nya_dll_node_unlink from head
   // ─────────────────────────────────────────────────────────────────────────────
   {
-    TestDLL   dll = {0};
-    TestNode* n1  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
-    TestNode* n2  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
+    TestDLL   dll = { 0 };
+    TestNode* n1  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
+    TestNode* n2  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
     n1->value     = 1;
     n2->value     = 2;
 
@@ -249,9 +249,9 @@ s32 main(void) {
   // TEST: nya_dll_node_unlink from tail
   // ─────────────────────────────────────────────────────────────────────────────
   {
-    TestDLL   dll = {0};
-    TestNode* n1  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
-    TestNode* n2  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
+    TestDLL   dll = { 0 };
+    TestNode* n1  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
+    TestNode* n2  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
     n1->value     = 1;
     n2->value     = 2;
 
@@ -271,8 +271,8 @@ s32 main(void) {
   // TEST: nya_dll_node_unlink single node
   // ─────────────────────────────────────────────────────────────────────────────
   {
-    TestDLL   dll = {0};
-    TestNode* n1  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
+    TestDLL   dll = { 0 };
+    TestNode* n1  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
     n1->value     = 1;
 
     nya_dll_node_push_back(&dll, n1);
@@ -288,10 +288,10 @@ s32 main(void) {
   // TEST: nya_dll_foreach
   // ─────────────────────────────────────────────────────────────────────────────
   {
-    TestDLL   dll = {0};
-    TestNode* n1  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
-    TestNode* n2  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
-    TestNode* n3  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
+    TestDLL   dll = { 0 };
+    TestNode* n1  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
+    TestNode* n2  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
+    TestNode* n3  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
     n1->value     = 1;
     n2->value     = 2;
     n3->value     = 3;
@@ -314,7 +314,7 @@ s32 main(void) {
   // TEST: nya_dll_foreach on empty list
   // ─────────────────────────────────────────────────────────────────────────────
   {
-    TestDLL dll   = {0};
+    TestDLL dll   = { 0 };
     s32     count = 0;
     nya_dll_foreach (&dll, node) { count++; }
     nya_assert(count == 0);
@@ -324,10 +324,10 @@ s32 main(void) {
   // TEST: nya_dll_foreach_reverse
   // ─────────────────────────────────────────────────────────────────────────────
   {
-    TestDLL   dll = {0};
-    TestNode* n1  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
-    TestNode* n2  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
-    TestNode* n3  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
+    TestDLL   dll = { 0 };
+    TestNode* n1  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
+    TestNode* n2  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
+    TestNode* n3  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
     n1->value     = 1;
     n2->value     = 2;
     n3->value     = 3;
@@ -351,7 +351,7 @@ s32 main(void) {
   // TEST: nya_dll_foreach_reverse on empty list
   // ─────────────────────────────────────────────────────────────────────────────
   {
-    TestDLL dll   = {0};
+    TestDLL dll   = { 0 };
     s32     count = 0;
     nya_dll_foreach_reverse(&dll, node) {
       count++;
@@ -363,11 +363,11 @@ s32 main(void) {
   // TEST: mixed push_front and push_back
   // ─────────────────────────────────────────────────────────────────────────────
   {
-    TestDLL   dll = {0};
-    TestNode* n1  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
-    TestNode* n2  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
-    TestNode* n3  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
-    TestNode* n4  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
+    TestDLL   dll = { 0 };
+    TestNode* n1  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
+    TestNode* n2  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
+    TestNode* n3  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
+    TestNode* n4  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
     n1->value     = 1;
     n2->value     = 2;
     n3->value     = 3;
@@ -381,7 +381,7 @@ s32 main(void) {
     nya_assert(dll.head == n4);
     nya_assert(dll.tail == n3);
 
-    s32 expected[] = {4, 1, 2, 3};
+    s32 expected[] = { 4, 1, 2, 3 };
     s32 idx        = 0;
     nya_dll_foreach (&dll, node) {
       nya_assert(node->value == expected[idx]);
@@ -394,9 +394,9 @@ s32 main(void) {
   // TEST: re-linking after unlink
   // ─────────────────────────────────────────────────────────────────────────────
   {
-    TestDLL   dll = {0};
-    TestNode* n1  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
-    TestNode* n2  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
+    TestDLL   dll = { 0 };
+    TestNode* n1  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
+    TestNode* n2  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
     n1->value     = 1;
     n2->value     = 2;
 
@@ -417,10 +417,10 @@ s32 main(void) {
   // TEST: large list operations
   // ─────────────────────────────────────────────────────────────────────────────
   {
-    TestDLL    dll   = {0};
-    TestNode** nodes = (TestNode**)nya_arena_alloc(&arena, 100 * sizeof(TestNode*));
+    TestDLL    dll   = { 0 };
+    TestNode** nodes = (TestNode**)nya_arena_alloc(arena, 100 * sizeof(TestNode*));
     for (s32 i = 0; i < 100; ++i) {
-      nodes[i]        = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
+      nodes[i]        = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
       nodes[i]->value = i;
       nya_dll_node_push_back(&dll, nodes[i]);
     }
@@ -442,9 +442,7 @@ s32 main(void) {
     nya_assert(expected_val == -1);
 
     // Remove every other node
-    for (s32 i = 0; i < 100; i += 2) {
-      nya_dll_node_unlink(&dll, nodes[i]);
-    }
+    for (s32 i = 0; i < 100; i += 2) { nya_dll_node_unlink(&dll, nodes[i]); }
 
     // Verify remaining
     s32 count = 0;
@@ -459,8 +457,8 @@ s32 main(void) {
   // TEST: pop from single element list
   // ─────────────────────────────────────────────────────────────────────────────
   {
-    TestDLL   dll = {0};
-    TestNode* n1  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
+    TestDLL   dll = { 0 };
+    TestNode* n1  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
     n1->value     = 42;
 
     nya_dll_node_push_back(&dll, n1);
@@ -475,9 +473,9 @@ s32 main(void) {
   // TEST: nya_dll_node_link at boundaries
   // ─────────────────────────────────────────────────────────────────────────────
   {
-    TestDLL   dll = {0};
-    TestNode* n1  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
-    TestNode* n2  = (TestNode*)nya_arena_alloc(&arena, sizeof(TestNode));
+    TestDLL   dll = { 0 };
+    TestNode* n1  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
+    TestNode* n2  = (TestNode*)nya_arena_alloc(arena, sizeof(TestNode));
     n1->value     = 1;
     n2->value     = 2;
 
@@ -494,7 +492,7 @@ s32 main(void) {
     nya_assert(n2->prev == n1);
   }
 
-  nya_arena_destroy(&arena);
+  nya_arena_destroy(arena);
 
   return 0;
 }

@@ -19,10 +19,10 @@ NYA_INTERNAL NYA_MemoryActionArray _nya_arena_memory_actions = { 0 };
 NYA_INTERNAL void                  _nya_arena_action_insert(NYA_MemoryAction action);
 
 /** The global arena won't be cleared. */
-NYA_Arena nya_arena_global;
+NYA_Arena* nya_arena_global;
 
 /** The temp arena can be cleared at any time. */
-NYA_Arena nya_arena_temp;
+NYA_Arena* nya_arena_temp;
 
 __attr_constructor NYA_INTERNAL void _nya_arena_init(void) {
   nya_arena_global = nya_arena_create(.name = "global_arena");
@@ -30,8 +30,10 @@ __attr_constructor NYA_INTERNAL void _nya_arena_init(void) {
 }
 
 __attr_destructor NYA_INTERNAL void _nya_arena_shutdown(void) {
-  nya_arena_destroy(&nya_arena_global);
-  nya_arena_destroy(&nya_arena_temp);
+  nya_arena_destroy(nya_arena_global);
+  nya_arena_destroy(nya_arena_temp);
+  nya_arena_global = nullptr;
+  nya_arena_temp   = nullptr;
 }
 
 /*
@@ -40,18 +42,19 @@ __attr_destructor NYA_INTERNAL void _nya_arena_shutdown(void) {
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_Arena _nya_arena_nodebug_create_with_options(NYA_ArenaOptions options) {
+NYA_Arena* _nya_arena_nodebug_create_with_options(NYA_ArenaOptions options) {
   nya_assert(options.region_size >= nya_kibyte_to_byte(4), "Minimum region size is 4 KiB.");
   nya_assert(options.alignment >= 8, "Minimum alignment is 8 bytes.");
   nya_assert(options.region_size % options.alignment == 0, "Region size must be divisible by alignment.");
   nya_assert(options.alignment % 2 == 0, "Alignment must be a power of two.");
   nya_assert(ASAN_PADDING % options.alignment == 0, "ASAN padding must be divisible by alignment.");
 
-  return (NYA_Arena){
-    .options = options,
-    .head    = nullptr,
-    .tail    = nullptr,
-  };
+  NYA_Arena* arena = nya_malloc(sizeof(NYA_Arena));
+  arena->options   = options;
+  arena->head      = nullptr;
+  arena->tail      = nullptr;
+
+  return arena;
 }
 
 void* _nya_arena_nodebug_alloc(NYA_Arena* arena, u64 size) __attr_malloc {
@@ -254,6 +257,8 @@ void _nya_arena_nodebug_destroy(NYA_Arena* arena) {
 
   arena->head = nullptr;
   arena->tail = nullptr;
+
+  nya_free(arena);
 }
 
 void* _nya_arena_nodebug_copy(NYA_Arena* dst, void* ptr, u64 size) {
@@ -287,7 +292,7 @@ void* _nya_arena_nodebug_move(NYA_Arena* src, NYA_Arena* dst, void* ptr, u64 siz
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_Arena _nya_arena_debug_create_with_options(NYA_ArenaOptions options, NYA_ConstCString function, NYA_ConstCString file, u32 line) {
+NYA_Arena* _nya_arena_debug_create_with_options(NYA_ArenaOptions options, NYA_ConstCString function, NYA_ConstCString file, u32 line) {
   NYA_MemoryAction action = {
     .type          = NYA_MEMORY_ACTION_ARENA_NEW,
     .arena_name    = options.name,

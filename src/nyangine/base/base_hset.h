@@ -30,15 +30,16 @@
 #define nya_hset_create(arena_ptr, item_type) nya_hset_create_with_capacity(arena_ptr, item_type, _NYA_HASHSET_DEFAULT_CAPACITY)
 #define nya_hset_create_with_capacity(arena_ptr, item_type, initial_capacity)                                                                        \
   ({                                                                                                                                                 \
-    item_type##HSet _hset = {                                                                                                                        \
-      .length   = 0,                                                                                                                                 \
-      .capacity = (initial_capacity),                                                                                                                \
-      .arena    = (arena_ptr),                                                                                                                       \
-      .items    = nya_arena_alloc(arena_ptr, (initial_capacity) * sizeof(item_type)),                                                                \
-      .occupied = nya_arena_alloc(arena_ptr, (initial_capacity) * sizeof(b8)),                                                                       \
+    item_type##HSet* _hset_ptr = (item_type##HSet*)nya_heap_alloc(sizeof(item_type##HSet));                                                          \
+    *_hset_ptr                 = (item_type##HSet){                                                                                                  \
+                      .length   = 0,                                                                                                                 \
+                      .capacity = (initial_capacity),                                                                                                \
+                      .arena    = (arena_ptr),                                                                                                       \
+                      .items    = nya_arena_alloc(arena_ptr, (initial_capacity) * sizeof(item_type)),                                                \
+                      .occupied = nya_arena_alloc(arena_ptr, (initial_capacity) * sizeof(b8)),                                                       \
     };                                                                                                                                               \
-    nya_memset(_hset.occupied, 0, (initial_capacity) * sizeof(b8));                                                                                  \
-    _hset;                                                                                                                                           \
+    nya_memset(_hset_ptr->occupied, 0, (initial_capacity) * sizeof(b8));                                                                             \
+    _hset_ptr;                                                                                                                                       \
   })
 
 #define nya_hset_clear(hset_ptr)                                                                                                                     \
@@ -51,8 +52,8 @@
   ({                                                                                                                                                 \
     nya_arena_free((hset_ptr)->arena, (hset_ptr)->items, sizeof(*(hset_ptr)->items) * (hset_ptr)->capacity);                                         \
     nya_arena_free((hset_ptr)->arena, (hset_ptr)->occupied, sizeof(*(hset_ptr)->occupied) * (hset_ptr)->capacity);                                   \
-    (hset_ptr)->items    = nullptr;                                                                                                                  \
-    (hset_ptr)->occupied = nullptr;                                                                                                                  \
+    nya_arena_free((hset_ptr)->arena, hset_ptr, sizeof(*(hset_ptr)));                                                                                \
+    (hset_ptr) = nullptr;                                                                                                                            \
   })
 
 /*

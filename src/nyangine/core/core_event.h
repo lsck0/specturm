@@ -33,7 +33,7 @@ typedef struct NYA_WindowMovedEvent   NYA_WindowMovedEvent;
 typedef struct NYA_WindowResizedEvent NYA_WindowResizedEvent;
 nya_derive_array(NYA_Event);
 nya_derive_array(NYA_EventHook);
-nya_derive_hmap(NYA_EventType, NYA_EventHookArray);
+nya_derive_hmap(NYA_EventType, NYA_EventHookArrayPtr);
 
 /*
  * ─────────────────────────────────────────────────────────
@@ -42,14 +42,14 @@ nya_derive_hmap(NYA_EventType, NYA_EventHookArray);
  */
 
 struct NYA_EventSystem {
-  NYA_Arena allocator;
+  NYA_Arena* allocator;
 
-  SDL_Mutex*     event_queue_mutex;
-  NYA_EventArray event_queue;
-  u64            event_queue_read_index;
+  SDL_Mutex*      event_queue_mutex;
+  NYA_EventArray* event_queue;
+  u64             event_queue_read_index;
 
-  NYA_EventType_NYA_EventHookArray_HMap deferred_event_hooks;
-  NYA_EventType_NYA_EventHookArray_HMap immediate_event_hooks;
+  NYA_EventType_NYA_EventHookArrayPtr_HMap* deferred_event_hooks;
+  NYA_EventType_NYA_EventHookArrayPtr_HMap* immediate_event_hooks;
 };
 
 /*

@@ -36,14 +36,14 @@ nya_derive_hmap(NYA_AssetHandle, NYA_Asset);
  */
 
 struct NYA_AssetSystem {
-  NYA_Arena allocator;
+  NYA_Arena* allocator;
 
-  NYA_AssetHandle_NYA_Asset_HMap assets;
-  NYA_AssetLoadParametersArray   loading_queue;
-  NYA_AssetHandleArray           unloading_queue;
+  NYA_AssetHandle_NYA_Asset_HMap* assets;
+  NYA_AssetLoadParametersArray*   loading_queue;
+  NYA_AssetHandleArray*           unloading_queue;
 
 #ifdef NYA_ASSET_BACKEND_FS
-  NYA_AssetHandleArray reload_queue;
+  NYA_AssetHandleArray* reload_queue;
 #endif // NYA_ASSET_BACKEND_FS
 };
 

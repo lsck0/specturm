@@ -27,9 +27,9 @@ nya_derive_array(NYA_Window);
  */
 
 struct NYA_WindowSystem {
-  NYA_Arena allocator;
+  NYA_Arena* allocator;
 
-  NYA_WindowArray windows;
+  NYA_WindowArray* windows;
 };
 
 /*
@@ -56,7 +56,7 @@ struct NYA_Window {
   u32 screen_width;
   u32 screen_height;
 
-  NYA_LayerArray layer_stack;
+  NYA_LayerArray* layer_stack;
 
   NYA_RenderSystemWindow render_system;
 };

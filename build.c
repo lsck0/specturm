@@ -469,37 +469,37 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
   b8 ok;
 
   NYA_Command find_source_shaders_command = {
-    .arena     = &nya_arena_global,
+    .arena     = nya_arena_global,
     .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
     .program   = "find",
     .arguments = { "./assets/shaders/source/", "-name", "*.hlsl", },
   };
   nya_command_run(&find_source_shaders_command);
   nya_assert(find_source_shaders_command.exit_code == 0, "Failed to find source shaders.");
-  NYA_StringArray shaders = nya_string_split_lines(&nya_arena_global, &find_source_shaders_command.stdout_content);
+  NYA_StringArray* shaders = nya_string_split_lines(nya_arena_global, find_source_shaders_command.stdout_content);
 
-  nya_array_foreach (&shaders, shader) {
+  nya_array_foreach (shaders, shader) {
     if (nya_string_is_empty(shader)) continue;
 
-    NYA_CString source = nya_string_to_cstring(&nya_arena_global, shader);
+    NYA_CString source = nya_string_to_cstring(nya_arena_global, shader);
     nya_string_strip_prefix(shader, "./assets/shaders/source/");
     nya_string_strip_suffix(shader, ".hlsl");
 
     nya_string_extend_front(shader, "./assets/shaders/compiled/DXIL/");
     nya_string_extend(shader, ".dxil");
-    NYA_CString target_dxil = nya_string_to_cstring(&nya_arena_global, shader);
+    NYA_CString target_dxil = nya_string_to_cstring(nya_arena_global, shader);
     nya_string_strip_prefix(shader, "./assets/shaders/compiled/DXIL/");
     nya_string_strip_suffix(shader, ".dxil");
 
     nya_string_extend_front(shader, "./assets/shaders/compiled/MSL/");
     nya_string_extend(shader, ".msl");
-    NYA_CString target_metal = nya_string_to_cstring(&nya_arena_global, shader);
+    NYA_CString target_metal = nya_string_to_cstring(nya_arena_global, shader);
     nya_string_strip_suffix(shader, ".msl");
     nya_string_strip_prefix(shader, "./assets/shaders/compiled/MSL/");
 
     nya_string_extend_front(shader, "./assets/shaders/compiled/SPIRV/");
     nya_string_extend(shader, ".spv");
-    NYA_CString target_spirv = nya_string_to_cstring(&nya_arena_global, shader);
+    NYA_CString target_spirv = nya_string_to_cstring(nya_arena_global, shader);
     nya_string_strip_suffix(shader, ".spv");
     nya_string_strip_prefix(shader, "./assets/shaders/compiled/SPIRV/");
 
@@ -516,9 +516,9 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
     nya_assert(create_dirs_command.exit_code == 0, "Failed to create shader output directories.");
 
     // compile to DXIL
-    NYA_String compile_to_dxil_name = nya_string_sprintf(&nya_arena_global, "%s -> %s", source, target_dxil);
+    NYA_String* compile_to_dxil_name = nya_string_sprintf(nya_arena_global, "%s -> %s", source, target_dxil);
     NYA_BuildRule compile_to_dxil_rule      = {
-        .name        = nya_string_to_cstring(&nya_arena_global, &compile_to_dxil_name),
+        .name        = nya_string_to_cstring(nya_arena_global, compile_to_dxil_name),
         .policy      = NYA_BUILD_IF_OUTDATED,
         .input_file  = source,
         .output_file = target_dxil,
@@ -536,9 +536,9 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
     nya_assert(ok, "Failed to compile shader to DXIL: %s", source);
 
     // compile to Metal
-    NYA_String compile_to_metal_name = nya_string_sprintf(&nya_arena_global, "%s -> %s", source, target_metal);
+    NYA_String* compile_to_metal_name = nya_string_sprintf(nya_arena_global, "%s -> %s", source, target_metal);
     NYA_BuildRule compile_to_metal_rule      = {
-        .name        = nya_string_to_cstring(&nya_arena_global, &compile_to_metal_name),
+        .name        = nya_string_to_cstring(nya_arena_global, compile_to_metal_name),
         .policy      = NYA_BUILD_IF_OUTDATED,
         .input_file  = source,
         .output_file = target_metal,
@@ -556,9 +556,9 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
     nya_assert(ok, "Failed to compile shader to Metal: %s", source);
 
     // compile to SPIR-V
-    NYA_String compile_to_spirv_name = nya_string_sprintf(&nya_arena_global, "%s -> %s", source, target_spirv);
+    NYA_String* compile_to_spirv_name = nya_string_sprintf(nya_arena_global, "%s -> %s", source, target_spirv);
     NYA_BuildRule compile_to_spirv_rule      = {
-        .name        = nya_string_to_cstring(&nya_arena_global, &compile_to_spirv_name),
+        .name        = nya_string_to_cstring(nya_arena_global, compile_to_spirv_name),
         .policy      = NYA_BUILD_IF_OUTDATED,
         .input_file  = source,
         .output_file = target_spirv,
@@ -604,7 +604,7 @@ NYA_INTERNAL void hook_add_version_flag_and_git_hash(NYA_BuildRule* rule) {
   if (initialized) goto skip_initialization;
 
   NYA_Command git_hash_command = {
-    .arena     = &nya_arena_global,
+    .arena     = nya_arena_global,
     .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
     .program   = "git",
     .arguments = { "rev-parse", "HEAD" },
@@ -612,12 +612,12 @@ NYA_INTERNAL void hook_add_version_flag_and_git_hash(NYA_BuildRule* rule) {
   nya_command_run(&git_hash_command);
   nya_assert(git_hash_command.exit_code == 0, "Failed to get git commit hash.");
 
-  nya_string_trim_whitespace(&git_hash_command.stdout_content);
-  NYA_CString git_hash      = nya_string_to_cstring(&nya_arena_global, &git_hash_command.stdout_content);
-  NYA_String  git_hash_flag = nya_string_sprintf(&nya_arena_global, "-DGIT_COMMIT=\"%s\"", git_hash);
-  NYA_String  version_flag  = nya_string_sprintf(&nya_arena_global, "-DVERSION=\"%s\"", VERSION);
-  GIT_HASH_FLAG             = nya_string_to_cstring(&nya_arena_global, &git_hash_flag);
-  VERSION_FLAG              = nya_string_to_cstring(&nya_arena_global, &version_flag);
+  nya_string_trim_whitespace(git_hash_command.stdout_content);
+  NYA_CString git_hash      = nya_string_to_cstring(nya_arena_global, git_hash_command.stdout_content);
+  NYA_String* git_hash_flag = nya_string_sprintf(nya_arena_global, "-DGIT_COMMIT=\"%s\"", git_hash);
+  NYA_String* version_flag  = nya_string_sprintf(nya_arena_global, "-DVERSION=\"%s\"", VERSION);
+  GIT_HASH_FLAG             = nya_string_to_cstring(nya_arena_global, git_hash_flag);
+  VERSION_FLAG              = nya_string_to_cstring(nya_arena_global, version_flag);
   initialized               = true;
 
 skip_initialization:
@@ -633,7 +633,7 @@ NYA_INTERNAL void hook_convert_perf_data_to_plain(NYA_BuildRule* rule) {
   nya_assert(rule != nullptr);
 
   NYA_Command convert_command = {
-    .arena     = &nya_arena_global,
+    .arena     = nya_arena_global,
     .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
     .program   = "perf",
     .arguments = { "script", "-i", "./perf.data" },
@@ -641,7 +641,7 @@ NYA_INTERNAL void hook_convert_perf_data_to_plain(NYA_BuildRule* rule) {
   nya_command_run(&convert_command);
   nya_assert(convert_command.exit_code == 0, "Failed to convert perf data to plain text.");
 
-  b8 ok = nya_file_write("./perf.data.txt", &convert_command.stdout_content);
+  b8 ok = nya_file_write("./perf.data.txt", convert_command.stdout_content);
   nya_assert(ok, "Failed to write perf data to text file.");
 }
 
@@ -722,16 +722,16 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
   nya_assert(nya_string_equals(test_files->name, "tests"));
 
   NYA_Command find_tests_command = {
-    .arena     = &nya_arena_global,
+    .arena     = nya_arena_global,
     .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
     .program   = "find",
     .arguments = { "./tests/", "-name", "*.c", },
   };
   nya_command_run(&find_tests_command);
-  NYA_StringArray tests = nya_string_split_lines(&nya_arena_global, &find_tests_command.stdout_content);
+  NYA_StringArray* tests = nya_string_split_lines(nya_arena_global, find_tests_command.stdout_content);
 
-  nya_array_foreach (&tests, test) {
-    NYA_CString test_cstr = nya_string_to_cstring(&nya_arena_global, test);
+  nya_array_foreach (tests, test) {
+    NYA_CString test_cstr = nya_string_to_cstring(nya_arena_global, test);
 
     // check if we should run this test, by checking if its name contains any of the requested test names
     b8 should_run = test_files->values_count == 0 ? true : false;
@@ -745,11 +745,11 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
     if (!should_run) continue;
 
     nya_string_strip_suffix(test, ".c");
-    NYA_CString test_binary = nya_string_to_cstring(&nya_arena_global, test);
+    NYA_CString test_binary = nya_string_to_cstring(nya_arena_global, test);
 
-    NYA_String build_test_name = nya_string_sprintf(&nya_arena_global, "build_test:%s", test_binary);
+    NYA_String* build_test_name = nya_string_sprintf(nya_arena_global, "build_test:%s", test_binary);
     NYA_BuildRule build_test_rule = {
-        .name        = nya_string_to_cstring(&nya_arena_global, &build_test_name),
+        .name        = nya_string_to_cstring(nya_arena_global, build_test_name),
         .policy      = NYA_BUILD_ALWAYS,
         .output_file = test_binary,
 
@@ -772,9 +772,9 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
         .pre_build_hooks = { &hook_add_version_flag_and_git_hash, },
     };
 
-    NYA_String run_test_name = nya_string_sprintf(&nya_arena_global, "run_test:%s", test_binary);
+    NYA_String* run_test_name = nya_string_sprintf(nya_arena_global, "run_test:%s", test_binary);
     NYA_BuildRule run_test_rule = {
-        .name        = nya_string_to_cstring(&nya_arena_global, &run_test_name),
+        .name        = nya_string_to_cstring(nya_arena_global, run_test_name),
         .policy      = NYA_BUILD_ALWAYS,
         .output_file = test_binary,
 

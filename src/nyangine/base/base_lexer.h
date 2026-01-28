@@ -40,7 +40,7 @@ struct NYA_Token {
 };
 
 struct NYA_Lexer {
-  NYA_Arena arena;
+  NYA_Arena* arena;
 
   NYA_ConstCString source;
   u32              cursor;
@@ -49,7 +49,7 @@ struct NYA_Lexer {
   u32 current_char_number;
 
   /** will be filled after running */
-  NYA_TokenArray tokens;
+  NYA_TokenArray* tokens;
 };
 
 /*
