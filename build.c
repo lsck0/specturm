@@ -765,7 +765,7 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
                 INCLUDE_PATHS,
                 LINKER_FLAGS,
                 FLAGS_SANITIZE,
-                FLAGS_RELEASE,
+                FLAGS_DEBUG,
                 FLAGS_LINUX_X86_64,
                 "-Wl,-rpath,$ORIGIN/../../../vendor/steam/redistributable_bin/linux64",
             },
