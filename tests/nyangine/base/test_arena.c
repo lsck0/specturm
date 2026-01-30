@@ -60,10 +60,10 @@ s32 main(void) {
   nya_assert(freed == nullptr);
 
   // test free last allocation reclaims space
-  u64   usage_before = nya_arena_memory_usage(arena);
+  u64   usage_before = nya_arena_memory_usage_bytes(arena);
   void* free_ptr     = nya_arena_alloc(arena, 512);
   nya_assert(free_ptr != nullptr);
-  nya_assert(nya_arena_memory_usage(arena) > usage_before);
+  nya_assert(nya_arena_memory_usage_bytes(arena) > usage_before);
   nya_arena_free(arena, free_ptr, 512);
 
   // test free nullptr is safe
@@ -141,7 +141,7 @@ s32 main(void) {
     // verify each allocation is unique
     for (u32 j = 0; j < i; ++j) { nya_assert(ptrs[i] != ptrs[j]); }
   }
-  nya_assert(nya_arena_memory_usage(multi_region_arena) > nya_kibyte_to_byte(4)); // must span regions
+  nya_assert(nya_arena_memory_usage_bytes(multi_region_arena) > nya_kibyte_to_byte(4)); // must span regions
   nya_arena_destroy(multi_region_arena);
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -153,11 +153,11 @@ s32 main(void) {
     void* tmp = nya_arena_alloc(free_all_arena, 128);
     nya_assert(tmp != nullptr);
   }
-  u64 usage_before_free_all = nya_arena_memory_usage(free_all_arena);
+  u64 usage_before_free_all = nya_arena_memory_usage_bytes(free_all_arena);
   nya_assert(usage_before_free_all > 0);
 
   nya_arena_free_all(free_all_arena);
-  nya_assert(nya_arena_memory_usage(free_all_arena) == 0);
+  nya_assert(nya_arena_memory_usage_bytes(free_all_arena) == 0);
 
   // can allocate again after free_all
   void* after_free_all = nya_arena_alloc(free_all_arena, 64);
@@ -227,14 +227,14 @@ s32 main(void) {
   nya_assert(move_data != nullptr);
   for (u32 i = 0; i < 128; ++i) { move_data[i] = (u8)i; }
 
-  u64 src_usage_before_move = nya_arena_memory_usage(move_src);
+  u64 src_usage_before_move = nya_arena_memory_usage_bytes(move_src);
   u8* moved_ptr             = (u8*)nya_arena_move(move_src, move_dst, move_data, 128);
   nya_assert(moved_ptr != nullptr);
   nya_assert(moved_ptr != move_data);
   for (u32 i = 0; i < 128; ++i) { nya_assert(moved_ptr[i] == (u8)i); }
 
   // source should have less usage after move (freed the moved block)
-  nya_assert(nya_arena_memory_usage(move_src) < src_usage_before_move);
+  nya_assert(nya_arena_memory_usage_bytes(move_src) < src_usage_before_move);
 
   // move nullptr returns nullptr
   void* null_move = nya_arena_move(move_src, move_dst, nullptr, 64);

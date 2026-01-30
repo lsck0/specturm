@@ -148,11 +148,9 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-/**
- * WARNING: ONLY USE THOSE MACROS WITH THE BITX DEFINES ABOVE!
- * Bits are 1-indexed.
+/*
+ * Those macros are expected to be used with the bit defines above.
  */
-
 #define nya_bit_set(val, bit)            ((val) |= (bit))
 #define nya_bit_unset(val, bit)          ((val) &= ~(bit))
 #define nya_bit_check(val, bit)          ((val) & (bit))

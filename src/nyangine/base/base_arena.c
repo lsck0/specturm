@@ -18,10 +18,7 @@ NYA_INTERNAL void  _nya_arena_free_list_destroy(NYA_ArenaFreeList* free_list);
 NYA_INTERNAL NYA_MemoryActionArray _nya_arena_memory_actions = { 0 };
 NYA_INTERNAL void                  _nya_arena_action_insert(NYA_MemoryAction action);
 
-/** The global arena won't be cleared. */
 NYA_Arena* nya_arena_global;
-
-/** The temp arena can be cleared at any time. */
 NYA_Arena* nya_arena_temp;
 
 __attr_constructor NYA_INTERNAL void _nya_arena_init(void) {
@@ -60,11 +57,11 @@ NYA_Arena* _nya_arena_nodebug_create_with_options(NYA_ArenaOptions options) {
 void* _nya_arena_nodebug_alloc(NYA_Arena* arena, u64 size) __attr_malloc {
   nya_assert(arena != nullptr);
 
-  if (nya_unlikely(size == 0)) return nullptr;
+  if (size == 0) return nullptr;
 
   _nya_arena_align_and_pad_size(arena, &size);
 
-  if (nya_unlikely(size > arena->options.region_size)) goto skip_search;
+  if (size > arena->options.region_size) goto skip_search;
 
   nya_dll_foreach (arena, region) {
     // check free list if the average free size is bigger than the requested size
@@ -123,9 +120,9 @@ void* _nya_arena_nodebug_realloc(NYA_Arena* arena, void* ptr, u64 old_size, u64 
   nya_assert(arena != nullptr);
 
   // edge cases
-  if (nya_unlikely(ptr == nullptr)) return nullptr;
-  if (nya_unlikely(new_size == old_size)) return ptr;
-  if (nya_unlikely(new_size == 0)) {
+  if (ptr == nullptr) return nullptr;
+  if (new_size == old_size) return ptr;
+  if (new_size == 0) {
     _nya_arena_nodebug_free(arena, ptr, old_size);
     return nullptr;
   }
@@ -437,8 +434,8 @@ void* _nya_arena_debug_move(NYA_Arena* src, NYA_Arena* dst, void* ptr, u64 size,
       .move          = {
                         .ptr               = ptr,
                         .size              = size,
-                        .target_arena_name = dst->options.name,
-                        .target_ptr        = move_ptr,
+                        .move_arena_name = dst->options.name,
+                        .move_ptr          = move_ptr,
                         },
   };
   _nya_arena_action_insert(action);
@@ -458,19 +455,13 @@ NYA_MemoryActionArray* nya_arena_get_memory_actions(void) {
   return &_nya_arena_memory_actions;
 }
 
-u64 nya_arena_memory_usage(NYA_Arena* arena) __attr_no_discard {
+u64 nya_arena_memory_usage_bytes(NYA_Arena* arena) __attr_no_discard {
   nya_assert(arena != nullptr);
 
   u64 total_usage = 0;
   nya_dll_foreach (arena, region) total_usage += region->used;
 
   return total_usage;
-}
-
-void nya_arena_print(NYA_Arena* arena) {
-  nya_assert(arena != nullptr);
-
-  nya_unimplemented();
 }
 
 /*
@@ -483,7 +474,7 @@ NYA_INTERNAL void _nya_arena_align_and_pad_size(NYA_Arena* arena, u64* size) {
   nya_assert(arena != nullptr);
   nya_assert(size != nullptr);
 
-  if (nya_unlikely(*size == 0)) return;
+  if (*size == 0) return;
 
   *size = ((*size + (arena->options.alignment - 1)) & ~(arena->options.alignment - 1)) + ASAN_PADDING;
 }

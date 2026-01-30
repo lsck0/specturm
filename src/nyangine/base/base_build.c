@@ -99,7 +99,7 @@ void nya_rebuild_yourself(s32* argc, NYA_CString* argv, NYA_Command cmd) {
   // replace process with the new binary
   execvp(argv[0], (char* const*)new_argv);
   perror("execvp");
-  exit(1);
+  exit(EXIT_FAILURE);
 }
 
 /*

@@ -8,12 +8,12 @@
 
 __attr_unused NYA_INTERNAL NYA_Arena*                _nya_perf_arena         = nullptr;
 __attr_unused NYA_INTERNAL NYA_PerfMeasurementArray* _nya_perf_measurements  = nullptr;
-__attr_unused NYA_INTERNAL u64                       _nya_perf_start_time_ms = 0;
+__attr_unused NYA_INTERNAL u64                       _nya_perf_start_time_ns = 0;
 __attr_unused NYA_INTERNAL u64                       _nya_perf_start_cycles  = 0;
 
 __attr_unused NYA_INTERNAL void _nya_perf_init(void);
 __attr_unused NYA_INTERNAL void _nya_perf_shutdown(void);
-__attr_unused NYA_INTERNAL u64  _nya_perf_time_since_start_ms(void);
+__attr_unused NYA_INTERNAL u64  _nya_perf_time_since_start_ns(void);
 __attr_unused NYA_INTERNAL u64  _nya_perf_cycles_since_start(void);
 
 /*
@@ -39,9 +39,9 @@ void _nya_perf_timer_start(NYA_ConstCString name) {
   if (measurement != nullptr) {
     u64 index                          = (measurement->current + 1) % NYA_PERF_MEASUREMENT_SAMPLES;
     measurement->is_running            = true;
-    measurement->started_ms[index]     = _nya_perf_time_since_start_ms();
-    measurement->ended_ms[index]       = 0;
-    measurement->elapsed_ms[index]     = 0;
+    measurement->started_ns[index]     = _nya_perf_time_since_start_ns();
+    measurement->ended_ns[index]       = 0;
+    measurement->elapsed_ns[index]     = 0;
     measurement->started_cycles[index] = _nya_perf_cycles_since_start();
     measurement->ended_cycles[index]   = 0;
     measurement->elapsed_cycles[index] = 0;
@@ -52,10 +52,10 @@ void _nya_perf_timer_start(NYA_ConstCString name) {
   NYA_PerfMeasurement new_measurement = {
     .name           = name,
     .is_running     = true,
-    .started_ms     = { [0] = _nya_perf_time_since_start_ms() },
-    .ended_ms       = { 0 },
-    .elapsed_ms     = { 0 },
-    .started_cycles = { [0] = _nya_perf_cycles_since_start() },
+    .started_ns     = { _nya_perf_time_since_start_ns() },
+    .ended_ns       = { 0 },
+    .elapsed_ns     = { 0 },
+    .started_cycles = { _nya_perf_cycles_since_start() },
     .ended_cycles   = { 0 },
     .elapsed_cycles = { 0 },
     .current        = 0,
@@ -71,10 +71,14 @@ void _nya_perf_timer_stop(NYA_ConstCString name) {
 
   u64 index                          = measurement->current;
   measurement->is_running            = false;
-  measurement->ended_ms[index]       = _nya_perf_time_since_start_ms();
-  measurement->elapsed_ms[index]     = measurement->ended_ms[index] - measurement->started_ms[index];
+  measurement->ended_ns[index]       = _nya_perf_time_since_start_ns();
+  measurement->elapsed_ns[index]     = measurement->ended_ns[index] - measurement->started_ns[index];
+  measurement->last_elapsed_ns       = measurement->elapsed_ns[index];
+  measurement->last_elapsed_ms       = measurement->last_elapsed_ns / 1000000;
+  measurement->last_elapsed_s        = measurement->last_elapsed_ns / 1000000000;
   measurement->ended_cycles[index]   = _nya_perf_cycles_since_start();
   measurement->elapsed_cycles[index] = measurement->ended_cycles[index] - measurement->started_cycles[index];
+  measurement->last_elapsed_cycles   = measurement->elapsed_cycles[index];
 }
 
 NYA_PerfMeasurementArray* _nya_perf_timer_get_all(void) {
@@ -94,7 +98,7 @@ __attr_constructor NYA_INTERNAL void _nya_perf_init(void) {
   _nya_perf_arena        = nya_arena_create(.name = "Perf Arena");
   _nya_perf_measurements = nya_array_create(_nya_perf_arena, NYA_PerfMeasurement);
 
-  _nya_perf_start_time_ms = nya_clock_get_timestamp_ms();
+  _nya_perf_start_time_ns = nya_clock_get_timestamp_ms();
   _nya_perf_start_cycles  = __rdtsc();
 }
 
@@ -103,8 +107,8 @@ __attr_destructor NYA_INTERNAL void _nya_perf_shutdown(void) {
 }
 #endif // NYA_IS_DEBUG
 
-NYA_INTERNAL u64 _nya_perf_time_since_start_ms(void) {
-  return nya_clock_get_timestamp_ms() - _nya_perf_start_time_ms;
+NYA_INTERNAL u64 _nya_perf_time_since_start_ns(void) {
+  return nya_clock_get_timestamp_ns() - _nya_perf_start_time_ns;
 }
 
 NYA_INTERNAL u64 _nya_perf_cycles_since_start(void) {

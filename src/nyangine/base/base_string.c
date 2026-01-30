@@ -325,7 +325,7 @@ u64 nya_string_count(const NYA_String* str, NYA_ConstCString substr) __attr_over
   u64 count  = 0;
   u64 length = strlen(substr);
 
-  if (nya_unlikely(length == 0 || length > str->length)) return 0;
+  if (length == 0 || length > str->length) return 0;
 
   for (u64 i = 0; i < str->length; i++) {
     if (i + length > str->length) break;

@@ -1,3 +1,18 @@
+/**
+ * @file base_lexer.h
+ *
+ * Simple lexer/tokenizer.
+ *
+ * Example:
+ * ```c
+ * NYA_Lexer nya_lexer_create("let x = 42;");
+ * nya_lexer_run(&lexer);
+ *
+ * nya_array_foreach (lexer.tokens, token) { ... }
+ *
+ * nya_lexer_destroy(&lexer);
+ * ```
+ * */
 #pragma once
 
 #include "nyangine/base/base_arena.h"
@@ -34,6 +49,7 @@ struct NYA_Token {
   u32           line_number;
   u32           char_number;
 
+  /** only present if type == NYA_TOKEN_SYMBOL */
   union {
     u8 symbol;
   };
@@ -48,7 +64,8 @@ struct NYA_Lexer {
   u32 current_line_number;
   u32 current_char_number;
 
-  /** will be filled after running */
+  /* will be filled after running */
+
   NYA_TokenArray* tokens;
 };
 

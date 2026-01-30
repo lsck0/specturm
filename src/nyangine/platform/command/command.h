@@ -22,6 +22,13 @@ enum NYA_CommandFlags {
   NYA_COMMAND_FLAG_DEFAULT         = NYA_COMMAND_FLAG_OUTPUT_SHOW,
 };
 
+/**
+ * NYA_Command
+ *
+ * Commands have to follow these rules:
+ * - If NYA_COMMAND_FLAG_OUTPUT_CAPTURE is set, an arena must be provided and stdout_content and stderr_content
+ *   will be set after execution.
+ * */
 struct NYA_Command {
   NYA_CommandFlags flags;
 
@@ -32,7 +39,8 @@ struct NYA_Command {
 
   NYA_Arena* arena;
 
-  /** will be filled after execution */
+  /* will be filled after execution */
+
   s32         exit_code;
   NYA_String* stdout_content;
   NYA_String* stderr_content;

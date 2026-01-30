@@ -1,3 +1,11 @@
+/**
+ * @file base_guard.h
+ *
+ * Linux Kernel inspired automatic cleanup for resources.
+ * First define the cleanup function using NYA_DEFINE_CLEANUP_FN,
+ * then adding NYA_GUARDED_BY before a variable declaration will ensure
+ * that the cleanup function is called when the variable goes out of scope.
+ * */
 #pragma once
 
 #include "nyangine/base/base.h"

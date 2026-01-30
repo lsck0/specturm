@@ -36,7 +36,7 @@ s32 main(void) {
 
   NYA_PerfMeasurement* sleep_measurement = nya_perf_timer_get("sleep_timer");
   nya_assert(sleep_measurement != nullptr);
-  nya_assert(sleep_measurement->elapsed_ms[0] >= 9);
+  nya_assert(sleep_measurement->last_elapsed_ms >= 9);
   nya_assert(sleep_measurement->elapsed_cycles[0] > 0);
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -67,7 +67,7 @@ s32 main(void) {
   NYA_PerfMeasurement* scoped_measurement = nya_perf_timer_get("scoped_timer");
   nya_assert(scoped_measurement != nullptr);
   nya_assert(scoped_measurement->is_running == false);
-  nya_assert(scoped_measurement->elapsed_ms[0] >= 4);
+  nya_assert(scoped_measurement->last_elapsed_ms >= 4);
 
   // ─────────────────────────────────────────────────────────────────────────────
   // TEST: Restarting same timer updates values correctly
@@ -77,14 +77,14 @@ s32 main(void) {
   nya_perf_timer_stop("restart_timer");
 
   NYA_PerfMeasurement* restart_measurement = nya_perf_timer_get("restart_timer");
-  u64                  first_elapsed       = restart_measurement->elapsed_ms[0];
+  u64                  first_elapsed       = restart_measurement->last_elapsed_ms;
   nya_assert(first_elapsed >= 4);
 
   nya_perf_timer_start("restart_timer");
   sleep_ms(15);
   nya_perf_timer_stop("restart_timer");
 
-  u64 second_elapsed = restart_measurement->elapsed_ms[1];
+  u64 second_elapsed = restart_measurement->last_elapsed_ms;
   nya_assert(second_elapsed >= 14);
   nya_assert(second_elapsed > first_elapsed);
 
@@ -116,10 +116,10 @@ s32 main(void) {
   NYA_PerfMeasurement* conc_a = nya_perf_timer_get("concurrent_a");
   NYA_PerfMeasurement* conc_b = nya_perf_timer_get("concurrent_b");
   nya_assert(conc_a != nullptr && conc_b != nullptr);
-  nya_assert(conc_a->elapsed_ms[0] >= 9); // ran for ~10ms
-  nya_assert(conc_b->elapsed_ms[0] >= 9); // ran for ~10ms
+  nya_assert(conc_a->last_elapsed_ms >= 9); // ran for ~10ms
+  nya_assert(conc_b->last_elapsed_ms >= 9); // ran for ~10ms
   // A started before B, so A should have ended before B finished
-  nya_assert(conc_a->elapsed_ms[0] < conc_b->elapsed_ms[0] + 5);
+  nya_assert(conc_a->last_elapsed_ms < conc_b->last_elapsed_ms + 5);
 
   // ─────────────────────────────────────────────────────────────────────────────
   // TEST: Timer with zero-duration work
@@ -128,7 +128,7 @@ s32 main(void) {
   nya_perf_timer_stop("zero_duration");
   NYA_PerfMeasurement* zero_m = nya_perf_timer_get("zero_duration");
   nya_assert(zero_m != nullptr);
-  // elapsed_ms might be 0 or very small, but cycles should still be recorded
+  // last_elapsed_ms might be 0 or very small, but cycles should still be recorded
   nya_assert(zero_m->elapsed_cycles[0] >= 0);
 
   // ─────────────────────────────────────────────────────────────────────────────

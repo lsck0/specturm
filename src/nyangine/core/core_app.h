@@ -17,13 +17,24 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-typedef struct NYA_App       NYA_App;
-typedef struct NYA_AppConfig NYA_AppConfig;
+typedef struct NYA_App        NYA_App;
+typedef struct NYA_AppConfig  NYA_AppConfig;
+typedef struct NYA_FrameStats NYA_FrameStats;
 
 struct NYA_AppConfig {
-  u32 time_step_ms;
+  u32 time_step_ns;
   u32 frame_rate_limit;
   b8  vsync_enabled;
+};
+
+struct NYA_FrameStats {
+  u64 min_frame_time_ns;
+  u64 frame_start_time_ns;
+  u64 frame_end_time_ns;
+  u64 elapsed_ns;
+  s64 time_behind_ns;
+  f32 delta_time_s;
+  f32 fps;
 };
 
 struct NYA_App {
@@ -42,9 +53,9 @@ struct NYA_App {
   NYA_RenderSystem render_system;
   NYA_WindowSystem window_system;
 
-  u64 previous_time_ms;
-  s64 time_behind_ms;
-  b8  should_quit_game_loop;
+  NYA_FrameStats frame_stats;
+
+  b8 should_quit_game_loop;
 };
 
 /*

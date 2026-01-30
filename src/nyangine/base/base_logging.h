@@ -21,6 +21,7 @@ typedef enum {
 
 /**
  * Panic Hook Function
+ *
  * This will be executed before the panic function crashes the program.
  * If it returns true the crash will be prevented.
  * */

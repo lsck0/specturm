@@ -1,4 +1,3 @@
-#include "nyangine/base/base_string.h"
 #include "nyangine/nyangine.h"
 
 /*
@@ -514,7 +513,7 @@ void _nya_args_validate_command_tree(NYA_ArgCommand* command) {
 
     if (param->kind == NYA_ARG_PARAMETER_KIND_POSITIONAL) {
       nya_assert(command->subcommands[0] == nullptr, "Can either have positional arguments or subcommands, not both.");
-      nya_assert(param->variadic || param->default_value.type == NYA_TYPE_NULL, "Only variadic positional arguments can be optional.");
+      nya_assert(param->default_value.type == NYA_TYPE_NULL, "Only flag parameters can have default values.");
 
       has_positionals = true;
 
@@ -531,7 +530,7 @@ void _nya_args_validate_command_tree(NYA_ArgCommand* command) {
     }
 
     if (param->kind == NYA_ARG_PARAMETER_KIND_FLAG) {
-      nya_assert(!param->variadic, "Flag option cannot be variadic.");
+      nya_assert(!param->variadic, "Flag cannot be variadic.");
 
       if (param->default_value.type != NYA_TYPE_NULL && param->default_value.type != param->value.type) {
         nya_panic(

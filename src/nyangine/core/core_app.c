@@ -1,8 +1,5 @@
-#include "SDL3/SDL_gpu.h"
-#include "SDL3/SDL_init.h"
 #include "SDL3/SDL_timer.h"
 
-#include "nyangine/core/core_event.h"
 #include "nyangine/nyangine.h"
 
 /*
@@ -31,10 +28,11 @@ void nya_app_init(NYA_AppConfig config) {
   nya_assert(ok, "SDL_Init() failed: %s", SDL_GetError());
 
   *app = (NYA_App){
-    .initialized      = true,
-    .config           = config,
-    .global_allocator = nya_arena_create(.name = "global_allocator"),
-    .frame_allocator  = nya_arena_create(.name = "frame_allocator"),
+    .initialized                   = true,
+    .config                        = config,
+    .global_allocator              = nya_arena_create(.name = "global_allocator"),
+    .frame_allocator               = nya_arena_create(.name = "frame_allocator"),
+    .frame_stats.min_frame_time_ns = 1'000'000'000 / (u64)config.frame_rate_limit,
   };
 
   nya_info("Nyangine initialized. Initializing subsystems...");
@@ -76,7 +74,8 @@ void nya_app_options_update(NYA_AppConfig config) {
 
   nya_render_set_vsync(config.vsync_enabled);
 
-  app->config = config;
+  app->config                        = config;
+  app->frame_stats.min_frame_time_ns = 1'000'000'000 / (u64)config.frame_rate_limit;
 }
 
 void nya_app_run(void) {
@@ -84,18 +83,20 @@ void nya_app_run(void) {
 
   while (!app->should_quit_game_loop) {
     nya_perf_time_this_scope("frame");
-    nya_event_dispatch((NYA_Event){
-        .type = NYA_EVENT_FRAME_STARTED,
-    });
 
-    u64 current_time_ms    = SDL_GetTicks();
-    u64 elapsed_ms         = current_time_ms - app->previous_time_ms;
-    app->previous_time_ms  = current_time_ms;
-    app->time_behind_ms   += (s64)elapsed_ms;
+    // start of frame tasks
+    {
+      nya_event_dispatch((NYA_Event){
+          .type = NYA_EVENT_FRAME_STARTED,
+      });
+
+      app->frame_stats.frame_start_time_ns  = SDL_GetTicksNS();
+      app->frame_stats.time_behind_ns      += (s64)app->frame_stats.elapsed_ns;
+    }
 
     // handle events
     {
-      nya_perf_time_this_scope("event_handling");
+      nya_perf_time_this_scope("frame_event_handling");
       nya_event_dispatch((NYA_Event){
           .type = NYA_EVENT_HANDLING_STARTED,
       });
@@ -130,8 +131,8 @@ void nya_app_run(void) {
 
     // updating
     {
-      while (app->time_behind_ms >= app->config.time_step_ms) {
-        nya_perf_time_this_scope("updating");
+      while (app->frame_stats.time_behind_ns >= app->config.time_step_ns) {
+        nya_perf_time_this_scope("frame_updating");
         nya_event_dispatch((NYA_Event){
             .type = NYA_EVENT_UPDATING_STARTED,
         });
@@ -139,12 +140,13 @@ void nya_app_run(void) {
         nya_array_foreach (app->window_system.windows, window) {
           nya_array_foreach (window->layer_stack, layer) {
             if (layer->enabled && layer->on_update != nullptr) { /**/
-              layer->on_update(window, (f32)(app->config.time_step_ms) / 1000.0F);
+              app->frame_stats.delta_time_s = (f32)nya_time_ns_to_s(app->config.time_step_ns);
+              layer->on_update(window, app->frame_stats.delta_time_s);
             }
           }
         }
 
-        app->time_behind_ms -= app->config.time_step_ms;
+        app->frame_stats.time_behind_ns -= app->config.time_step_ns;
         nya_event_dispatch((NYA_Event){
             .type = NYA_EVENT_UPDATING_ENDED,
         });
@@ -153,7 +155,7 @@ void nya_app_run(void) {
 
     // rendering
     {
-      nya_perf_time_this_scope("rendering");
+      nya_perf_time_this_scope("frame_rendering");
       nya_event_dispatch((NYA_Event){
           .type = NYA_EVENT_RENDERING_STARTED,
       });
@@ -171,14 +173,23 @@ void nya_app_run(void) {
       });
     }
 
-    nya_event_dispatch((NYA_Event){
-        .type = NYA_EVENT_FRAME_ENDED,
-    });
+    // end of frame tasks
+    {
+      app->frame_stats.frame_end_time_ns = SDL_GetTicksNS();
+      app->frame_stats.elapsed_ns        = app->frame_stats.frame_end_time_ns - app->frame_stats.frame_start_time_ns;
+
+      nya_arena_free_all(app->frame_allocator);
+
+      nya_event_dispatch((NYA_Event){
+          .type = NYA_EVENT_FRAME_ENDED,
+      });
+    }
 
     // framerate limiting
     if (!app->config.vsync_enabled && app->config.frame_rate_limit > 0) {
-      u64 min_frame_time_ms = 1000 / app->config.frame_rate_limit;
-      if (elapsed_ms < min_frame_time_ms) SDL_Delay((u32)(min_frame_time_ms - elapsed_ms));
+      if (app->frame_stats.elapsed_ns < app->frame_stats.min_frame_time_ns) { /**/
+        SDL_DelayNS(app->frame_stats.min_frame_time_ns - app->frame_stats.elapsed_ns);
+      }
     }
   }
 }

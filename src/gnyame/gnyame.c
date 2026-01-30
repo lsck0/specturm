@@ -1,6 +1,6 @@
 #include "gnyame/gnyame.h"
 
-void on_update(NYA_Window* window, f32 delta_time);
+void on_update(NYA_Window* window, f32 delta_time_s);
 void on_event(NYA_Window* window, NYA_Event* event);
 void on_render(NYA_Window* window);
 
@@ -14,7 +14,7 @@ void gnyame_init(s32 argc, NYA_CString* argv) {
   nya_unused(argc, argv);
 
   nya_app_init((NYA_AppConfig){
-      .time_step_ms     = 15,
+      .time_step_ns     = nya_time_ms_to_ns(15),
       .frame_rate_limit = 120,
       .vsync_enabled    = false,
   });
@@ -56,9 +56,10 @@ void gnyame_deinit(void) {
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-void on_update(NYA_Window* window, f32 delta_time) {
+void on_update(NYA_Window* window, f32 delta_time_s) {
   nya_unused(window);
-  nya_unused(delta_time);
+
+  nya_info("Delta time: " FMTf32 "s", delta_time_s);
 
   if (nya_input_is_key_just_pressed(NYA_KEY_A)) { nya_asset_release(NYA_ASSETS_TEXTS_HELLO_TXT); }
 

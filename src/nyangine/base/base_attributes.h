@@ -1,3 +1,8 @@
+/**
+ * @file base_attributes.h
+ *
+ * Convenience macros around compiler attributes. This should be synced to `.clang-format`.
+ * */
 #pragma once
 
 #ifndef __has_attribute

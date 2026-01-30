@@ -3,7 +3,7 @@
  *
  * Base PRNG used: https://espadrine.github.io/blog/posts/shishua-the-fastest-prng-in-the-world.html
  *
- * EXAMPLE USAGE:
+ * Example:
  *
  * ```c
  * NYA_RNG rng = nya_rng_create();

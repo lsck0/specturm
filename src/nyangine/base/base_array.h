@@ -1,3 +1,71 @@
+/**
+ * @file base_array.h
+ *
+ * Typesafe dynamic arrays.
+ *
+ * API Overview:
+ * - nya_array_create(arena_ptr, item_type)
+ * - nya_array_create_with_capacity(arena_ptr, item_type, initial_capacity)
+ * - nya_array_from_argv(arena_ptr, argc, argv)
+ * - nya_array_resize(arr_ptr, new_capacity)
+ * - nya_array_reserve(arr_ptr, min_capacity)
+ * - nya_array_shrink_to_fit(arr_ptr)
+ * - nya_array_clear(arr_ptr)
+ * - nya_array_destroy(arr_ptr)
+ * - nya_array_get(arr_ptr, index)
+ * - nya_array_set(arr_ptr, index, item)
+ * - nya_array_first(arr_ptr)
+ * - nya_array_last(arr_ptr)
+ * - nya_array_add(arr_ptr, item)
+ * - nya_array_add_many(arr_ptr, ...)
+ * - nya_array_extend(arr_ptr, other_arr_ptr)
+ * - nya_array_insert(arr_ptr, item, index)
+ * - nya_array_insert_many(arr_ptr, start_index, ...)
+ * - nya_array_remove(arr_ptr, index)
+ * - nya_array_remove_many(arr_ptr, start_index, count)
+ * - nya_array_remove_item(arr_ptr, item)
+ * - nya_array_push_back(arr_ptr, item)
+ * - nya_array_push_back_many(arr_ptr, ...)
+ * - nya_array_push_front(arr_ptr, item)
+ * - nya_array_push_front_many(arr_ptr, ...)
+ * - nya_array_pop_back(arr_ptr)
+ * - nya_array_pop_back_many(arr_ptr, count)
+ * - nya_array_pop_front(arr_ptr)
+ * - nya_array_pop_front_many(arr_ptr, count)
+ * - nya_array_contains(arr_ptr, item)
+ * - nya_array_find(arr_ptr, item)
+ * - nya_array_sort(arr_ptr, compare_fn)
+ * - nya_array_equals(arr1_ptr, arr2_ptr)
+ * - nya_carray_length(carray)
+ * - nya_array_length(arr_ptr)
+ * - nya_array_swap(arr_ptr, index_a, index_b)
+ * - nya_array_reverse(arr_ptr)
+ * - nya_array_copy(arr_ptr)
+ * - nya_array_move(arr_ptr, new_arena_ptr)
+ * - nya_array_slice_excld(arr_ptr, start, end)
+ * - nya_array_slice_incld(arr_ptr, start, end)
+ * - nya_array_for(arr_ptr, index_name)
+ * - nya_array_for_reverse(arr_ptr, index_name)
+ * - nya_array_foreach(arr_ptr, item_name)
+ * - nya_array_foreach_reverse(arr_ptr, item_name)
+ *
+ * Example:
+ * ```c
+ * typedef struct {
+ *  u32   id;
+ *  char* name;
+ * } Player;
+ * nya_derive_array(Player);
+ *
+ * NYA_Arena* arena = nya_arena_create(...);
+ * PlayerArray* players = nya_array_create(arena, Player);
+ *
+ * nya_array_add_many(players, (Player){ .id = 1, .name = "Alice" }, (Player){ .id = 2, .name = "Bob" });
+ * nya_array_foreach (players, player) nya_info("Player %u: %s", player->id, player->name);
+ *
+ * nya_arena_destroy(arena);
+ * ```
+ * */
 #pragma once
 
 #include "nyangine/base/base_arena.h"
@@ -63,7 +131,6 @@ nya_derive_array(f32ptr);
 nya_derive_array(f64ptr);
 nya_derive_array(f128ptr);
 
-#if defined(__has_feature) && __has_attribute(ext_vector_type)
 nya_derive_array(f16x2);
 nya_derive_array(f16x3);
 nya_derive_array(f16x4);
@@ -76,9 +143,6 @@ nya_derive_array(f64x4);
 nya_derive_array(f128x2);
 nya_derive_array(f128x3);
 nya_derive_array(f128x4);
-#endif // defined(__has_feature) && __has_attribute(ext_vector_type)
-
-#if defined(__has_feature) && __has_attribute(ext_vector_type) && __has_attribute(matrix_type)
 nya_derive_array(f16_2x2);
 nya_derive_array(f16_3x3);
 nya_derive_array(f16_4x4);
@@ -91,7 +155,6 @@ nya_derive_array(f64_4x4);
 nya_derive_array(f128_2x2);
 nya_derive_array(f128_3x3);
 nya_derive_array(f128_4x4);
-#endif // defined(__has_feature) && __has_attribute(ext_vector_type) && __has_attribute(matrix_type)
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -118,9 +181,10 @@ nya_derive_array(f128_4x4);
 #define nya_array_from_argv(arena_ptr, argc, argv)                                                                                                   \
   ({                                                                                                                                                 \
     nya_assert_type_match(arena_ptr, (NYA_Arena*)0);                                                                                                 \
+    nya_assert_type_match(argc, s32(0));                                                                                                             \
     nya_assert_type_match(argv, (const char**)0);                                                                                                    \
-    NYA_StringArray args = nya_array_create_with_capacity(arena_ptr, NYA_String, argc);                                                              \
-    nya_range_for (idx, 0, argc) nya_array_push_back(&args, nya_string_from(arena_ptr, (argv)[idx]));                                                \
+    NYA_StringArray* args = nya_array_create_with_capacity(arena_ptr, NYA_String, argc);                                                             \
+    for (s32 i = 0; i < (argc); i++) nya_array_add(args, nya_string_from(arena_ptr, (argv)[i]));                                                     \
     args;                                                                                                                                            \
   })
 
@@ -137,7 +201,14 @@ nya_derive_array(f128_4x4);
 
 #define nya_array_reserve(arr_ptr, min_capacity)                                                                                                     \
   ({                                                                                                                                                 \
-    if ((arr_ptr)->capacity < (min_capacity)) { nya_array_resize((arr_ptr), nya_cast_to_u64(nya_max(2UL * (arr_ptr)->capacity, (min_capacity)))); }  \
+    if ((arr_ptr)->capacity < (min_capacity)) { /**/                                                                                                 \
+      nya_array_resize((arr_ptr), nya_cast_to_u64(nya_max(2UL * (arr_ptr)->capacity, (min_capacity))));                                              \
+    }                                                                                                                                                \
+  })
+
+#define nya_array_shrink_to_fit(arr_ptr)                                                                                                             \
+  ({                                                                                                                                                 \
+    if ((arr_ptr)->length < (arr_ptr)->capacity) nya_array_resize(arr_ptr, (arr_ptr)->length);                                                       \
   })
 
 #define nya_array_clear(arr_ptr) ({ (arr_ptr)->length = 0; })
@@ -366,11 +437,6 @@ nya_derive_array(f128_4x4);
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-#define nya_array_shrink_to_fit(arr_ptr)                                                                                                             \
-  ({                                                                                                                                                 \
-    if ((arr_ptr)->length < (arr_ptr)->capacity) nya_array_resize(arr_ptr, (arr_ptr)->length);                                                       \
-  })
-
 #define nya_array_copy(arr_ptr)                                                                                                                      \
   ({                                                                                                                                                 \
     typeof(*(arr_ptr)) copy = { .items    = nya_arena_copy((arr_ptr)->arena, (arr_ptr)->items, sizeof(*(arr_ptr)->items) * (arr_ptr)->capacity),     \
@@ -426,9 +492,6 @@ nya_derive_array(f128_4x4);
  * ITERATOR MACROS
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
-
-#define nya_range_for_t(type, idx, start, end) for (type idx = start; (idx) < (end); (idx)++)
-#define nya_range_for(idx, start, end)         nya_range_for_t (s32, idx, start, end)
 
 #define nya_array_for(arr_ptr, index_name) for (u64 index_name = 0; (index_name) < (arr_ptr)->length; (index_name)++)
 

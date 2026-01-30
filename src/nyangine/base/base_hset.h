@@ -1,3 +1,42 @@
+/**
+ * @file base_hset.h
+ *
+ * API Overview:
+ * - nya_hset_create(arena_ptr, item_type)
+ * - nya_hset_create_with_capacity(arena_ptr, item_type, initial_capacity)
+ * - nya_hset_clear(hset_ptr)
+ * - nya_hset_destroy(hset_ptr)
+ * - nya_hset_resize_and_rehash(hset_ptr, new_capacity)
+ * - nya_hset_contains(hset_ptr, item)
+ * - nya_hset_insert(hset_ptr, item)
+ * - nya_hset_remove(hset_ptr, item)
+ * - nya_hset_union(dest_hset_ptr, src_hset_ptr)
+ * - nya_hset_intersection(dest_hset_ptr, src_hset_ptr)
+ * - nya_hset_difference(dest_hset_ptr, src_hset_ptr)
+ * - nya_hset_symmetric_difference(dest_hset_ptr, src_hset_ptr)
+ * - nya_hset_copy(hset_ptr)
+ * - nya_hset_move(hset_ptr, new_arena_ptr)
+ * - nya_hset_foreach(hset_ptr, item_name)
+ *
+ * Example:
+ * ```c
+ * typedef struct {
+ *  u32   id;
+ *  char* name;
+ * } Player;
+ * nya_derive_hset(Player);
+ *
+ * NYA_Arena* arena = nya_arena_create(...);
+ * PlayerHSet* player_set = nya_hset_create(arena, Player);
+ *
+ * nya_hset_insert(player_set, (Player){ .id = 1, .name = "Alice" });
+ * nya_hset_insert(player_set, (Player){ .id = 2, .name = "Bob" });
+ *
+ * nya_hset_foreach (player_set, player) nya_info("Player %u: %s", player->id, player->name);
+ *
+ * nya_arena_destroy(arena);
+ * ```c
+ * */
 #pragma once
 
 #include "nyangine/base/base_arena.h"
@@ -63,7 +102,7 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-#define nya_hset_insert_unchecked(hset_ptr, item)                                                                                                    \
+#define _nya_hset_insert_unchecked(hset_ptr, item)                                                                                                   \
   ({                                                                                                                                                 \
     nya_assert_type_match(item, (hset_ptr)->items[0]);                                                                                               \
     typeof(item) item_var   = item;                                                                                                                  \
@@ -100,7 +139,7 @@
                                                                                                                                                      \
     for (u64 i = 0; i < old_hset.capacity; i++) {                                                                                                    \
       if (!old_hset.occupied[i]) continue;                                                                                                           \
-      nya_hset_insert_unchecked(hset_ptr, old_hset.items[i]);                                                                                        \
+      _nya_hset_insert_unchecked(hset_ptr, old_hset.items[i]);                                                                                       \
     }                                                                                                                                                \
                                                                                                                                                      \
     nya_arena_free((hset_ptr)->arena, old_hset.items, sizeof(*old_hset.items) * old_hset.capacity);                                                  \
@@ -178,7 +217,7 @@
           typeof((hset_ptr)->items[0]) _rehash_item = (hset_ptr)->items[_rehash_idx];                                                                \
           (hset_ptr)->occupied[_rehash_idx]         = false;                                                                                         \
           (hset_ptr)->length--;                                                                                                                      \
-          nya_hset_insert_unchecked(hset_ptr, _rehash_item);                                                                                         \
+          _nya_hset_insert_unchecked(hset_ptr, _rehash_item);                                                                                        \
           _rehash_idx = (_rehash_idx + 1) % (hset_ptr)->capacity;                                                                                    \
         }                                                                                                                                            \
         break;                                                                                                                                       \

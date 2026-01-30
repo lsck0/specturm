@@ -1,3 +1,13 @@
+/**
+ * @file base_types.h
+ *
+ * Fundamental type defs and dynamic type system.
+ *
+ * Example:
+ * ```c
+ * NYA_Value val = {.type = NYA_TYPE_U32, .as_u32 = 42};
+ * ```
+ * */
 #pragma once
 
 #include "nyangine/base/base.h"

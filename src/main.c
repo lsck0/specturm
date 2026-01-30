@@ -98,6 +98,11 @@ s32 main(s32 argc, NYA_CString* argv) {
 }
 
 void dll_load(void) {
+  u64 gnyame_dll_last_modified_temp;
+  b8  ok = nya_filesystem_last_modified(DLL_PATH, &gnyame_dll_last_modified_temp);
+  nya_assert(ok, "Failed to get last modified time for %s.", DLL_PATH);
+  gnyame_dll_last_modified = gnyame_dll_last_modified_temp;
+
   gnyame_dll = dlopen(DLL_PATH, RTLD_NOW | RTLD_GLOBAL);
   nya_assert(gnyame_dll, "Failed to load %s: %s.", DLL_PATH, dlerror());
 
@@ -105,11 +110,6 @@ void dll_load(void) {
   gnyame_run    = (gnyame_run_fn*)dlsym(gnyame_dll, "gnyame_run");
   gnyame_deinit = (gnyame_deinit_fn*)dlsym(gnyame_dll, "gnyame_deinit");
   nya_assert(gnyame_init && gnyame_run && gnyame_deinit, "Failed to load symbols from %s: %s.", DLL_PATH, dlerror());
-
-  u64 gnyame_dll_last_modified_temp;
-  b8  ok = nya_filesystem_last_modified(DLL_PATH, &gnyame_dll_last_modified_temp);
-  nya_assert(ok, "Failed to get last modified time for %s.", DLL_PATH);
-  gnyame_dll_last_modified = gnyame_dll_last_modified_temp;
 }
 
 void dll_unload(void) {

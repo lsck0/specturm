@@ -594,26 +594,25 @@ NYA_INTERNAL void hook_add_version_flag_and_git_hash(NYA_BuildRule* rule) {
   static b8          initialized = false;
   static NYA_CString GIT_HASH_FLAG;
   static NYA_CString VERSION_FLAG;
-  if (initialized) goto skip_initialization;
 
-  NYA_Command git_hash_command = {
-    .arena     = nya_arena_global,
-    .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
-    .program   = "git",
-    .arguments = { "rev-parse", "HEAD" },
-  };
-  nya_command_run(&git_hash_command);
-  nya_assert(git_hash_command.exit_code == 0, "Failed to get git commit hash.");
+  if (!initialized) {
+    NYA_Command git_hash_command = {
+      .arena     = nya_arena_global,
+      .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
+      .program   = "git",
+      .arguments = { "rev-parse", "HEAD" },
+    };
+    nya_command_run(&git_hash_command);
+    nya_assert(git_hash_command.exit_code == 0, "Failed to get git commit hash.");
 
-  nya_string_trim_whitespace(git_hash_command.stdout_content);
-  NYA_CString git_hash      = nya_string_to_cstring(nya_arena_global, git_hash_command.stdout_content);
-  NYA_String* git_hash_flag = nya_string_sprintf(nya_arena_global, "-DGIT_COMMIT=\"%s\"", git_hash);
-  NYA_String* version_flag  = nya_string_sprintf(nya_arena_global, "-DVERSION=\"%s\"", VERSION);
-  GIT_HASH_FLAG             = nya_string_to_cstring(nya_arena_global, git_hash_flag);
-  VERSION_FLAG              = nya_string_to_cstring(nya_arena_global, version_flag);
-  initialized               = true;
-
-skip_initialization:
+    nya_string_trim_whitespace(git_hash_command.stdout_content);
+    NYA_CString git_hash      = nya_string_to_cstring(nya_arena_global, git_hash_command.stdout_content);
+    NYA_String* git_hash_flag = nya_string_sprintf(nya_arena_global, "-DGIT_COMMIT=\"%s\"", git_hash);
+    NYA_String* version_flag  = nya_string_sprintf(nya_arena_global, "-DVERSION=\"%s\"", VERSION);
+    GIT_HASH_FLAG             = nya_string_to_cstring(nya_arena_global, git_hash_flag);
+    VERSION_FLAG              = nya_string_to_cstring(nya_arena_global, version_flag);
+    initialized               = true;
+  }
 
   u64 length = 0;
   while (length < NYA_COMMAND_MAX_ARGUMENTS && rule->command.arguments[length] != nullptr) length++;

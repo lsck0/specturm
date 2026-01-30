@@ -1,34 +1,3 @@
-/**
- * @file core_asset.h
- *
- * When needing an asset it first must be queued for loading:
- * ```c
- *  nya_asset_load((NYA_AssetLoadParameters){
- *      .type   = NYA_ASSET_TYPE_TEXT,
- *      .handle = NYA_ASSETS_TEXTS_HELLO_TXT,
- *  });
- * ```
- *
- * Once an asset is loaded it can be looked up by the handle:
- * ```c
- *  NYA_Asset* hello_txt_asset = nya_asset_get(NYA_ASSETS_TEXTS_HELLO_TXT);
- *  if (hello_txt_asset && hello_txt_asset->status == NYA_ASSET_STATUS_LOADED) {
- *    ...
- *  }
- * ```
- * If it was never loaded, nya_get_asset will return null.
- *
- * To make use of the reference counting system / automatic unloading of assets,
- * acquire the asset when creating an entity that uses it:
- * ```c
- *  nya_asset_acquire(NYA_ASSETS_TEXTS_HELLO_TXT);
- * ```
- * And release it when the entity is destroyed:
- * ```c
- *  nya_asset_release(NYA_ASSETS_TEXTS_HELLO_TXT);
- * ```
- * When a release drops the reference count to zero the asset is queued for unloading.
- * */
 #pragma once
 
 #include "SDL3/SDL_gpu.h"

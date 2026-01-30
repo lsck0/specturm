@@ -41,7 +41,6 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-#if defined(__has_feature) && __has_attribute(ext_vector_type)
 typedef f16  f16x2 __attr_vector(2);
 typedef f16  f16x3 __attr_vector(3);
 typedef f16  f16x4 __attr_vector(4);
@@ -131,7 +130,6 @@ typedef f128 f128x4 __attr_vector(4);
 #define f128x4_unit_y ((f128x4){ 0, 1, 0, 0 })
 #define f128x4_unit_z ((f128x4){ 0, 0, 1, 0 })
 #define f128x4_unit_w ((f128x4){ 0, 0, 0, 1 })
-#endif // defined(__has_feature) && __has_attribute(ext_vector_type)
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -139,7 +137,6 @@ typedef f128 f128x4 __attr_vector(4);
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-#if defined(__has_feature) && __has_attribute(ext_vector_type) && __has_attribute(matrix_type)
 typedef f16  f16_2x2 __attr_matrix(2, 2);
 typedef f16  f16_3x3 __attr_matrix(3, 3);
 typedef f16  f16_4x4 __attr_matrix(4, 4);
@@ -215,4 +212,3 @@ NYA_API NYA_EXTERN f64x4  nya_matrix_times_vector(f64_4x4 mat, f64x4 vec) __attr
 NYA_API NYA_EXTERN f128x2 nya_matrix_times_vector(f128_2x2 mat, f128x2 vec) __attr_overloaded;
 NYA_API NYA_EXTERN f128x3 nya_matrix_times_vector(f128_3x3 mat, f128x3 vec) __attr_overloaded;
 NYA_API NYA_EXTERN f128x4 nya_matrix_times_vector(f128_4x4 mat, f128x4 vec) __attr_overloaded;
-#endif // defined(__has_feature) && __has_attribute(ext_vector_type) && __has_attribute(matrix_type)

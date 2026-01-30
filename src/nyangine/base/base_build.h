@@ -1,3 +1,10 @@
+/**
+ * @file base_build.h
+ *
+ * Rule based build system with integration to the CLI parser.
+ *
+ * For example usage, see `build.c`.
+ * */
 #pragma once
 
 #include "nyangine/base/base_string.h"
@@ -21,12 +28,19 @@ enum NYA_BuildRulePolicy {
   NYA_BUILD_COUNT,
 };
 
+/**
+ * NYA_BuildRule
+ *
+ * Build rules have to follow these rules:
+ * - If the policy is NYA_BUILD_ONCE, output_file must be specified.
+ * - If the policy is NYA_BUILD_IF_OUTDATED, both input_file and output_file must be specified.
+ * - Metarules (is_metarule = true) dont have commands, only dependencies and hooks.
+ * - Hooks are optional.
+ * */
 struct NYA_BuildRule {
   NYA_ConstCString    name;
   NYA_BuildRulePolicy policy;
-
-  /** Metarules dont have commands, only dependencies and hooks. */
-  b8 is_metarule;
+  b8                  is_metarule;
 
   NYA_ConstCString input_file;
   NYA_ConstCString output_file;

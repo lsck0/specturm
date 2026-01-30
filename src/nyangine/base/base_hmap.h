@@ -1,3 +1,43 @@
+/**
+ * @file base_hmap.h
+ *
+ * API Overview:
+ * - nya_hmap_create(arena_ptr, key_type, value_type)
+ * - nya_hmap_create_with_capacity(arena_ptr, key_type, value_type, initial
+ * - nya_hmap_clear(hmap_ptr)
+ * - nya_hmap_destroy(hmap_ptr)
+ * - nya_hmap_resize_and_rehash(hmap_ptr, new_capacity)
+ * - nya_hmap_contains(hmap_ptr, key)
+ * - nya_hmap_get(hmap_ptr, key)
+ * - nya_hmap_set(hmap_ptr, key, value)
+ * - nya_hmap_remove(hmap_ptr, key)
+ * - nya_hmap_copy(hmap_ptr)
+ * - nya_hmap_move(hmap_ptr, new_arena_ptr)
+ * - nya_hmap_foreach_key(hmap_ptr, key_name)
+ * - nya_hmap_foreach_value(hmap_ptr, value_name)
+ *
+ * Example:
+ * ```c
+ * typedef struct {
+ *  u32   id;
+ *  char* name;
+ * } Player;
+ * nya_derive_hmap(u32, Player);
+ *
+ * NYA_Arena* arena = nya_arena_create(...);
+ * u32_Player_HMap* players = nya_hmap_create(arena, u32, Player);
+ *
+ * nya_hmap_set(players, 1, (Player){ .id = 1, .name = "Alice" });
+ * nya_hmap_set(players, 2, (Player){ .id = 2, .name = "Bob" });
+ *
+ * Player* alice = nya_hmap_get(players, 1);
+ * if (alice != nullptr) {
+ *  ...
+ * }
+ *
+ * nya_arena_destroy(arena);
+ * ```
+ * */
 #pragma once
 
 #include "nyangine/base/base_arena.h"
@@ -66,7 +106,7 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-#define nya_hmap_set_unchecked(hmap_ptr, key, value)                                                                                                 \
+#define _nya_hmap_set_unchecked(hmap_ptr, key, value)                                                                                                \
   ({                                                                                                                                                 \
     nya_assert_type_match(key, (hmap_ptr)->keys[0]);                                                                                                 \
     nya_assert_type_match(value, (hmap_ptr)->values[0]);                                                                                             \
@@ -110,7 +150,7 @@
                                                                                                                                                      \
     for (u64 i = 0; i < old_capacity; i++) {                                                                                                         \
       if (!old_occupied[i]) continue;                                                                                                                \
-      nya_hmap_set_unchecked(hmap_ptr, old_keys[i], old_values[i]);                                                                                  \
+      _nya_hmap_set_unchecked(hmap_ptr, old_keys[i], old_values[i]);                                                                                 \
     }                                                                                                                                                \
                                                                                                                                                      \
     nya_arena_free((hmap_ptr)->arena, old_keys, sizeof(*old_keys) * old_capacity);                                                                   \
@@ -175,7 +215,7 @@
     if (((f32)((hmap_ptr)->length + 1) / (f32)(hmap_ptr)->capacity) > _NYA_HASHMAP_LOAD_FACTOR) {                                                    \
       nya_hmap_resize_and_rehash(hmap_ptr, (hmap_ptr)->capacity * 2);                                                                                \
     }                                                                                                                                                \
-    nya_hmap_set_unchecked(hmap_ptr, key, value);                                                                                                    \
+    _nya_hmap_set_unchecked(hmap_ptr, key, value);                                                                                                   \
   })
 
 #define nya_hmap_remove(hmap_ptr, key)                                                                                                               \

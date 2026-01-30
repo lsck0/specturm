@@ -1,3 +1,44 @@
+/**
+ * @file base_heap.h
+ *
+ * API Overview:
+ * - nya_heap_create(arena_ptr, item_type, compare_fn)
+ * - nya_heap_create_with_capacity(arena_ptr, item_type, compare_fn, initial_capacity
+ * - nya_heap_from_carray(arena_ptr, item_type, carray, carray_length, compare_fn)
+ * - nya_heap_resize(heap_ptr, new_capacity)
+ * - nya_heap_reserve(heap_ptr, min_capacity)
+ * - nya_heap_clear(heap_ptr)
+ * - nya_heap_destroy(heap_ptr)
+ * - nya_heap_peek(heap_ptr)
+ * - nya_heap_push(heap_ptr, item)
+ * - nya_heap_pop(heap_ptr)
+ * - nya_heap_length(heap_ptr)
+ *
+ * Example:
+ * ```c
+ * typedef struct {
+ *  u32   id;
+ *  char* name;
+ * } Player;
+ * nya_derive_heap(Player);
+ *
+ * s32 compare_fn(const Player* a, const Player* b) {
+ *   if (a->id < b->id) { return -1; }
+ *   else if (a->id > b->id) { return 1; }
+ *   else { return 0; }
+ * }
+ *
+ * NYA_Arena* arena = nya_arena_create(...);
+ * PlayerHeap* players = nya_heap_create(arena, Player, &compare_fn);
+ *
+ * nya_heap_push(players, (Player){ .id = 2, .name = "Alice" });
+ * nya_heap_push(players, (Player){ .id = 1, .name = "Bob" });
+ *
+ * Player top_player = nya_heap_peek(players); // top_player.id == 1
+ *
+ * nya_arena_destroy(arena);
+ * ```
+ * */
 #pragma once
 
 #include "nyangine/base/base_arena.h"

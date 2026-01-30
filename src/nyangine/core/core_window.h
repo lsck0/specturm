@@ -73,7 +73,7 @@ struct NYA_Layer {
 
   void (*on_create)(void);
   void (*on_destroy)(void);
-  void (*on_update)(NYA_Window* window, f32 delta_time);
+  void (*on_update)(NYA_Window* window, f32 delta_time_s);
   void (*on_event)(NYA_Window* window, NYA_Event* event);
   void (*on_render)(NYA_Window* window);
 
