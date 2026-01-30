@@ -51,13 +51,13 @@ NYA_API NYA_EXTERN void nya_system_input_handle_event(NYA_Event* event);
  * ─────────────────────────────────────────────────────────
  */
 
-NYA_API NYA_EXTERN b8 nya_input_is_key_just_pressed(NYA_Keycode key);
-NYA_API NYA_EXTERN b8 nya_input_is_key_pressed(NYA_Keycode key);
-NYA_API NYA_EXTERN b8 nya_input_is_key_just_released(NYA_Keycode key);
+NYA_API NYA_EXTERN b8 nya_input_key_just_pressed(NYA_Keycode key);
+NYA_API NYA_EXTERN b8 nya_input_key_pressed(NYA_Keycode key);
+NYA_API NYA_EXTERN b8 nya_input_key_just_released(NYA_Keycode key);
 
-NYA_API NYA_EXTERN f32x2 nya_input_get_mouse_position(void);
-NYA_API NYA_EXTERN f32x2 nya_input_get_mouse_position_delta(void);
-NYA_API NYA_EXTERN f32x2 nya_input_get_mouse_wheel_scroll(void);
-NYA_API NYA_EXTERN b8    nya_input_is_mouse_button_just_pressed(NYA_MouseButton button);
-NYA_API NYA_EXTERN b8    nya_input_is_mouse_button_pressed(NYA_MouseButton button);
-NYA_API NYA_EXTERN b8    nya_input_is_mouse_button_just_released(NYA_MouseButton button);
+NYA_API NYA_EXTERN f32x2 nya_input_mouse_position(void);
+NYA_API NYA_EXTERN f32x2 nya_input_mouse_position_delta(void);
+NYA_API NYA_EXTERN f32x2 nya_input_mouse_wheel_scroll(void);
+NYA_API NYA_EXTERN b8    nya_input_mouse_button_just_pressed(NYA_MouseButton button);
+NYA_API NYA_EXTERN b8    nya_input_mouse_button_pressed(NYA_MouseButton button);
+NYA_API NYA_EXTERN b8    nya_input_mouse_button_just_released(NYA_MouseButton button);

@@ -59,9 +59,9 @@ void gnyame_deinit(void) {
 void on_update(NYA_Window* window, f32 delta_time_s) {
   nya_unused(window, delta_time_s);
 
-  if (nya_input_is_key_just_pressed(NYA_KEY_A)) { nya_asset_release(NYA_ASSETS_TEXTS_HELLO_TXT); }
+  if (nya_input_key_just_pressed(NYA_KEY_A)) { nya_asset_release(NYA_ASSETS_TEXTS_HELLO_TXT); }
 
-  if (nya_input_is_key_just_pressed(NYA_KEY_B)) {
+  if (nya_input_key_just_pressed(NYA_KEY_B)) {
     nya_asset_load((NYA_AssetLoadParameters){
         .type   = NYA_ASSET_TYPE_TEXT,
         .handle = NYA_ASSETS_TEXTS_HELLO_TXT,
