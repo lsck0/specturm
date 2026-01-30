@@ -60,7 +60,12 @@ subcommand_matching:
     argv++;
   }
 
-  for (s32 arg_index = 0; arg_index < argc; arg_index++) {
+  // determine where to start processing arguments
+  // if we have a subcommand, argv[0] is already the first argument (subcommand name was skipped)
+  // if no subcommand, argv[0] is the program name and we should skip it
+  s32 start_index = (path_count > 1) ? 0 : 1;
+
+  for (s32 arg_index = start_index; arg_index < argc; arg_index++) {
     if (argv[arg_index] == nullptr) continue;
 
     if (nya_string_starts_with(argv[arg_index], "--")) {

@@ -15,7 +15,7 @@ void gnyame_init(s32 argc, NYA_CString* argv) {
 
   nya_app_init((NYA_AppConfig){
       .time_step_ns     = nya_time_ms_to_ns(15),
-      .frame_rate_limit = 120,
+      .frame_rate_limit = 60,
       .vsync_enabled    = false,
   });
 
@@ -57,9 +57,7 @@ void gnyame_deinit(void) {
  */
 
 void on_update(NYA_Window* window, f32 delta_time_s) {
-  nya_unused(window);
-
-  nya_info("Delta time: " FMTf32 "s", delta_time_s);
+  nya_unused(window, delta_time_s);
 
   if (nya_input_is_key_just_pressed(NYA_KEY_A)) { nya_asset_release(NYA_ASSETS_TEXTS_HELLO_TXT); }
 
@@ -72,7 +70,7 @@ void on_update(NYA_Window* window, f32 delta_time_s) {
   }
 
   NYA_Asset* hello_txt_asset = nya_asset_get(NYA_ASSETS_TEXTS_HELLO_TXT);
-  if (hello_txt_asset && hello_txt_asset->status == NYA_ASSET_STATUS_LOADED) {
+  nya_asset_with(hello_txt_asset) {
     nya_info("hello.txt: %.*s", (s32)hello_txt_asset->as_text.size, (char*)hello_txt_asset->as_text.data);
   }
 

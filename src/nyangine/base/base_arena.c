@@ -77,13 +77,22 @@ void* _nya_arena_nodebug_alloc(NYA_Arena* arena, u64 size) __attr_malloc {
 
     // check if there is space left in the region
     if (region->capacity - region->used >= size) {
-      u8* ptr       = region->memory + region->used;
-      region->used += size;
+      u8* ptr = region->memory + region->used;
 
-      asan_unpoison_memory_region(ptr, size - ASAN_PADDING);
-      asan_poison_memory_region(ptr + size - ASAN_PADDING, ASAN_PADDING);
+      // align pointer to arena alignment requirement
+      uintptr_t aligned_ptr = ((uintptr_t)ptr + (arena->options.alignment - 1)) & ~(arena->options.alignment - 1);
+      u64       padding     = aligned_ptr - (uintptr_t)ptr;
 
-      return ptr;
+      // check if we still have enough space after alignment padding
+      if (region->capacity - region->used - padding >= size) {
+        ptr           = (u8*)aligned_ptr;
+        region->used += size + padding;
+
+        asan_unpoison_memory_region(ptr, size - ASAN_PADDING);
+        asan_poison_memory_region(ptr + size - ASAN_PADDING, ASAN_PADDING);
+
+        return ptr;
+      }
     }
 
     continue;
@@ -97,8 +106,12 @@ skip_search:
   nya_assert(new_region != nullptr);
   nya_assert(new_region_memory != nullptr);
 
+  // align the initial pointer to arena alignment requirement
+  uintptr_t aligned_memory  = ((uintptr_t)new_region_memory + (arena->options.alignment - 1)) & ~(arena->options.alignment - 1);
+  u64       initial_padding = aligned_memory - (uintptr_t)new_region_memory;
+
   *new_region = (NYA_ArenaRegion){
-    .used       = size,
+    .used       = size + initial_padding,
     .capacity   = new_region_size,
     .memory     = new_region_memory,
     .gc_counter = 0,
@@ -108,7 +121,7 @@ skip_search:
   };
   nya_dll_node_push_back(arena, new_region);
 
-  u8* ptr = new_region->memory;
+  u8* ptr = (u8*)aligned_memory;
 
   asan_unpoison_memory_region(ptr, size - ASAN_PADDING);
   asan_poison_memory_region(ptr + size - ASAN_PADDING, new_region->capacity - size + ASAN_PADDING);

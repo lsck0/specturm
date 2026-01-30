@@ -91,6 +91,7 @@ void nya_app_run(void) {
       });
 
       app->frame_stats.frame_start_time_ns  = SDL_GetTicksNS();
+      app->frame_stats.elapsed_ns           = app->frame_stats.frame_start_time_ns - app->frame_stats.prev_frame_time_ns;
       app->frame_stats.time_behind_ns      += (s64)app->frame_stats.elapsed_ns;
     }
 
@@ -131,7 +132,7 @@ void nya_app_run(void) {
 
     // updating
     {
-      while (app->frame_stats.time_behind_ns >= app->config.time_step_ns) {
+      while (app->frame_stats.time_behind_ns >= (s64)app->config.time_step_ns) {
         nya_perf_time_this_scope("frame_updating");
         nya_event_dispatch((NYA_Event){
             .type = NYA_EVENT_UPDATING_STARTED,
@@ -146,7 +147,7 @@ void nya_app_run(void) {
           }
         }
 
-        app->frame_stats.time_behind_ns -= app->config.time_step_ns;
+        app->frame_stats.time_behind_ns -= (s64)app->config.time_step_ns;
         nya_event_dispatch((NYA_Event){
             .type = NYA_EVENT_UPDATING_ENDED,
         });
@@ -175,8 +176,9 @@ void nya_app_run(void) {
 
     // end of frame tasks
     {
-      app->frame_stats.frame_end_time_ns = SDL_GetTicksNS();
-      app->frame_stats.elapsed_ns        = app->frame_stats.frame_end_time_ns - app->frame_stats.frame_start_time_ns;
+      app->frame_stats.frame_end_time_ns  = SDL_GetTicksNS();
+      app->frame_stats.prev_frame_time_ns = app->frame_stats.frame_start_time_ns;
+      app->frame_stats.fps                = 1.0F / (f32)nya_time_ns_to_s(app->frame_stats.elapsed_ns);
 
       nya_arena_free_all(app->frame_allocator);
 
