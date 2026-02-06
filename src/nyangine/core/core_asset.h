@@ -153,10 +153,6 @@ NYA_API NYA_EXTERN void nya_system_asset_deinit(void);
 
 #define nya_asset_with(asset) if ((asset) && (asset)->status == NYA_ASSET_STATUS_LOADED)
 
-/// this is used in the build system
-NYA_API NYA_EXTERN void nya_asset_generate_manifest(NYA_ConstCString asset_directory, NYA_ConstCString output_file);
-NYA_API NYA_EXTERN void nya_asset_generate_embedding(NYA_ConstCString asset_directory, NYA_ConstCString output_file);
-
 NYA_API NYA_EXTERN NYA_Asset* nya_asset_get(NYA_AssetHandle handle);
 NYA_API NYA_EXTERN void       nya_asset_acquire(NYA_AssetHandle handle);
 NYA_API NYA_EXTERN void       nya_asset_release(NYA_AssetHandle handle);

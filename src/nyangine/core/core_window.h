@@ -4,6 +4,7 @@
 
 #include "nyangine/base/base_array.h"
 #include "nyangine/base/base_string.h"
+#include "nyangine/core/core_callback.h"
 #include "nyangine/core/core_event.h"
 #include "nyangine/renderer/renderer.h"
 
@@ -19,6 +20,12 @@ typedef struct NYA_Window       NYA_Window;
 typedef struct NYA_WindowSystem NYA_WindowSystem;
 nya_derive_array(NYA_Layer);
 nya_derive_array(NYA_Window);
+
+typedef void (*NYA_LayerOnCreateFn)(void);
+typedef void (*NYA_LayerOnDestroyFn)(void);
+typedef void (*NYA_LayerOnUpdateFn)(NYA_Window* window, f32 delta_time_s);
+typedef void (*NYA_LayerOnEventFn)(NYA_Window* window, NYA_Event* event);
+typedef void (*NYA_LayerOnRenderFn)(NYA_Window* window);
 
 /*
  * ─────────────────────────────────────────────────────────
@@ -71,11 +78,11 @@ struct NYA_Layer {
   void* id;
   b8    enabled;
 
-  void (*on_create)(void);
-  void (*on_destroy)(void);
-  void (*on_update)(NYA_Window* window, f32 delta_time_s);
-  void (*on_event)(NYA_Window* window, NYA_Event* event);
-  void (*on_render)(NYA_Window* window);
+  NYA_CallbackHandle on_create;
+  NYA_CallbackHandle on_destroy;
+  NYA_CallbackHandle on_update;
+  NYA_CallbackHandle on_event;
+  NYA_CallbackHandle on_render;
 
   /** Set by nya_layer_push. */
 

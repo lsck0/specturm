@@ -1,8 +1,6 @@
 #include "SDL3/SDL_events.h"
 #include "SDL3/SDL_video.h"
 
-#include "nyangine/base/base_array.h"
-#include "nyangine/base/base_hmap.h"
 #include "nyangine/nyangine.h"
 
 /*
@@ -357,8 +355,10 @@ NYA_INTERNAL void _nya_event_notify_deferred_listeners(NYA_Event* event) {
   if (!hook_array) return;
 
   nya_array_foreach (*hook_array, hook) {
-    if (hook->condition && !hook->condition(event)) continue;
-    hook->fn(event);
+    NYA_EventHookFn          fn           = nya_callback_get(hook->fn);
+    NYA_EventHookConditionFn condition_fn = nya_callback_get(hook->condition_fn);
+    if (condition_fn != nullptr && !condition_fn(event)) continue;
+    fn(event);
     if (event->was_handled) break;
   }
 }
@@ -372,8 +372,10 @@ NYA_INTERNAL void _nya_event_notify_immediate_listeners(NYA_Event* event) {
   if (!hook_array) return;
 
   nya_array_foreach (*hook_array, hook) {
-    if (hook->condition && !hook->condition(event)) continue;
-    hook->fn(event);
+    NYA_EventHookFn          fn           = nya_callback_get(hook->fn);
+    NYA_EventHookConditionFn condition_fn = nya_callback_get(hook->condition_fn);
+    if (condition_fn != nullptr && !condition_fn(event)) continue;
+    fn(event);
     if (event->was_handled) break;
   }
 }

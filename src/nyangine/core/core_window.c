@@ -1,6 +1,5 @@
 #include "SDL3/SDL_gpu.h"
 
-#include "nyangine/core/core_app.h"
 #include "nyangine/nyangine.h"
 
 /*
@@ -101,7 +100,8 @@ void nya_window_destroy(void* window_id) {
   NYA_Window* window = nya_window_get(window_id);
 
   nya_array_foreach_reverse (window->layer_stack, layer) {
-    if (layer->on_destroy != nullptr) layer->on_destroy();
+    NYA_LayerOnDestroyFn on_destroy_fn = nya_callback_get(layer->on_create);
+    if (on_destroy_fn != nullptr) on_destroy_fn();
   }
   nya_array_destroy(window->layer_stack);
 
@@ -172,7 +172,8 @@ void nya_layer_push(void* window_id, NYA_Layer layer) {
 
   NYA_Window* window = nya_window_get(window_id);
 
-  if (layer.on_create != nullptr) layer.on_create();
+  NYA_LayerOnCreateFn on_create_fn = nya_callback_get(layer.on_create);
+  if (on_create_fn != nullptr) on_create_fn();
 
   nya_array_push_back(window->layer_stack, layer);
 }
@@ -183,8 +184,9 @@ NYA_Layer nya_layer_pop(void* window_id) {
   NYA_Window* window = nya_window_get(window_id);
   nya_assert(window->layer_stack->length > 0, "Cannot pop layer: layer stack is empty.");
 
-  NYA_Layer layer = nya_array_last(window->layer_stack);
-  if (layer.on_destroy != nullptr) layer.on_destroy();
+  NYA_Layer            layer         = nya_array_last(window->layer_stack);
+  NYA_LayerOnDestroyFn on_destroy_fn = nya_callback_get(layer.on_destroy);
+  if (on_destroy_fn != nullptr) on_destroy_fn();
 
   return nya_array_pop_back(window->layer_stack);
 }

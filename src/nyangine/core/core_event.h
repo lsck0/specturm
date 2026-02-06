@@ -11,6 +11,7 @@
 #include "nyangine/base/base_keys.h"
 #include "nyangine/base/base_mouse.h"
 #include "nyangine/base/base_types.h"
+#include "nyangine/core/core_callback.h"
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -34,6 +35,9 @@ typedef struct NYA_WindowResizedEvent NYA_WindowResizedEvent;
 nya_derive_array(NYA_Event);
 nya_derive_array(NYA_EventHook);
 nya_derive_hmap(NYA_EventType, NYA_EventHookArrayPtr);
+
+typedef void (*NYA_EventHookFn)(NYA_Event*);
+typedef b8 (*NYA_EventHookConditionFn)(NYA_Event*);
 
 /*
  * ─────────────────────────────────────────────────────────
@@ -251,10 +255,10 @@ enum NYA_EventHookType {
 };
 
 struct NYA_EventHook {
-  NYA_EventType     event_type;
-  NYA_EventHookType hook_type;
-  void (*fn)(NYA_Event*);
-  b8 (*condition)(NYA_Event*);
+  NYA_EventType      event_type;
+  NYA_EventHookType  hook_type;
+  NYA_CallbackHandle fn;
+  NYA_CallbackHandle condition_fn;
 };
 
 /*

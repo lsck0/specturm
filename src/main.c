@@ -43,6 +43,7 @@ typedef void(gnyame_run_fn)(void);
 typedef void(gnyame_deinit_fn)(void);
 
 NYA_App*          nya_app                             = nullptr;
+void*             nyangine_dll                        = nullptr;
 void*             gnyame_dll                          = nullptr;
 gnyame_init_fn*   gnyame_init                         = nullptr;
 gnyame_run_fn*    gnyame_run                          = nullptr;
@@ -54,10 +55,12 @@ atomic b8         gnyame_dll_watch_thread_should_exit = false;
 void  dll_load(void);
 void  dll_unload(void);
 void* dll_watch_thread_fn(void* arg);
+void  dll_update_callback_pointers(void);
 
 s32 main(s32 argc, NYA_CString* argv) {
   b8 ok;
 
+  nyangine_dll = dlopen(nullptr, RTLD_NOW | RTLD_GLOBAL);
   dll_load();
 
   pthread_t thread;
@@ -79,6 +82,7 @@ s32 main(s32 argc, NYA_CString* argv) {
       nanosleep(&ts, nullptr);
 
       dll_load();
+      dll_update_callback_pointers();
 
       gnyame_dll_reload_requested    = false;
       nya_app->should_quit_game_loop = false;
@@ -113,7 +117,7 @@ void dll_load(void) {
 }
 
 void dll_unload(void) {
-  if (!gnyame_dll) return;
+  nya_assert(gnyame_dll != nullptr);
 
   b8 ok = dlclose(gnyame_dll) == 0;
   nya_assert(ok, "Failed to unload %s: %s.", DLL_PATH, dlerror());
@@ -143,6 +147,23 @@ void* dll_watch_thread_fn(void* arg) {
   }
 
   return nullptr;
+}
+
+void dll_update_callback_pointers(void) {
+  nya_assert(nya_app != nullptr);
+  nya_assert(gnyame_dll != nullptr);
+
+  NYA_CallbackArray* callbacks = nya_app->callback_system.callbacks;
+
+  nya_array_foreach (callbacks, callback) {
+    if (callback->fn == nullptr || callback->name == nullptr) continue;
+    callback->fn = dlsym(gnyame_dll, callback->name);
+
+    if (callback->fn == nullptr) {
+      callback->fn = dlsym(nyangine_dll, callback->name);
+      nya_assert(callback->fn, "Could not find symbol %s in either %s or %s.", callback->name, DLL_PATH, "nyangine");
+    }
+  }
 }
 
 #endif // NYA_IS_DEBUG

@@ -1,6 +1,6 @@
 * PLAN
 
-- [ ] MAKE DYNAMIC DATASTRUCTES HEAP ALLOCATED PLEASE.
+- [ ] ponder about renaming gnyame to gayme
 - [ ] more asset system work (CPU / GPU resources, async)
 - [ ] render primitives + gpu resource management (does this make sense in the asset system?)
 - [ ] ui system: widgets, layout, styling
@@ -14,5 +14,5 @@
 
 - [ ] buffered logging to file
 - [ ] job system / task / multithreadding scheduler
-- [ ] basic nn library: tensors, layers, autograd --> NEAT implementation
 - [ ] CI
+- [ ] basic nn library: tensors, layers, autograd --> NEAT implementation

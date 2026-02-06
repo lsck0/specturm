@@ -1,5 +1,6 @@
 #include "SDL3/SDL_timer.h"
 
+#include "nyangine/core/core_window.h"
 #include "nyangine/nyangine.h"
 
 /*
@@ -38,6 +39,7 @@ void nya_app_init(NYA_AppConfig config) {
   nya_info("Nyangine initialized. Initializing subsystems...");
 
   nya_system_job_init();
+  nya_system_callback_init();
   nya_system_render_init();
   nya_system_window_init();
   nya_system_events_init();
@@ -60,6 +62,7 @@ void nya_app_deinit(void) {
   nya_system_window_deinit();
   nya_system_render_deinit();
   nya_system_job_deinit();
+  nya_system_callback_deinit();
 
   nya_info("Subsystems deinitialized successfully. Good Bye.");
 
@@ -116,8 +119,9 @@ void nya_app_run(void) {
 
         nya_array_foreach (app->window_system.windows, window) {
           nya_array_foreach_reverse (window->layer_stack, layer) {
-            if (layer->enabled && layer->on_event != nullptr) {
-              layer->on_event(window, &event);
+            NYA_LayerOnEventFn on_event_fn = nya_callback_get(layer->on_event);
+            if (layer->enabled && on_event_fn != nullptr) {
+              on_event_fn(window, &event);
               if (event.was_handled) break;
             }
           }
@@ -140,9 +144,10 @@ void nya_app_run(void) {
 
         nya_array_foreach (app->window_system.windows, window) {
           nya_array_foreach (window->layer_stack, layer) {
-            if (layer->enabled && layer->on_update != nullptr) { /**/
+            NYA_LayerOnUpdateFn on_update_fn = nya_callback_get(layer->on_update);
+            if (layer->enabled && on_update_fn != nullptr) { /**/
               app->frame_stats.delta_time_s = (f32)nya_time_ns_to_s(app->config.time_step_ns);
-              layer->on_update(window, app->frame_stats.delta_time_s);
+              on_update_fn(window, app->frame_stats.delta_time_s);
             }
           }
         }
@@ -164,7 +169,8 @@ void nya_app_run(void) {
       nya_array_foreach (app->window_system.windows, window) {
         nya_render_begin(window);
         nya_array_foreach (window->layer_stack, layer) {
-          if (layer->enabled && layer->on_render != nullptr) layer->on_render(window);
+          NYA_LayerOnRenderFn on_render_fn = nya_callback_get(layer->on_render);
+          if (layer->enabled && on_render_fn != nullptr) on_render_fn(window);
         }
         nya_render_end(window);
       }

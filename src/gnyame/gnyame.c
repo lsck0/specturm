@@ -25,9 +25,9 @@ void gnyame_init(s32 argc, NYA_CString* argv) {
       (NYA_Layer){
           .id        = "main_layer",
           .enabled   = true,
-          .on_update = on_update,
-          .on_event  = on_event,
-          .on_render = on_render,
+          .on_update = nya_callback(on_update),
+          .on_event  = nya_callback(on_event),
+          .on_render = nya_callback(on_render),
       }
   );
 

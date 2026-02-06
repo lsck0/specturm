@@ -1,4 +1,3 @@
-#include "nyangine/core/core_event.h"
 #include "nyangine/nyangine.h"
 
 /*
@@ -7,7 +6,7 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_INTERNAL void _nya_system_event_on_update_ended_hook(NYA_Event* event);
+void _nya_system_event_on_update_ended_hook(NYA_Event* event);
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -37,7 +36,7 @@ void nya_system_input_init(void) {
   nya_event_hook_register((NYA_EventHook){
       .event_type = NYA_EVENT_UPDATING_ENDED,
       .hook_type  = NYA_EVENT_HOOK_TYPE_IMMEDIATE,
-      .fn         = _nya_system_event_on_update_ended_hook,
+      .fn         = nya_callback(_nya_system_event_on_update_ended_hook),
   });
 
   nya_info("Input system initialized.");
@@ -177,7 +176,7 @@ b8 nya_input_mouse_button_just_released(NYA_MouseButton button) {
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_INTERNAL void _nya_system_event_on_update_ended_hook(NYA_Event* event) {
+void _nya_system_event_on_update_ended_hook(NYA_Event* event) {
   nya_assert(event != nullptr);
   nya_assert(event->type == NYA_EVENT_UPDATING_ENDED);
 

@@ -5,6 +5,7 @@
 #include "nyangine/base/base_attributes.h"
 #include "nyangine/base/base_string.h"
 #include "nyangine/core/core_asset.h"
+#include "nyangine/core/core_callback.h"
 #include "nyangine/core/core_event.h"
 #include "nyangine/core/core_input.h"
 #include "nyangine/core/core_job.h"
@@ -47,12 +48,13 @@ struct NYA_App {
   NYA_Arena* global_allocator;
   NYA_Arena* frame_allocator;
 
-  NYA_AssetSystem  asset_system;
-  NYA_EventSystem  event_system;
-  NYA_InputSystem  input_system;
-  NYA_JobSystem    job_system;
-  NYA_RenderSystem render_system;
-  NYA_WindowSystem window_system;
+  NYA_AssetSystem    asset_system;
+  NYA_CallbackSystem callback_system;
+  NYA_EventSystem    event_system;
+  NYA_InputSystem    input_system;
+  NYA_JobSystem      job_system;
+  NYA_RenderSystem   render_system;
+  NYA_WindowSystem   window_system;
 
   NYA_FrameStats frame_stats;
 

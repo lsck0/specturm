@@ -1,13 +1,3 @@
-#include "nyangine/base/base.h"
-
-#if OS_WINDOWS
-#include "nyangine/platform/platform_windows.c"
-#elif OS_LINUX
-#include "nyangine/platform/platform_linux.c"
-#else
-#error "Unsupported OS"
-#endif
-
 #include "nyangine/base/base_arena.c"
 #include "nyangine/base/base_args.c"
 #include "nyangine/base/base_build.c"
@@ -21,6 +11,7 @@
 #include "nyangine/base/base_string.c"
 #include "nyangine/core/core_app.c"
 #include "nyangine/core/core_asset.c"
+#include "nyangine/core/core_callback.c"
 #include "nyangine/core/core_entity.c"
 #include "nyangine/core/core_event.c"
 #include "nyangine/core/core_input.c"
@@ -28,5 +19,6 @@
 #include "nyangine/core/core_window.c"
 #include "nyangine/math/math_la.c"
 #include "nyangine/nn/nn.c"
+#include "nyangine/platform/platform.c"
 #include "nyangine/renderer/renderer.c"
 #include "nyangine/ui/ui.c"
