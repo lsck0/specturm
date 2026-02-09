@@ -230,7 +230,8 @@ nya_derive_array(f128_4x4);
 #define nya_array_destroy_on_stack(arr_ptr)                                                                                                          \
   ({                                                                                                                                                 \
     nya_arena_free((arr_ptr)->arena, (arr_ptr)->items, sizeof(*(arr_ptr)->items) * (arr_ptr)->capacity);                                             \
-    (arr_ptr) = nullptr;                                                                                                                             \
+    (arr_ptr)->length   = 0;                                                                                                                         \
+    (arr_ptr)->capacity = 0;                                                                                                                         \
   })
 
 /*

@@ -474,13 +474,21 @@ NYA_INTERNAL void _nya_event_notify_deferred_listeners(NYA_Event* event) {
   NYA_EventHookArray* hook_array = nya_hmap_get(app->event_system.deferred_event_hooks, event->type);
   if (!hook_array) return;
 
+  NYA_EventHookArray finished_oneshot_hooks = nya_array_create_on_stack(app->event_system.allocator, NYA_EventHook);
+
   nya_array_foreach (hook_array, hook) {
     NYA_EventHookFn          fn           = nya_callback_get(hook->fn);
     NYA_EventHookConditionFn condition_fn = nya_callback_get(hook->condition_fn);
     if (condition_fn != nullptr && !condition_fn(event)) continue;
+
     fn(event);
+
+    if (hook->one_shot) nya_array_push_back(&finished_oneshot_hooks, *hook);
     if (event->was_handled) break;
   }
+
+  nya_array_foreach (&finished_oneshot_hooks, hook_to_remove) nya_array_remove_item(hook_array, *hook_to_remove);
+  nya_array_destroy_on_stack(&finished_oneshot_hooks);
 }
 
 NYA_INTERNAL void _nya_event_notify_immediate_listeners(NYA_Event* event) {
@@ -491,11 +499,19 @@ NYA_INTERNAL void _nya_event_notify_immediate_listeners(NYA_Event* event) {
   NYA_EventHookArray* hook_array = nya_hmap_get(app->event_system.immediate_event_hooks, event->type);
   if (!hook_array) return;
 
+  NYA_EventHookArray finished_oneshot_hooks = nya_array_create_on_stack(app->event_system.allocator, NYA_EventHook);
+
   nya_array_foreach (hook_array, hook) {
     NYA_EventHookFn          fn           = nya_callback_get(hook->fn);
     NYA_EventHookConditionFn condition_fn = nya_callback_get(hook->condition_fn);
     if (condition_fn != nullptr && !condition_fn(event)) continue;
+
     fn(event);
+
+    if (hook->one_shot) nya_array_push_back(&finished_oneshot_hooks, *hook);
     if (event->was_handled) break;
   }
+
+  nya_array_foreach (&finished_oneshot_hooks, hook_to_remove) nya_array_remove_item(hook_array, *hook_to_remove);
+  nya_array_destroy_on_stack(&finished_oneshot_hooks);
 }

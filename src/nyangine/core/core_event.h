@@ -368,6 +368,7 @@ struct NYA_EventHook {
   NYA_EventHookType  hook_type;
   NYA_CallbackHandle fn;
   NYA_CallbackHandle condition_fn;
+  b64                one_shot;
 };
 
 /*
