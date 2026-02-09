@@ -43,7 +43,7 @@ typedef void(gnyame_run_fn)(void);
 typedef void(gnyame_deinit_fn)(void);
 
 NYA_App*          nya_app                             = nullptr;
-void*             nyangine_dll                        = nullptr;
+void*             nya_symbols                         = nullptr;
 void*             gnyame_dll                          = nullptr;
 gnyame_init_fn*   gnyame_init                         = nullptr;
 gnyame_run_fn*    gnyame_run                          = nullptr;
@@ -60,7 +60,9 @@ void  dll_update_callback_pointers(void);
 s32 main(s32 argc, NYA_CString* argv) {
   b8 ok;
 
-  nyangine_dll = dlopen(nullptr, RTLD_NOW | RTLD_GLOBAL);
+  nya_symbols = dlopen(nullptr, RTLD_NOW | RTLD_GLOBAL);
+  nya_assert(nya_symbols, "Failed to open handle to main executable: %s.", dlerror());
+
   dll_load();
 
   pthread_t thread;
@@ -68,9 +70,9 @@ s32 main(s32 argc, NYA_CString* argv) {
   nya_assert(ok, "Failed to create DLL watch thread.");
 
   gnyame_init(argc, argv);
-  nya_app = nya_app_get_instance();
+  nya_app = nya_app_get();
 
-  while (!nya_app->should_quit_game_loop) {
+  while (!nya_app->should_quit) {
     gnyame_run();
 
     if (gnyame_dll_reload_requested) {
@@ -84,8 +86,8 @@ s32 main(s32 argc, NYA_CString* argv) {
       dll_load();
       dll_update_callback_pointers();
 
-      gnyame_dll_reload_requested    = false;
-      nya_app->should_quit_game_loop = false;
+      gnyame_dll_reload_requested = false;
+      nya_app->should_quit        = false;
       nya_debug("Reloaded %s.", DLL_PATH);
     }
   }
@@ -137,8 +139,8 @@ void* dll_watch_thread_fn(void* arg) {
 
     if (ok && last_modified != gnyame_dll_last_modified && !gnyame_dll_reload_requested) {
       nya_debug("%s was changed, requesting reload.", DLL_PATH);
-      gnyame_dll_reload_requested    = true;
-      nya_app->should_quit_game_loop = true;
+      gnyame_dll_reload_requested = true;
+      nya_app->should_quit        = true;
     }
 
     struct timespec ts = { 0 };
@@ -157,12 +159,11 @@ void dll_update_callback_pointers(void) {
 
   nya_array_foreach (callbacks, callback) {
     if (callback->fn == nullptr || callback->name == nullptr) continue;
-    callback->fn = dlsym(gnyame_dll, callback->name);
 
-    if (callback->fn == nullptr) {
-      callback->fn = dlsym(nyangine_dll, callback->name);
-      nya_assert(callback->fn, "Could not find symbol %s in either %s or %s.", callback->name, DLL_PATH, "nyangine");
-    }
+    callback->fn = dlsym(gnyame_dll, callback->name);
+    if (callback->fn == nullptr) callback->fn = dlsym(nya_symbols, callback->name);
+
+    nya_assert(callback->fn, "Could not find symbol %s in either %s or %s.", callback->name, DLL_PATH, "nyangine");
   }
 }
 

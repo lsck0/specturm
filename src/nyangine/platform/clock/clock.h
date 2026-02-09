@@ -3,6 +3,12 @@
 #include "nyangine/base/base.h"
 #include "nyangine/base/base_types.h"
 
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * FUNCTIONS AND MACROS
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
 #define nya_time_s_to_ms(seconds)       ((u64)(seconds) * 1'000ULL)
 #define nya_time_s_to_µs(seconds)       ((u64)(seconds) * 1'000'000ULL)
 #define nya_time_s_to_ns(seconds)       ((u64)(seconds) * 1'000'000'000ULL)

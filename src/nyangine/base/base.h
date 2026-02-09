@@ -225,4 +225,5 @@ static_assert(ASAN_PADDING >= 0);
 #define true         ((b8)1)
 #define false        ((b8)0)
 
+#define CONCAT(a, b) a##b
 #define OUT

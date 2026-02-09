@@ -21,7 +21,7 @@ void _nya_system_event_on_update_ended_hook(NYA_Event* event);
  */
 
 void nya_system_input_init(void) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   app->input_system = (NYA_InputSystem){
     .allocator = nya_arena_create(.name = "input_system_allocator"),
@@ -43,7 +43,7 @@ void nya_system_input_init(void) {
 }
 
 void nya_system_input_deinit(void) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   nya_hmap_destroy(app->input_system.keys_just_pressed);
   nya_hmap_destroy(app->input_system.keys_pressed);
@@ -57,7 +57,7 @@ void nya_system_input_deinit(void) {
 void nya_system_input_handle_event(NYA_Event* event) {
   nya_assert(event != nullptr);
 
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   if (event->type == NYA_EVENT_KEY_DOWN || event->type == NYA_EVENT_KEY_UP) {
     NYA_Keycode keycode    = event->as_key_event.key;
@@ -114,58 +114,58 @@ void nya_system_input_handle_event(NYA_Event* event) {
  */
 
 b8 nya_input_key_just_pressed(NYA_Keycode key) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   b8* just_pressed = nya_hmap_get(app->input_system.keys_just_pressed, key);
   return just_pressed != nullptr && *just_pressed;
 }
 
 b8 nya_input_key_pressed(NYA_Keycode key) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   b8* pressed = nya_hmap_get(app->input_system.keys_pressed, key);
   return pressed != nullptr && *pressed;
 }
 
 b8 nya_input_key_just_released(NYA_Keycode key) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   b8* just_released = nya_hmap_get(app->input_system.keys_just_released, key);
   return just_released != nullptr && *just_released;
 }
 
 f32x2 nya_input_mouse_position(void) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   return app->input_system.mouse_position;
 }
 
 f32x2 nya_input_mouse_position_delta(void) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   return app->input_system.mouse_position_delta;
 }
 
 f32x2 nya_input_mouse_wheel_scroll(void) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   return app->input_system.mouse_wheel_delta;
 }
 
 b8 nya_input_mouse_button_just_pressed(NYA_MouseButton button) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   return app->input_system.mouse_buttons_just_pressed[button];
 }
 
 b8 nya_input_mouse_button_pressed(NYA_MouseButton button) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   return app->input_system.mouse_buttons_pressed[button];
 }
 
 b8 nya_input_mouse_button_just_released(NYA_MouseButton button) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   return app->input_system.mouse_buttons_just_released[button];
 }
@@ -180,7 +180,7 @@ void _nya_system_event_on_update_ended_hook(NYA_Event* event) {
   nya_assert(event != nullptr);
   nya_assert(event->type == NYA_EVENT_UPDATING_ENDED);
 
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   nya_hmap_clear(app->input_system.keys_just_pressed);
   nya_hmap_clear(app->input_system.keys_just_released);

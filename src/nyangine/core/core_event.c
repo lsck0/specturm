@@ -27,7 +27,7 @@ NYA_INTERNAL void      _nya_event_notify_immediate_listeners(NYA_Event* event);
  */
 
 void nya_system_events_init(void) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   app->event_system = (NYA_EventSystem){
     .allocator              = nya_arena_create(.name = "event_system_allocator"),
@@ -43,11 +43,10 @@ void nya_system_events_init(void) {
 }
 
 void nya_system_events_deinit(void) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   SDL_DestroyMutex(app->event_system.event_queue_mutex);
   nya_array_destroy(app->event_system.event_queue);
-
   nya_hmap_destroy(app->event_system.deferred_event_hooks);
   nya_hmap_destroy(app->event_system.immediate_event_hooks);
 
@@ -69,7 +68,7 @@ void nya_system_event_drain_sdl_events(void) {
 b8 nya_system_event_poll(OUT NYA_Event* out_event) {
   nya_assert(out_event);
 
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   SDL_LockMutex(app->event_system.event_queue_mutex);
   NYA_EventArray* nya_array = app->event_system.event_queue;
@@ -97,7 +96,7 @@ b8 nya_system_event_poll(OUT NYA_Event* out_event) {
  */
 
 void nya_event_dispatch(NYA_Event event) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   event.timestamp = nya_clock_get_timestamp_ms();
 
@@ -112,7 +111,7 @@ void nya_event_dispatch(NYA_Event event) {
 }
 
 void nya_event_hook_register(NYA_EventHook hook) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   NYA_EventHookArray** hook_array = nullptr;
   switch (hook.hook_type) {
@@ -144,7 +143,7 @@ void nya_event_hook_register(NYA_EventHook hook) {
 }
 
 void nya_event_hook_unregister(NYA_EventHook hook) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   NYA_EventHookArray** hook_array = nullptr;
   switch (hook.hook_type) {
@@ -171,7 +170,7 @@ void nya_event_hook_unregister(NYA_EventHook hook) {
  */
 
 NYA_INTERNAL void* _nya_event_sdl_window_id_to_nya_window_id(SDL_WindowID sdl_window_id) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   nya_array_foreach (app->window_system.windows, nya_window) {
     if (SDL_GetWindowID(nya_window->sdl_window) == sdl_window_id) return nya_window->id;
@@ -186,6 +185,77 @@ NYA_INTERNAL NYA_Event _nya_event_from_sdl_event(SDL_Event sdl_event) {
   NYA_Event event = { 0 };
 
   switch (sdl_event.type) {
+    case SDL_EVENT_CLIPBOARD_UPDATE: {
+      event.type = NYA_EVENT_CLIPBOARD_UPDATE;
+    } break;
+
+    case SDL_EVENT_DISPLAY_ADDED: {
+      event.type                        = NYA_EVENT_DISPLAY_ADDED;
+      event.as_display_event.display_id = (u32)sdl_event.display.displayID;
+    } break;
+
+    case SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED: {
+      event.type                        = NYA_EVENT_DISPLAY_CONTENT_SCALE_CHANGED;
+      event.as_display_event.display_id = (u32)sdl_event.display.displayID;
+    } break;
+
+    case SDL_EVENT_DISPLAY_CURRENT_MODE_CHANGED: {
+      event.type                        = NYA_EVENT_DISPLAY_CURRENT_MODE_CHANGED;
+      event.as_display_event.display_id = (u32)sdl_event.display.displayID;
+    } break;
+
+    case SDL_EVENT_DISPLAY_DESKTOP_MODE_CHANGED: {
+      event.type                        = NYA_EVENT_DISPLAY_DESKTOP_MODE_CHANGED;
+      event.as_display_event.display_id = (u32)sdl_event.display.displayID;
+    } break;
+
+    case SDL_EVENT_DISPLAY_MOVED: {
+      event.type                        = NYA_EVENT_DISPLAY_MOVED;
+      event.as_display_event.display_id = (u32)sdl_event.display.displayID;
+      event.as_display_event.data1      = sdl_event.display.data1;
+      event.as_display_event.data2      = sdl_event.display.data2;
+    } break;
+
+    case SDL_EVENT_DISPLAY_ORIENTATION: {
+      event.type                        = NYA_EVENT_DISPLAY_ORIENTATION;
+      event.as_display_event.display_id = (u32)sdl_event.display.displayID;
+      event.as_display_event.data1      = sdl_event.display.data1;
+    } break;
+
+    case SDL_EVENT_DISPLAY_REMOVED: {
+      event.type                        = NYA_EVENT_DISPLAY_REMOVED;
+      event.as_display_event.display_id = (u32)sdl_event.display.displayID;
+    } break;
+
+    case SDL_EVENT_DROP_BEGIN: {
+      event.type                    = NYA_EVENT_DROP_BEGIN;
+      event.as_drop_event.window_id = _nya_event_sdl_window_id_to_nya_window_id(sdl_event.drop.windowID);
+    } break;
+
+    case SDL_EVENT_DROP_COMPLETE: {
+      event.type                    = NYA_EVENT_DROP_COMPLETE;
+      event.as_drop_event.window_id = _nya_event_sdl_window_id_to_nya_window_id(sdl_event.drop.windowID);
+    } break;
+
+    case SDL_EVENT_DROP_FILE: {
+      event.type                    = NYA_EVENT_DROP_FILE;
+      event.as_drop_event.window_id = _nya_event_sdl_window_id_to_nya_window_id(sdl_event.drop.windowID);
+      event.as_drop_event.path      = sdl_event.drop.data;
+    } break;
+
+    case SDL_EVENT_DROP_POSITION: {
+      event.type                             = NYA_EVENT_DROP_POSITION;
+      event.as_drop_position_event.window_id = _nya_event_sdl_window_id_to_nya_window_id(sdl_event.drop.windowID);
+      event.as_drop_position_event.x         = sdl_event.drop.x;
+      event.as_drop_position_event.y         = sdl_event.drop.y;
+    } break;
+
+    case SDL_EVENT_DROP_TEXT: {
+      event.type                    = NYA_EVENT_DROP_TEXT;
+      event.as_drop_event.window_id = _nya_event_sdl_window_id_to_nya_window_id(sdl_event.drop.windowID);
+      event.as_drop_event.path      = sdl_event.drop.data;
+    } break;
+
     case SDL_EVENT_KEY_DOWN: {
       event.type                        = NYA_EVENT_KEY_DOWN;
       event.as_key_event.window_id      = _nya_event_sdl_window_id_to_nya_window_id(sdl_event.key.windowID);
@@ -206,6 +276,10 @@ NYA_INTERNAL NYA_Event _nya_event_from_sdl_event(SDL_Event sdl_event) {
       event.as_key_event.scancode       = (NYA_Scancode)sdl_event.key.scancode;
       event.as_key_event.modifier_flags = sdl_event.key.mod;
       event.as_key_event.raw            = sdl_event.key.raw;
+    } break;
+
+    case SDL_EVENT_KEYMAP_CHANGED: {
+      event.type = NYA_EVENT_KEYMAP_CHANGED;
     } break;
 
     case SDL_EVENT_MOUSE_BUTTON_DOWN: {
@@ -254,6 +328,20 @@ NYA_INTERNAL NYA_Event _nya_event_from_sdl_event(SDL_Event sdl_event) {
       event.type = NYA_EVENT_QUIT;
     } break;
 
+    case SDL_EVENT_TEXT_EDITING: {
+      event.type                            = NYA_EVENT_TEXT_EDITING;
+      event.as_text_editing_event.window_id = _nya_event_sdl_window_id_to_nya_window_id(sdl_event.edit.windowID);
+      event.as_text_editing_event.text      = sdl_event.edit.text;
+      event.as_text_editing_event.start     = sdl_event.edit.start;
+      event.as_text_editing_event.length    = sdl_event.edit.length;
+    } break;
+
+    case SDL_EVENT_TEXT_INPUT: {
+      event.type                          = NYA_EVENT_TEXT_INPUT;
+      event.as_text_input_event.window_id = _nya_event_sdl_window_id_to_nya_window_id(sdl_event.text.windowID);
+      event.as_text_input_event.text      = sdl_event.text.text;
+    } break;
+
     case SDL_EVENT_WINDOW_CLOSE_REQUESTED: {
       event.type                      = NYA_EVENT_WINDOW_CLOSE_REQUESTED;
       event.as_window_event.window_id = _nya_event_sdl_window_id_to_nya_window_id(sdl_event.window.windowID);
@@ -264,8 +352,23 @@ NYA_INTERNAL NYA_Event _nya_event_from_sdl_event(SDL_Event sdl_event) {
       event.as_window_event.window_id = _nya_event_sdl_window_id_to_nya_window_id(sdl_event.window.windowID);
     } break;
 
+    case SDL_EVENT_WINDOW_DISPLAY_CHANGED: {
+      event.type                      = NYA_EVENT_WINDOW_DISPLAY_CHANGED;
+      event.as_window_event.window_id = _nya_event_sdl_window_id_to_nya_window_id(sdl_event.window.windowID);
+    } break;
+
+    case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED: {
+      event.type                      = NYA_EVENT_WINDOW_DISPLAY_SCALE_CHANGED;
+      event.as_window_event.window_id = _nya_event_sdl_window_id_to_nya_window_id(sdl_event.window.windowID);
+    } break;
+
     case SDL_EVENT_WINDOW_ENTER_FULLSCREEN: {
       event.type                      = NYA_EVENT_WINDOW_ENTER_FULLSCREEN;
+      event.as_window_event.window_id = _nya_event_sdl_window_id_to_nya_window_id(sdl_event.window.windowID);
+    } break;
+
+    case SDL_EVENT_WINDOW_EXPOSED: {
+      event.type                      = NYA_EVENT_WINDOW_EXPOSED;
       event.as_window_event.window_id = _nya_event_sdl_window_id_to_nya_window_id(sdl_event.window.windowID);
     } break;
 
@@ -276,6 +379,11 @@ NYA_INTERNAL NYA_Event _nya_event_from_sdl_event(SDL_Event sdl_event) {
 
     case SDL_EVENT_WINDOW_FOCUS_LOST: {
       event.type                      = NYA_EVENT_WINDOW_FOCUS_LOST;
+      event.as_window_event.window_id = _nya_event_sdl_window_id_to_nya_window_id(sdl_event.window.windowID);
+    } break;
+
+    case SDL_EVENT_WINDOW_HDR_STATE_CHANGED: {
+      event.type                      = NYA_EVENT_WINDOW_HDR_STATE_CHANGED;
       event.as_window_event.window_id = _nya_event_sdl_window_id_to_nya_window_id(sdl_event.window.windowID);
     } break;
 
@@ -321,6 +429,13 @@ NYA_INTERNAL NYA_Event _nya_event_from_sdl_event(SDL_Event sdl_event) {
       event.as_window_event.window_id = _nya_event_sdl_window_id_to_nya_window_id(sdl_event.window.windowID);
     } break;
 
+    case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED: {
+      event.type                              = NYA_EVENT_WINDOW_PIXEL_SIZE_CHANGED;
+      event.as_window_resized_event.window_id = _nya_event_sdl_window_id_to_nya_window_id(sdl_event.window.windowID);
+      event.as_window_resized_event.width     = (u32)sdl_event.window.data1;
+      event.as_window_resized_event.height    = (u32)sdl_event.window.data2;
+    } break;
+
     case SDL_EVENT_WINDOW_RESIZED: {
       event.type                              = NYA_EVENT_WINDOW_RESIZED;
       event.as_window_resized_event.window_id = _nya_event_sdl_window_id_to_nya_window_id(sdl_event.window.windowID);
@@ -330,6 +445,11 @@ NYA_INTERNAL NYA_Event _nya_event_from_sdl_event(SDL_Event sdl_event) {
 
     case SDL_EVENT_WINDOW_RESTORED: {
       event.type                      = NYA_EVENT_WINDOW_RESTORED;
+      event.as_window_event.window_id = _nya_event_sdl_window_id_to_nya_window_id(sdl_event.window.windowID);
+    } break;
+
+    case SDL_EVENT_WINDOW_SAFE_AREA_CHANGED: {
+      event.type                      = NYA_EVENT_WINDOW_SAFE_AREA_CHANGED;
       event.as_window_event.window_id = _nya_event_sdl_window_id_to_nya_window_id(sdl_event.window.windowID);
     } break;
 
@@ -349,7 +469,7 @@ NYA_INTERNAL NYA_Event _nya_event_from_sdl_event(SDL_Event sdl_event) {
 NYA_INTERNAL void _nya_event_notify_deferred_listeners(NYA_Event* event) {
   nya_assert(event != nullptr);
 
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   NYA_EventHookArray** hook_array = nya_hmap_get(app->event_system.deferred_event_hooks, event->type);
   if (!hook_array) return;
@@ -366,7 +486,7 @@ NYA_INTERNAL void _nya_event_notify_deferred_listeners(NYA_Event* event) {
 NYA_INTERNAL void _nya_event_notify_immediate_listeners(NYA_Event* event) {
   nya_assert(event != nullptr);
 
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   NYA_EventHookArray** hook_array = nya_hmap_get(app->event_system.immediate_event_hooks, event->type);
   if (!hook_array) return;

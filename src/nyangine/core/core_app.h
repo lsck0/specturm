@@ -6,6 +6,7 @@
 #include "nyangine/base/base_string.h"
 #include "nyangine/core/core_asset.h"
 #include "nyangine/core/core_callback.h"
+#include "nyangine/core/core_entity.h"
 #include "nyangine/core/core_event.h"
 #include "nyangine/core/core_input.h"
 #include "nyangine/core/core_job.h"
@@ -30,17 +31,19 @@ struct NYA_AppConfig {
 
 struct NYA_FrameStats {
   u64 min_frame_time_ns;
+  f32 delta_time_s;
+  f32 fps;
+
   u64 frame_start_time_ns;
   u64 frame_end_time_ns;
   u64 prev_frame_time_ns;
   u64 elapsed_ns;
   s64 time_behind_ns;
-  f32 delta_time_s;
-  f32 fps;
 };
 
 struct NYA_App {
   b8 initialized;
+  b8 should_quit;
 
   /** use `nya_app_options_update` to change config */
   NYA_AppConfig config;
@@ -48,27 +51,26 @@ struct NYA_App {
   NYA_Arena* global_allocator;
   NYA_Arena* frame_allocator;
 
+  NYA_FrameStats frame_stats;
+
   NYA_AssetSystem    asset_system;
   NYA_CallbackSystem callback_system;
+  NYA_EntitySystem   entity_system;
   NYA_EventSystem    event_system;
   NYA_InputSystem    input_system;
   NYA_JobSystem      job_system;
   NYA_RenderSystem   render_system;
   NYA_WindowSystem   window_system;
-
-  NYA_FrameStats frame_stats;
-
-  b8 should_quit_game_loop;
 };
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- * FUNCTIONS
+ * FUNCTIONS AND MACROS
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
 NYA_API NYA_EXTERN void     nya_app_init(NYA_AppConfig config);
 NYA_API NYA_EXTERN void     nya_app_deinit(void);
-NYA_API NYA_EXTERN NYA_App* nya_app_get_instance(void);
-NYA_API NYA_EXTERN void     nya_app_options_update(NYA_AppConfig config);
 NYA_API NYA_EXTERN void     nya_app_run(void);
+NYA_API NYA_EXTERN NYA_App* nya_app_get(void);
+NYA_API NYA_EXTERN void     nya_app_options_update(NYA_AppConfig config);

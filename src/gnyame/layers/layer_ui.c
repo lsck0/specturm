@@ -1,45 +1,49 @@
 #include "gnyame/gnyame.h"
 
-#include "gnyame/layers/layer_game.c"
-#include "gnyame/layers/layer_ui.c"
-#include "gnyame/layers/layers.c"
-#include "gnyame/windows.c"
-
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- * GNYAME INIT
+ * ON CREATE
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-void gnyame_init(s32 argc, NYA_CString* argv) {
-  nya_unused(argc, argv);
-
-  nya_app_init((NYA_AppConfig){
-      .time_step_ns     = nya_time_ms_to_ns(15),
-      .frame_rate_limit = 60,
-      .vsync_enabled    = false,
-  });
-
-  gny_layers_init();
-  gny_window_main_create();
+void gny_layer_ui_on_create(void) {
 }
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- * GNYAME RUN
+ * ON DESTROY
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-void gnyame_run(void) {
-  nya_app_run();
+void gny_layer_ui_on_destroy(void) {
 }
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- * GNYAME DEINIT
+ * ON EVENT
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-void gnyame_deinit(void) {
-  nya_app_deinit();
+void gny_layer_ui_on_event(NYA_Window* window, NYA_Event* event) {
+  nya_unused(window, event);
+}
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * ON UPDATE
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+void gny_layer_ui_on_update(NYA_Window* window, f32 delta_time_s) {
+  nya_unused(window, delta_time_s);
+}
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * ON RENDER
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+void gny_layer_ui_on_render(NYA_Window* window) {
+  nya_unused(window);
 }

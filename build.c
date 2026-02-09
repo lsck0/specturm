@@ -1,3 +1,5 @@
+#include "nyangine/nyangine.h"
+/**/
 #include "nyangine/base/base_arena.c"
 #include "nyangine/base/base_args.c"
 #include "nyangine/base/base_build.c"
@@ -5,8 +7,13 @@
 #include "nyangine/base/base_logging.c"
 #include "nyangine/base/base_perf.c"
 #include "nyangine/base/base_string.c"
-#include "nyangine/nyangine.h"
-#include "nyangine/platform/platform.c"
+#include "nyangine/platform/clock/clock_linux.c"
+#include "nyangine/platform/command/command_linux.c"
+#include "nyangine/platform/filesystem/filesystem_linux.c"
+
+#if OS_WINDOWS
+#error "The build system does not (yet?) support w*ndows. Use Linux."
+#endif
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -14,6 +21,7 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
+// clang-format off
 #define PROJECT_NAME "gnyame"
 #define VERSION      "0.0.0"
 
@@ -27,27 +35,26 @@
 
 #define CC            "clang"
 #define CFLAGS        "-std=c23", "-ggdb", "-fenable-matrix", "-mavx", "-mavx2"
-#define WARNINGS      "-Wall", "-Wextra", "-Wno-gnu", "-Wno-gcc-compat", "-Wno-initializer-overrides", "-Wno-keyword-macro"
+#define WARNINGS      "-Wall", "-Wextra", "-Wshadow", "-Wstrict-prototypes", "-Wswitch-default", "-Wno-gnu", "-Wno-gcc-compat", "-Wno-initializer-overrides", "-Wno-keyword-macro"
 #define INCLUDE_PATHS "-I./src/", "-I./", "-I./vendor/sdl/include/"
 #define LINKER_FLAGS  "-lm", "-pthread", "-lSDL3"
 #define NPROCS        "16"
 
-// clang-format off
-#define FLAGS_DEBUG     "-O0", "-DIS_DEBUG=true", "-DNYA_ASSET_BACKEND_FS", "-rdynamic"
-#define FLAGS_DLL       "-fPIC", "-shared"
-#define FLAGS_SANITIZE  "-fno-omit-frame-pointer", "-fno-optimize-sibling-calls", "-fno-sanitize-recover=all", "-fsanitize=address,leak,undefined,signed-integer-overflow,unsigned-integer-overflow,shift,float-cast-overflow,float-divide-by-zero,pointer-overflow"
-#define FLAGS_RELEASE   "-O3", "-DNYA_ASSET_BACKEND_BLOB", "-D_FORTIFY_SOURCE=2", "-fno-omit-frame-pointer", "-fstack-protector-strong", "-Wl,-rpath,$ORIGIN"
+#define FLAGS_DEBUG          "-DIS_DEBUG=true", "-DNYA_ASSET_BACKEND_FS", "-O0", "-fuse-ld=mold", "-rdynamic"
+#define FLAGS_DLL            "-fPIC", "-shared"
+#define FLAGS_SANITIZE       "-fno-omit-frame-pointer", "-fno-optimize-sibling-calls", "-fno-sanitize-recover=all", "-fsanitize=address,leak,undefined,signed-integer-overflow,unsigned-integer-overflow,shift,float-cast-overflow,float-divide-by-zero,pointer-overflow"
+#define FLAGS_RELEASE        "-O3", "-fuse-ld=lld", "-flto", "-fPIE", "-DNYA_ASSET_BACKEND_BLOB", "-D_FORTIFY_SOURCE=2", "-fcf-protection=full", "-fstack-protector-strong", "-fno-omit-frame-pointer"
 #define FLAGS_WINDOWS_X86_64 "--target=x86_64-w64-mingw32", "-Wl,-subsystem,windows", "-static", "-L./vendor/sdl/build-window-x86_64/", "-lcomdlg32", "-ldxguid", "-lgdi32", "-limm32", "-lkernel32", "-lole32", "-loleaut32", "-lsetupapi", "-luser32", "-luuid", "-lversion", "-lwinmm"
-#define FLAGS_LINUX_X86_64   "-L./vendor/sdl/build-linux-x86_64/"
+#define FLAGS_LINUX_X86_64   "-Wl,-rpath,$ORIGIN", "-L./vendor/sdl/build-linux-x86_64/"
 // clang-format on
 
+NYA_INTERNAL void hook_add_version_flag_and_git_hash(NYA_BuildRule* rule);
+NYA_INTERNAL void hook_bundle_project(NYA_BuildRule* rule);
+NYA_INTERNAL void hook_convert_perf_data_to_plain(NYA_BuildRule* rule);
+NYA_INTERNAL void hook_remove_output_file(NYA_BuildRule* rule);
 NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule);
 NYA_INTERNAL void hook_index_assets(NYA_BuildRule* rule);
 NYA_INTERNAL void hook_bundle_assets(NYA_BuildRule* rule);
-NYA_INTERNAL void hook_add_version_flag_and_git_hash(NYA_BuildRule* rule);
-NYA_INTERNAL void hook_convert_perf_data_to_plain(NYA_BuildRule* rule);
-NYA_INTERNAL void hook_remove_output_file(NYA_BuildRule* rule);
-NYA_INTERNAL void hook_bundle_project(NYA_BuildRule* rule);
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -470,6 +477,118 @@ NYA_BuildRule update_submodules = {
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
+NYA_INTERNAL void hook_add_version_flag_and_git_hash(NYA_BuildRule* rule) {
+  nya_assert(rule != nullptr);
+
+  static b8          initialized = false;
+  static NYA_CString GIT_HASH_FLAG;
+  static NYA_CString VERSION_FLAG;
+
+  if (!initialized) {
+    NYA_Command git_hash_command = {
+      .arena     = nya_arena_global,
+      .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
+      .program   = "git",
+      .arguments = { "rev-parse", "HEAD" },
+    };
+    nya_command_run(&git_hash_command);
+    nya_assert(git_hash_command.exit_code == 0, "Failed to get git commit hash.");
+
+    nya_string_trim_whitespace(git_hash_command.stdout_content);
+    NYA_CString git_hash      = nya_string_to_cstring(nya_arena_global, git_hash_command.stdout_content);
+    NYA_String* git_hash_flag = nya_string_sprintf(nya_arena_global, "-DGIT_COMMIT=\"%s\"", git_hash);
+    NYA_String* version_flag  = nya_string_sprintf(nya_arena_global, "-DVERSION=\"%s\"", VERSION);
+    GIT_HASH_FLAG             = nya_string_to_cstring(nya_arena_global, git_hash_flag);
+    VERSION_FLAG              = nya_string_to_cstring(nya_arena_global, version_flag);
+    initialized               = true;
+  }
+
+  u64 length = 0;
+  while (length < NYA_COMMAND_MAX_ARGUMENTS && rule->command.arguments[length] != nullptr) length++;
+  nya_assert(length < NYA_COMMAND_MAX_ARGUMENTS - 2, "Not enough space to add version flags.");
+  rule->command.arguments[length + 0] = GIT_HASH_FLAG;
+  rule->command.arguments[length + 1] = VERSION_FLAG;
+}
+
+NYA_INTERNAL void hook_convert_perf_data_to_plain(NYA_BuildRule* rule) {
+  nya_assert(rule != nullptr);
+
+  NYA_Command convert_command = {
+    .arena     = nya_arena_global,
+    .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
+    .program   = "perf",
+    .arguments = { "script", "-i", "./perf.data" },
+  };
+  nya_command_run(&convert_command);
+  nya_assert(convert_command.exit_code == 0, "Failed to convert perf data to plain text.");
+
+  b8 ok = nya_file_write("./perf.data.txt", convert_command.stdout_content);
+  nya_assert(ok, "Failed to write perf data to text file.");
+}
+
+// we just need to move everything into the right place
+NYA_INTERNAL void hook_bundle_project(NYA_BuildRule* rule) {
+  nya_assert(rule != nullptr);
+
+  NYA_ConstCString dist_path    = "./dist/";
+  NYA_ConstCString linux_path   = "./dist/" PROJECT_NAME "." VERSION ".linux-x86_64/";
+  NYA_ConstCString windows_path = "./dist/" PROJECT_NAME "." VERSION ".windows-x86_64/";
+
+  NYA_Command clean_dist_command = {
+    .program   = "rm",
+    .arguments = { "-rf", dist_path },
+  };
+  nya_command_run(&clean_dist_command);
+  nya_assert(clean_dist_command.exit_code == 0, "Failed to clean dist directory.");
+
+  NYA_Command create_dirs_command = {
+    .program   = "mkdir",
+    .arguments = { "-p", linux_path, windows_path, },
+  };
+  nya_command_run(&create_dirs_command);
+  nya_assert(create_dirs_command.exit_code == 0, "Failed to create dist directories.");
+
+  // LINUX
+
+  NYA_Command copy_linux_binary_command = {
+    .program   = "cp",
+    .arguments = { LINUX_X86_64_BINARY, linux_path, },
+  };
+  nya_command_run(&copy_linux_binary_command);
+  nya_assert(copy_linux_binary_command.exit_code == 0, "Failed to copy linux binary.");
+
+  NYA_Command copy_steam_sdk_linux_command = {
+    .program   = "cp",
+    .arguments = { "./vendor/steam/redistributable_bin/linux64/libsteam_api.so", linux_path, },
+  };
+  nya_command_run(&copy_steam_sdk_linux_command);
+  nya_assert(copy_steam_sdk_linux_command.exit_code == 0, "Failed to copy steam sdk for linux.");
+
+  // WINDOWS
+
+  NYA_Command copy_windows_binary_command = {
+    .program   = "cp",
+    .arguments = { WINDOWS_X86_64_BINARY, windows_path, },
+  };
+  nya_command_run(&copy_windows_binary_command);
+  nya_assert(copy_windows_binary_command.exit_code == 0, "Failed to copy windows binary.");
+
+  NYA_Command copy_steam_sdk_windows_command = {
+    .program   = "cp",
+    .arguments = { "./vendor/steam/redistributable_bin/win64/steam_api64.dll", windows_path, },
+  };
+  nya_command_run(&copy_steam_sdk_windows_command);
+  nya_assert(copy_steam_sdk_windows_command.exit_code == 0, "Failed to copy steam sdk for windows.");
+}
+
+NYA_INTERNAL void hook_remove_output_file(NYA_BuildRule* rule) {
+  nya_assert(rule != nullptr);
+  nya_assert(rule->output_file);
+
+  b8 ok = nya_filesystem_delete(rule->output_file);
+  nya_assert(ok, "Failed to remove output file: %s", rule->output_file);
+}
+
 NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
   nya_assert(rule != nullptr);
 
@@ -698,118 +817,6 @@ NYA_INTERNAL void hook_bundle_assets(NYA_BuildRule* rule) {
     .arguments = { "-i", output_file, },
   };
   nya_command_run(&format_command);
-}
-
-NYA_INTERNAL void hook_add_version_flag_and_git_hash(NYA_BuildRule* rule) {
-  nya_assert(rule != nullptr);
-
-  static b8          initialized = false;
-  static NYA_CString GIT_HASH_FLAG;
-  static NYA_CString VERSION_FLAG;
-
-  if (!initialized) {
-    NYA_Command git_hash_command = {
-      .arena     = nya_arena_global,
-      .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
-      .program   = "git",
-      .arguments = { "rev-parse", "HEAD" },
-    };
-    nya_command_run(&git_hash_command);
-    nya_assert(git_hash_command.exit_code == 0, "Failed to get git commit hash.");
-
-    nya_string_trim_whitespace(git_hash_command.stdout_content);
-    NYA_CString git_hash      = nya_string_to_cstring(nya_arena_global, git_hash_command.stdout_content);
-    NYA_String* git_hash_flag = nya_string_sprintf(nya_arena_global, "-DGIT_COMMIT=\"%s\"", git_hash);
-    NYA_String* version_flag  = nya_string_sprintf(nya_arena_global, "-DVERSION=\"%s\"", VERSION);
-    GIT_HASH_FLAG             = nya_string_to_cstring(nya_arena_global, git_hash_flag);
-    VERSION_FLAG              = nya_string_to_cstring(nya_arena_global, version_flag);
-    initialized               = true;
-  }
-
-  u64 length = 0;
-  while (length < NYA_COMMAND_MAX_ARGUMENTS && rule->command.arguments[length] != nullptr) length++;
-  nya_assert(length < NYA_COMMAND_MAX_ARGUMENTS - 2, "Not enough space to add version flags.");
-  rule->command.arguments[length + 0] = GIT_HASH_FLAG;
-  rule->command.arguments[length + 1] = VERSION_FLAG;
-}
-
-NYA_INTERNAL void hook_convert_perf_data_to_plain(NYA_BuildRule* rule) {
-  nya_assert(rule != nullptr);
-
-  NYA_Command convert_command = {
-    .arena     = nya_arena_global,
-    .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
-    .program   = "perf",
-    .arguments = { "script", "-i", "./perf.data" },
-  };
-  nya_command_run(&convert_command);
-  nya_assert(convert_command.exit_code == 0, "Failed to convert perf data to plain text.");
-
-  b8 ok = nya_file_write("./perf.data.txt", convert_command.stdout_content);
-  nya_assert(ok, "Failed to write perf data to text file.");
-}
-
-NYA_INTERNAL void hook_remove_output_file(NYA_BuildRule* rule) {
-  nya_assert(rule != nullptr);
-  nya_assert(rule->output_file);
-
-  b8 ok = nya_filesystem_delete(rule->output_file);
-  nya_assert(ok, "Failed to remove output file: %s", rule->output_file);
-}
-
-// we just need to move everything into the right place
-NYA_INTERNAL void hook_bundle_project(NYA_BuildRule* rule) {
-  nya_assert(rule != nullptr);
-
-  NYA_ConstCString dist_path    = "./dist/";
-  NYA_ConstCString linux_path   = "./dist/" PROJECT_NAME "." VERSION ".linux-x86_64/";
-  NYA_ConstCString windows_path = "./dist/" PROJECT_NAME "." VERSION ".windows-x86_64/";
-
-  NYA_Command clean_dist_command = {
-    .program   = "rm",
-    .arguments = { "-rf", dist_path },
-  };
-  nya_command_run(&clean_dist_command);
-  nya_assert(clean_dist_command.exit_code == 0, "Failed to clean dist directory.");
-
-  NYA_Command create_dirs_command = {
-    .program   = "mkdir",
-    .arguments = { "-p", linux_path, windows_path, },
-  };
-  nya_command_run(&create_dirs_command);
-  nya_assert(create_dirs_command.exit_code == 0, "Failed to create dist directories.");
-
-  // LINUX
-
-  NYA_Command copy_linux_binary_command = {
-    .program   = "cp",
-    .arguments = { LINUX_X86_64_BINARY, linux_path, },
-  };
-  nya_command_run(&copy_linux_binary_command);
-  nya_assert(copy_linux_binary_command.exit_code == 0, "Failed to copy linux binary.");
-
-  NYA_Command copy_steam_sdk_linux_command = {
-    .program   = "cp",
-    .arguments = { "./vendor/steam/redistributable_bin/linux64/libsteam_api.so", linux_path, },
-  };
-  nya_command_run(&copy_steam_sdk_linux_command);
-  nya_assert(copy_steam_sdk_linux_command.exit_code == 0, "Failed to copy steam sdk for linux.");
-
-  // WINDOWS
-
-  NYA_Command copy_windows_binary_command = {
-    .program   = "cp",
-    .arguments = { WINDOWS_X86_64_BINARY, windows_path, },
-  };
-  nya_command_run(&copy_windows_binary_command);
-  nya_assert(copy_windows_binary_command.exit_code == 0, "Failed to copy windows binary.");
-
-  NYA_Command copy_steam_sdk_windows_command = {
-    .program   = "cp",
-    .arguments = { "./vendor/steam/redistributable_bin/win64/steam_api64.dll", windows_path, },
-  };
-  nya_command_run(&copy_steam_sdk_windows_command);
-  nya_assert(copy_steam_sdk_windows_command.exit_code == 0, "Failed to copy steam sdk for windows.");
 }
 
 /*

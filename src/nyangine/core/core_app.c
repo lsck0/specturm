@@ -1,6 +1,6 @@
+#include "SDL3/SDL_init.h"
 #include "SDL3/SDL_timer.h"
 
-#include "nyangine/core/core_window.h"
 #include "nyangine/nyangine.h"
 
 /*
@@ -11,19 +11,26 @@
 
 NYA_INTERNAL NYA_App NYA_APP_INSTANCE;
 
+NYA_INTERNAL void _nya_app_handle_shutdown_signal(NYA_Signal signal) {
+  nya_unused(signal);
+
+  NYA_App* app     = nya_app_get();
+  app->should_quit = true;
+}
+
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  * PUBLIC API IMPLEMENTATION
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_App* nya_app_get_instance(void) {
-  nya_assert(NYA_APP_INSTANCE.initialized);
-  return &NYA_APP_INSTANCE;
-}
-
 void nya_app_init(NYA_AppConfig config) {
   NYA_App* app = &NYA_APP_INSTANCE;
+
+  nya_signals_init();
+  nya_signals_set_handler(NYA_SIGNAL_HANGUP, _nya_app_handle_shutdown_signal);
+  nya_signals_set_handler(NYA_SIGNAL_INTERRUPT, _nya_app_handle_shutdown_signal);
+  nya_signals_set_handler(NYA_SIGNAL_TERMINATE, _nya_app_handle_shutdown_signal);
 
   b8 ok = SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO | SDL_INIT_AUDIO);
   nya_assert(ok, "SDL_Init() failed: %s", SDL_GetError());
@@ -51,7 +58,7 @@ void nya_app_init(NYA_AppConfig config) {
 }
 
 void nya_app_deinit(void) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   nya_info("Deinitializing subsystems...");
 
@@ -64,27 +71,24 @@ void nya_app_deinit(void) {
   nya_system_job_deinit();
   nya_system_callback_deinit();
 
-  nya_info("Subsystems deinitialized successfully. Good Bye.");
+  nya_info("Subsystems deinitialized successfully.");
 
   nya_arena_destroy(app->global_allocator);
   nya_arena_destroy(app->frame_allocator);
 
+  SDL_Quit();
+
+  nya_signals_deinit();
+
   app->initialized = false;
-}
 
-void nya_app_options_update(NYA_AppConfig config) {
-  NYA_App* app = nya_app_get_instance();
-
-  nya_render_set_vsync(config.vsync_enabled);
-
-  app->config                        = config;
-  app->frame_stats.min_frame_time_ns = 1'000'000'000 / (u64)config.frame_rate_limit;
+  nya_info("Nyangine deinitialized. Goodbye.");
 }
 
 void nya_app_run(void) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
-  while (!app->should_quit_game_loop) {
+  while (!app->should_quit) {
     nya_perf_time_this_scope("frame");
 
     // start of frame tasks
@@ -200,4 +204,18 @@ void nya_app_run(void) {
       }
     }
   }
+}
+
+NYA_App* nya_app_get(void) {
+  nya_assert(NYA_APP_INSTANCE.initialized);
+  return &NYA_APP_INSTANCE;
+}
+
+void nya_app_options_update(NYA_AppConfig config) {
+  NYA_App* app = nya_app_get();
+
+  nya_render_set_vsync(config.vsync_enabled);
+
+  app->config                        = config;
+  app->frame_stats.min_frame_time_ns = 1'000'000'000 / (u64)config.frame_rate_limit;
 }

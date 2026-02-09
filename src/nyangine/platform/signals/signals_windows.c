@@ -1,3 +1,6 @@
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
 #include "nyangine/nyangine.h"
 
 /*
@@ -6,7 +9,10 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-// NYA_INTERNAL s32 _nya_job_scheduler(void* data);
+NYA_INTERNAL NYA_SignalHandler NYA_SIGNALS_TO_CALLBACK_MAP[NYA_SIGNAL_COUNT] = { 0 };
+
+NYA_INTERNAL NYA_Signal  _nya_signal_from_native(DWORD ctrl_type);
+NYA_INTERNAL BOOL WINAPI _nya_console_handler(DWORD ctrl_type);
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -14,61 +20,18 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-/*
- * ─────────────────────────────────────────────────────────
- * SYSTEM FUNCTIONS
- * ─────────────────────────────────────────────────────────
- */
-
-void nya_system_job_init(void) {
-  NYA_App* app = nya_app_get();
-
-  app->job_system = (NYA_JobSystem){
-    .allocator       = nya_arena_create(.name = "job_system_allocator"),
-    .job_queue_mutex = SDL_CreateMutex(),
-  };
-
-  app->job_system.job_queue = nya_array_create(app->job_system.allocator, NYA_Job);
-
-  // SDL_Thread* scheduler_thread = SDL_CreateThread(_nya_job_scheduler, "Job Scheduler", nullptr);
-  // nya_assert(scheduler_thread != nullptr);
-  // SDL_DetachThread(scheduler_thread);
-
-  nya_info("Job system initialized.");
+void nya_signals_init(void) {
+  SetConsoleCtrlHandler(_nya_console_handler, TRUE);
 }
 
-void nya_system_job_deinit(void) {
-  NYA_App* app = nya_app_get();
-
-  SDL_DestroyMutex(app->job_system.job_queue_mutex);
-  nya_array_destroy(app->job_system.job_queue);
-
-  nya_arena_destroy(app->job_system.allocator);
-
-  nya_info("Job system deinitialized.");
+void nya_signals_deinit(void) {
+  SetConsoleCtrlHandler(_nya_console_handler, FALSE);
 }
 
-/*
- * ─────────────────────────────────────────────────────────
- * JOB FUNCTIONS
- * ─────────────────────────────────────────────────────────
- */
+void nya_signals_set_handler(NYA_Signal sig, NYA_SignalHandler handler) {
+  if (sig >= NYA_SIGNAL_COUNT) return;
 
-void nya_job_submit(job_fn function, void* data, u64 size) {
-  nya_assert(function != nullptr);
-  nya_assert(data != nullptr);
-
-  NYA_App* app = nya_app_get();
-
-  NYA_Job job = {
-    .job  = function,
-    .data = data,
-    .size = size,
-  };
-
-  SDL_LockMutex(app->job_system.job_queue_mutex);
-  nya_array_push_back(app->job_system.job_queue, job);
-  SDL_UnlockMutex(app->job_system.job_queue_mutex);
+  NYA_SIGNALS_TO_CALLBACK_MAP[sig] = handler;
 }
 
 /*
@@ -77,13 +40,24 @@ void nya_job_submit(job_fn function, void* data, u64 size) {
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-// NYA_INTERNAL s32 _nya_job_scheduler(void* data) {
-//   nya_unused(data);
-//
-//   NYA_JobSystem* job_system = &nya_app_get()->job_system;
-//
-//   for (;;) {
-//     printf("Job Scheduler Running...\n");
-//     sleep(1);
-//   }
-// }
+NYA_INTERNAL NYA_Signal _nya_signal_from_native(DWORD ctrl_type) {
+  switch (ctrl_type) {
+    case CTRL_C_EVENT:        return NYA_SIGNAL_INTERRUPT;
+    case CTRL_CLOSE_EVENT:    return NYA_SIGNAL_TERMINATE;
+    case CTRL_LOGOFF_EVENT:
+    case CTRL_SHUTDOWN_EVENT: return NYA_SIGNAL_HANGUP;
+    default:                  return NYA_SIGNAL_INVALID;
+  }
+}
+
+NYA_INTERNAL BOOL WINAPI _nya_console_handler(DWORD ctrl_type) {
+  NYA_Signal signal = _nya_signal_from_native(ctrl_type);
+  if (signal == NYA_SIGNAL_INVALID) return FALSE;
+
+  NYA_SignalHandler handler = NYA_SIGNALS_TO_CALLBACK_MAP[signal];
+  if (handler != nullptr) {
+    handler(signal);
+    return TRUE; /* Signal handled */
+  }
+  return FALSE; /* Use default handler */
+}

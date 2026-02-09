@@ -13,7 +13,7 @@
  */
 
 void nya_system_callback_init(void) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   app->callback_system = (NYA_CallbackSystem){
     .allocator = nya_arena_create(.name = "callback_system_allocator"),
@@ -34,7 +34,7 @@ void nya_system_callback_init(void) {
 }
 
 void nya_system_callback_deinit(void) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   nya_array_destroy(app->callback_system.callbacks);
   nya_arena_destroy(app->callback_system.allocator);
@@ -49,7 +49,7 @@ void nya_system_callback_deinit(void) {
  */
 
 NYA_CallbackHandle _nya_callback(NYA_Callback callback) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   nya_array_push_back(app->callback_system.callbacks, callback);
 
@@ -57,7 +57,7 @@ NYA_CallbackHandle _nya_callback(NYA_Callback callback) {
 }
 
 void* nya_callback_get(NYA_CallbackHandle handle) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   return app->callback_system.callbacks->items[handle].fn;
 }

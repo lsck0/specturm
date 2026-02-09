@@ -1,14 +1,19 @@
 * PLAN
 
-- [ ] ponder about renaming gnyame to gayme
-- [ ] more asset system work (CPU / GPU resources, async)
-- [ ] render primitives + gpu resource management (does this make sense in the asset system?)
+- [ ] stack allocation variants for dynamic data structures (for putting into other data structures, for example)
+- [ ] callback lookup in release should be a noop
+- [ ] more asset system work (implement missing resource types, maybe priority system?)
+- [ ] render primitives (lines, circles, rectangles, etc)
+- [ ] font rendering
 - [ ] ui system: widgets, layout, styling
 - [ ] debug ui: profiling, memory, console
 - [ ] entity system
 - [ ] rendering system
 - [ ] audio system
 - [ ] physics system
+- [ ] animation system
+- [ ] save/load system
+- [ ] scenes
 
 * OTHER TODOs
 
@@ -16,3 +21,4 @@
 - [ ] job system / task / multithreadding scheduler
 - [ ] CI
 - [ ] basic nn library: tensors, layers, autograd --> NEAT implementation
+- [ ] building on w*ndows?

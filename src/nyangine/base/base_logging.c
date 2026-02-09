@@ -79,10 +79,10 @@ void _nya_log_message(NYA_LogLevel level, const char* function, const char* file
     }
 
     if (_nya_panic_hook) {
-      va_list args;
-      va_start(args, format);
-      b8 prevent_crash = _nya_panic_hook(function, file, line, format, args);
-      va_end(args);
+      va_list panic_args;
+      va_start(panic_args, format);
+      b8 prevent_crash = _nya_panic_hook(function, file, line, format, panic_args);
+      va_end(panic_args);
 
       if (prevent_crash) return;
     }

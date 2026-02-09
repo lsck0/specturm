@@ -1,7 +1,6 @@
 #pragma once
 
-#include "nyangine/base/base_attributes.h"
-#include "nyangine/base/base_string.h"
+#include "nyangine/base/base.h"
 #include "nyangine/base/base_types.h"
 
 /*
@@ -10,6 +9,7 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_API NYA_EXTERN u64 nya_hash_fnv1a(const void* data, u64 size) __attr_overloaded;
-NYA_API NYA_EXTERN u64 nya_hash_fnv1a(NYA_ConstCString string) __attr_overloaded;
-NYA_API NYA_EXTERN u64 nya_hash_fnv1a(NYA_String string) __attr_overloaded;
+NYA_API NYA_EXTERN u8  nya_crc8(const u8* data, u64 len);
+NYA_API NYA_EXTERN u16 nya_crc16(const u8* data, u64 len);
+NYA_API NYA_EXTERN u32 nya_crc32(const u8* data, u64 len);
+NYA_API NYA_EXTERN u64 nya_crc64(const u8* data, u64 len);

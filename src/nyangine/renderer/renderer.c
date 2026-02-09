@@ -19,7 +19,7 @@
  */
 
 void nya_system_render_init(void) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   SDL_GPUDevice* gpu_device =
       SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_METALLIB | SDL_GPU_SHADERFORMAT_SPIRV, NYA_IS_DEBUG, nullptr);
@@ -33,7 +33,7 @@ void nya_system_render_init(void) {
 }
 
 void nya_system_render_deinit(void) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   SDL_WaitForGPUIdle(app->render_system.gpu_device);
   SDL_DestroyGPUDevice(app->render_system.gpu_device);
@@ -44,7 +44,7 @@ void nya_system_render_deinit(void) {
 void nya_system_render_for_window_init(NYA_Window* window) {
   nya_assert(window != nullptr);
 
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   b8 ok;
 
@@ -67,7 +67,7 @@ void nya_system_render_for_window_init(NYA_Window* window) {
 void nya_system_render_for_window_deinit(NYA_Window* window) {
   nya_assert(window != nullptr);
 
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   SDL_WaitForGPUIdle(app->render_system.gpu_device);
   SDL_ReleaseWindowFromGPUDevice(app->render_system.gpu_device, window->sdl_window);
@@ -82,7 +82,7 @@ void nya_system_render_for_window_deinit(NYA_Window* window) {
  */
 
 void nya_render_set_vsync(b8 enabled) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   if (app->config.vsync_enabled != enabled) {
     nya_array_foreach (app->window_system.windows, window) {
@@ -100,7 +100,7 @@ void nya_render_set_vsync(b8 enabled) {
 void nya_render_begin(NYA_Window* window) {
   nya_assert(window != nullptr);
 
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   SDL_GPUCommandBuffer* command_buffer = SDL_AcquireGPUCommandBuffer(app->render_system.gpu_device);
   window->render_system.command_buffer = command_buffer;

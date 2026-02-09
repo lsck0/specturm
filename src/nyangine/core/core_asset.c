@@ -51,7 +51,7 @@ NYA_INTERNAL NYA_AssetHandle _nya_asset_pick_correct_compiled_shader(NYA_AssetHa
  */
 
 void nya_system_asset_init(void) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   app->asset_system = (NYA_AssetSystem){
     .allocator = nya_arena_create(.name = "asset_system_allocator"),
@@ -87,7 +87,7 @@ void nya_system_asset_init(void) {
 }
 
 void nya_system_asset_deinit(void) {
-  NYA_App* app = nya_app_get_instance();
+  NYA_App* app = nya_app_get();
 
   // submit all assets to be unloaded
   nya_hmap_foreach_value (app->asset_system.assets, asset) {
@@ -120,7 +120,7 @@ void nya_system_asset_deinit(void) {
 NYA_Asset* nya_asset_get(NYA_AssetHandle handle) {
   nya_assert(handle != nullptr);
 
-  NYA_AssetSystem* system = &nya_app_get_instance()->asset_system;
+  NYA_AssetSystem* system = &nya_app_get()->asset_system;
   NYA_Asset*       asset  = nya_hmap_get(system->assets, handle);
 
 #ifdef NYA_ASSET_BACKEND_FS
@@ -143,7 +143,7 @@ NYA_Asset* nya_asset_get(NYA_AssetHandle handle) {
 void nya_asset_acquire(NYA_AssetHandle handle) {
   nya_assert(handle != nullptr);
 
-  NYA_AssetSystem* system = &nya_app_get_instance()->asset_system;
+  NYA_AssetSystem* system = &nya_app_get()->asset_system;
 
   NYA_Asset* asset = nya_hmap_get(system->assets, handle);
   nya_assert(asset != nullptr, "Cannot acquire unloaed asset: %s", handle);
@@ -154,7 +154,7 @@ void nya_asset_acquire(NYA_AssetHandle handle) {
 void nya_asset_release(NYA_AssetHandle handle) {
   nya_assert(handle != nullptr);
 
-  NYA_AssetSystem* system = &nya_app_get_instance()->asset_system;
+  NYA_AssetSystem* system = &nya_app_get()->asset_system;
 
   NYA_Asset* asset = nya_hmap_get(system->assets, handle);
   nya_assert(asset != nullptr, "Cannot release unloaed asset: %s", handle);
@@ -165,7 +165,7 @@ void nya_asset_release(NYA_AssetHandle handle) {
 }
 
 void nya_asset_load(NYA_AssetLoadParameters parameters) {
-  NYA_AssetSystem* system = &nya_app_get_instance()->asset_system;
+  NYA_AssetSystem* system = &nya_app_get()->asset_system;
 
   NYA_Asset* asset = nya_hmap_get(system->assets, parameters.handle);
   if (asset != nullptr && asset->status != NYA_ASSET_STATUS_UNLOADED) return;
@@ -187,7 +187,7 @@ void nya_asset_unload(NYA_Asset* asset) {
   nya_assert(asset != nullptr);
   nya_assert(asset->reference_count == 0, "Cannot unload asset with non-zero reference count: %s", asset->handle);
 
-  NYA_AssetSystem* system = &nya_app_get_instance()->asset_system;
+  NYA_AssetSystem* system = &nya_app_get()->asset_system;
 
   nya_array_push_back(system->unloading_queue, asset->handle);
 
@@ -228,7 +228,7 @@ NYA_INTERNAL void _nya_asset_load_raw_from_filesystem(NYA_CString path, OUT NYA_
     nya_unreachable();
   }
 
-  NYA_App*   app   = nya_app_get_instance();
+  NYA_App*   app   = nya_app_get();
   NYA_Arena* arena = app->asset_system.allocator;
 
   b8 ok;
@@ -255,7 +255,7 @@ NYA_INTERNAL void _nya_asset_load_raw_from_filesystem(NYA_CString path, OUT NYA_
 NYA_INTERNAL void _nya_asset_unload_raw_from_filesystem(NYA_Asset* asset) {
   nya_assert(asset != nullptr);
 
-  NYA_App*   app   = nya_app_get_instance();
+  NYA_App*   app   = nya_app_get();
   NYA_Arena* arena = app->asset_system.allocator;
 
   nya_arena_free(arena, asset->as_text.data, asset->as_text.size);
@@ -291,8 +291,8 @@ NYA_INTERNAL b8 _nya_asset_get_modification_time(NYA_Asset* asset, OUT u64* out_
 void _nya_asset_loading_process(NYA_Event* event) {
   nya_unused(event);
 
-  NYA_AssetSystem*  system        = &nya_app_get_instance()->asset_system;
-  NYA_RenderSystem* render_system = &nya_app_get_instance()->render_system;
+  NYA_AssetSystem*  system        = &nya_app_get()->asset_system;
+  NYA_RenderSystem* render_system = &nya_app_get()->render_system;
 
   nya_array_foreach (system->loading_queue, parameters) {
     nya_info("Loading asset: %s", parameters->handle);
@@ -356,8 +356,8 @@ void _nya_asset_loading_process(NYA_Event* event) {
 void _nya_asset_unloading_process(NYA_Event* event) {
   nya_unused(event);
 
-  NYA_AssetSystem*  system        = &nya_app_get_instance()->asset_system;
-  NYA_RenderSystem* render_system = &nya_app_get_instance()->render_system;
+  NYA_AssetSystem*  system        = &nya_app_get()->asset_system;
+  NYA_RenderSystem* render_system = &nya_app_get()->render_system;
 
   nya_array_foreach (system->unloading_queue, handle) {
     nya_info("Unloading asset: %s", *handle);
@@ -390,7 +390,7 @@ void _nya_asset_unloading_process(NYA_Event* event) {
 #ifdef NYA_ASSET_BACKEND_FS
 void _nya_asset_reload_process(NYA_Event* event) {
   nya_unused(event);
-  NYA_AssetSystem* system = &nya_app_get_instance()->asset_system;
+  NYA_AssetSystem* system = &nya_app_get()->asset_system;
 
   NYA_AssetHandleArray* postponed = nya_array_create(system->allocator, NYA_AssetHandle);
 
@@ -422,7 +422,7 @@ void _nya_asset_reload_process(NYA_Event* event) {
 NYA_INTERNAL NYA_AssetHandle _nya_asset_pick_correct_compiled_shader(NYA_AssetHandle source_shader, OUT SDL_GPUShaderFormat* out_format) {
   nya_assert(nya_string_contains(source_shader, "/shaders/source/"));
 
-  NYA_AssetSystem* system = &nya_app_get_instance()->asset_system;
+  NYA_AssetSystem* system = &nya_app_get()->asset_system;
 
   NYA_String* compiled_shader_path = nya_string_from(system->allocator, source_shader);
   nya_string_replace(compiled_shader_path, "/shaders/source/", "/shaders/compiled/");

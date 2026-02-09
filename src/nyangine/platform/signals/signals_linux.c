@@ -1,3 +1,5 @@
+#include <signal.h>
+
 #include "nyangine/nyangine.h"
 
 /*
@@ -6,7 +8,11 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-// NYA_INTERNAL s32 _nya_job_scheduler(void* data);
+NYA_INTERNAL NYA_SignalHandler NYA_SIGNALS_TO_CALLBACK_MAP[NYA_SIGNAL_COUNT] = { 0 };
+
+NYA_INTERNAL int        _nya_signal_to_native(NYA_Signal signal);
+NYA_INTERNAL NYA_Signal _nya_signal_from_native(int sig);
+NYA_INTERNAL void       _nya_signal_handler(int sig);
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -14,61 +20,33 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-/*
- * ─────────────────────────────────────────────────────────
- * SYSTEM FUNCTIONS
- * ─────────────────────────────────────────────────────────
- */
-
-void nya_system_job_init(void) {
-  NYA_App* app = nya_app_get();
-
-  app->job_system = (NYA_JobSystem){
-    .allocator       = nya_arena_create(.name = "job_system_allocator"),
-    .job_queue_mutex = SDL_CreateMutex(),
-  };
-
-  app->job_system.job_queue = nya_array_create(app->job_system.allocator, NYA_Job);
-
-  // SDL_Thread* scheduler_thread = SDL_CreateThread(_nya_job_scheduler, "Job Scheduler", nullptr);
-  // nya_assert(scheduler_thread != nullptr);
-  // SDL_DetachThread(scheduler_thread);
-
-  nya_info("Job system initialized.");
+void nya_signals_init(void) {
+  /* nothing to do on linux */
 }
 
-void nya_system_job_deinit(void) {
-  NYA_App* app = nya_app_get();
+void nya_signals_deinit(void) {
+  __sighandler_t ok;
 
-  SDL_DestroyMutex(app->job_system.job_queue_mutex);
-  nya_array_destroy(app->job_system.job_queue);
+  ok = signal(SIGINT, SIG_DFL);
+  nya_assert(ok != SIG_ERR, "Failed to reset SIGINT handler: %s", strerror(errno));
 
-  nya_arena_destroy(app->job_system.allocator);
+  ok = signal(SIGTERM, SIG_DFL);
+  nya_assert(ok != SIG_ERR, "Failed to reset SIGTERM handler: %s", strerror(errno));
 
-  nya_info("Job system deinitialized.");
+  ok = signal(SIGHUP, SIG_DFL);
+  nya_assert(ok != SIG_ERR, "Failed to reset SIGHUP handler: %s", strerror(errno));
 }
 
-/*
- * ─────────────────────────────────────────────────────────
- * JOB FUNCTIONS
- * ─────────────────────────────────────────────────────────
- */
+void nya_signals_set_handler(NYA_Signal sig, NYA_SignalHandler handler) {
+  if (sig >= NYA_SIGNAL_COUNT) return;
 
-void nya_job_submit(job_fn function, void* data, u64 size) {
-  nya_assert(function != nullptr);
-  nya_assert(data != nullptr);
+  NYA_SIGNALS_TO_CALLBACK_MAP[sig] = handler;
 
-  NYA_App* app = nya_app_get();
-
-  NYA_Job job = {
-    .job  = function,
-    .data = data,
-    .size = size,
-  };
-
-  SDL_LockMutex(app->job_system.job_queue_mutex);
-  nya_array_push_back(app->job_system.job_queue, job);
-  SDL_UnlockMutex(app->job_system.job_queue_mutex);
+  int native_sig = _nya_signal_to_native(sig);
+  if (native_sig >= 0) { /**/
+    __sighandler_t ok = signal(native_sig, _nya_signal_handler);
+    nya_assert(ok != SIG_ERR, "Failed to set signal handler for signal %d: %s", native_sig, strerror(errno));
+  }
 }
 
 /*
@@ -77,13 +55,28 @@ void nya_job_submit(job_fn function, void* data, u64 size) {
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-// NYA_INTERNAL s32 _nya_job_scheduler(void* data) {
-//   nya_unused(data);
-//
-//   NYA_JobSystem* job_system = &nya_app_get()->job_system;
-//
-//   for (;;) {
-//     printf("Job Scheduler Running...\n");
-//     sleep(1);
-//   }
-// }
+NYA_INTERNAL int _nya_signal_to_native(NYA_Signal signal) {
+  switch (signal) {
+    case NYA_SIGNAL_INTERRUPT: return SIGINT;
+    case NYA_SIGNAL_TERMINATE: return SIGTERM;
+    case NYA_SIGNAL_HANGUP:    return SIGHUP;
+    default:                   return -1;
+  }
+}
+
+NYA_INTERNAL NYA_Signal _nya_signal_from_native(int sig) {
+  switch (sig) {
+    case SIGINT:  return NYA_SIGNAL_INTERRUPT;
+    case SIGTERM: return NYA_SIGNAL_TERMINATE;
+    case SIGHUP:  return NYA_SIGNAL_HANGUP;
+    default:      return NYA_SIGNAL_INVALID;
+  }
+}
+
+NYA_INTERNAL void _nya_signal_handler(int sig) {
+  NYA_Signal signal = _nya_signal_from_native(sig);
+  if (signal == NYA_SIGNAL_INVALID) return;
+
+  NYA_SignalHandler handler = NYA_SIGNALS_TO_CALLBACK_MAP[signal];
+  if (handler != nullptr) handler(signal);
+}

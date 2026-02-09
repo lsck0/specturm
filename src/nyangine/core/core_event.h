@@ -22,6 +22,9 @@
 typedef enum NYA_EventType            NYA_EventType;
 typedef enum NYA_EventHookType        NYA_EventHookType;
 typedef struct NYA_AssetEvent         NYA_AssetEvent;
+typedef struct NYA_DisplayEvent       NYA_DisplayEvent;
+typedef struct NYA_DropEvent          NYA_DropEvent;
+typedef struct NYA_DropPositionEvent  NYA_DropPositionEvent;
 typedef struct NYA_Event              NYA_Event;
 typedef struct NYA_EventHook          NYA_EventHook;
 typedef struct NYA_EventSystem        NYA_EventSystem;
@@ -29,6 +32,8 @@ typedef struct NYA_KeyEvent           NYA_KeyEvent;
 typedef struct NYA_MouseButtonEvent   NYA_MouseButtonEvent;
 typedef struct NYA_MouseMovedEvent    NYA_MouseMovedEvent;
 typedef struct NYA_MouseWheelEvent    NYA_MouseWheelEvent;
+typedef struct NYA_TextEditingEvent   NYA_TextEditingEvent;
+typedef struct NYA_TextInputEvent     NYA_TextInputEvent;
 typedef struct NYA_WindowEvent        NYA_WindowEvent;
 typedef struct NYA_WindowMovedEvent   NYA_WindowMovedEvent;
 typedef struct NYA_WindowResizedEvent NYA_WindowResizedEvent;
@@ -76,8 +81,25 @@ enum NYA_EventType {
   NYA_EVENT_RENDERING_ENDED,
   NYA_EVENT_LIFECYCLE_EVENTS_END,
 
+  NYA_EVENT_CLIPBOARD_UPDATE,
+
+  NYA_EVENT_DISPLAY_ADDED,
+  NYA_EVENT_DISPLAY_CONTENT_SCALE_CHANGED,
+  NYA_EVENT_DISPLAY_CURRENT_MODE_CHANGED,
+  NYA_EVENT_DISPLAY_DESKTOP_MODE_CHANGED,
+  NYA_EVENT_DISPLAY_MOVED,
+  NYA_EVENT_DISPLAY_ORIENTATION,
+  NYA_EVENT_DISPLAY_REMOVED,
+
+  NYA_EVENT_DROP_FILE,
+  NYA_EVENT_DROP_TEXT,
+  NYA_EVENT_DROP_BEGIN,
+  NYA_EVENT_DROP_COMPLETE,
+  NYA_EVENT_DROP_POSITION,
+
   NYA_EVENT_KEY_DOWN,
   NYA_EVENT_KEY_UP,
+  NYA_EVENT_KEYMAP_CHANGED,
 
   NYA_EVENT_MOUSE_BUTTON_DOWN,
   NYA_EVENT_MOUSE_BUTTON_UP,
@@ -86,11 +108,18 @@ enum NYA_EventType {
 
   NYA_EVENT_QUIT,
 
+  NYA_EVENT_TEXT_INPUT,
+  NYA_EVENT_TEXT_EDITING,
+
   NYA_EVENT_WINDOW_CLOSE_REQUESTED,
   NYA_EVENT_WINDOW_DESTROYED,
+  NYA_EVENT_WINDOW_DISPLAY_CHANGED,
+  NYA_EVENT_WINDOW_DISPLAY_SCALE_CHANGED,
   NYA_EVENT_WINDOW_ENTER_FULLSCREEN,
+  NYA_EVENT_WINDOW_EXPOSED,
   NYA_EVENT_WINDOW_FOCUS_GAINED,
   NYA_EVENT_WINDOW_FOCUS_LOST,
+  NYA_EVENT_WINDOW_HDR_STATE_CHANGED,
   NYA_EVENT_WINDOW_HIDDEN,
   NYA_EVENT_WINDOW_LEAVE_FULLSCREEN,
   NYA_EVENT_WINDOW_MAXIMIZED,
@@ -99,8 +128,10 @@ enum NYA_EventType {
   NYA_EVENT_WINDOW_MOUSE_LEAVE,
   NYA_EVENT_WINDOW_MOVED,
   NYA_EVENT_WINDOW_OCCLUDED,
+  NYA_EVENT_WINDOW_PIXEL_SIZE_CHANGED,
   NYA_EVENT_WINDOW_RESIZED,
   NYA_EVENT_WINDOW_RESTORED,
+  NYA_EVENT_WINDOW_SAFE_AREA_CHANGED,
   NYA_EVENT_WINDOW_SHOWN,
 
   NYA_EVENT_COUNT,
@@ -118,8 +149,25 @@ __attr_unused static NYA_ConstCString NYA_EVENT_NAME_MAP[] = {
   [NYA_EVENT_RENDERING_STARTED] = "RENDERING_STARTED",
   [NYA_EVENT_RENDERING_ENDED]   = "RENDERING_ENDED",
 
-  [NYA_EVENT_KEY_DOWN] = "KEY_DOWN",
-  [NYA_EVENT_KEY_UP]   = "KEY_UP",
+  [NYA_EVENT_CLIPBOARD_UPDATE] = "CLIPBOARD_UPDATE",
+
+  [NYA_EVENT_DISPLAY_ADDED]                 = "DISPLAY_ADDED",
+  [NYA_EVENT_DISPLAY_CONTENT_SCALE_CHANGED] = "DISPLAY_CONTENT_SCALE_CHANGED",
+  [NYA_EVENT_DISPLAY_CURRENT_MODE_CHANGED]  = "DISPLAY_CURRENT_MODE_CHANGED",
+  [NYA_EVENT_DISPLAY_DESKTOP_MODE_CHANGED]  = "DISPLAY_DESKTOP_MODE_CHANGED",
+  [NYA_EVENT_DISPLAY_MOVED]                 = "DISPLAY_MOVED",
+  [NYA_EVENT_DISPLAY_ORIENTATION]           = "DISPLAY_ORIENTATION",
+  [NYA_EVENT_DISPLAY_REMOVED]               = "DISPLAY_REMOVED",
+
+  [NYA_EVENT_DROP_BEGIN]    = "DROP_BEGIN",
+  [NYA_EVENT_DROP_COMPLETE] = "DROP_COMPLETE",
+  [NYA_EVENT_DROP_FILE]     = "DROP_FILE",
+  [NYA_EVENT_DROP_POSITION] = "DROP_POSITION",
+  [NYA_EVENT_DROP_TEXT]     = "DROP_TEXT",
+
+  [NYA_EVENT_KEY_DOWN]       = "KEY_DOWN",
+  [NYA_EVENT_KEY_UP]         = "KEY_UP",
+  [NYA_EVENT_KEYMAP_CHANGED] = "KEYMAP_CHANGED",
 
   [NYA_EVENT_MOUSE_BUTTON_DOWN] = "MOUSE_BUTTON_DOWN",
   [NYA_EVENT_MOUSE_BUTTON_UP]   = "MOUSE_BUTTON_UP",
@@ -128,22 +176,60 @@ __attr_unused static NYA_ConstCString NYA_EVENT_NAME_MAP[] = {
 
   [NYA_EVENT_QUIT] = "QUIT",
 
-  [NYA_EVENT_WINDOW_CLOSE_REQUESTED]  = "WINDOW_CLOSE_REQUESTED",
-  [NYA_EVENT_WINDOW_DESTROYED]        = "WINDOW_DESTROYED",
-  [NYA_EVENT_WINDOW_ENTER_FULLSCREEN] = "WINDOW_ENTER_FULLSCREEN",
-  [NYA_EVENT_WINDOW_FOCUS_GAINED]     = "WINDOW_FOCUS_GAINED",
-  [NYA_EVENT_WINDOW_FOCUS_LOST]       = "WINDOW_FOCUS_LOST",
-  [NYA_EVENT_WINDOW_HIDDEN]           = "WINDOW_HIDDEN",
-  [NYA_EVENT_WINDOW_LEAVE_FULLSCREEN] = "WINDOW_LEAVE_FULLSCREEN",
-  [NYA_EVENT_WINDOW_MAXIMIZED]        = "WINDOW_MAXIMIZED",
-  [NYA_EVENT_WINDOW_MINIMIZED]        = "WINDOW_MINIMIZED",
-  [NYA_EVENT_WINDOW_MOUSE_ENTER]      = "WINDOW_MOUSE_ENTER",
-  [NYA_EVENT_WINDOW_MOUSE_LEAVE]      = "WINDOW_MOUSE_LEAVE",
-  [NYA_EVENT_WINDOW_MOVED]            = "WINDOW_MOVED",
-  [NYA_EVENT_WINDOW_OCCLUDED]         = "WINDOW_OCCLUDED",
-  [NYA_EVENT_WINDOW_RESIZED]          = "WINDOW_RESIZED",
-  [NYA_EVENT_WINDOW_RESTORED]         = "WINDOW_RESTORED",
-  [NYA_EVENT_WINDOW_SHOWN]            = "WINDOW_SHOWN",
+  [NYA_EVENT_TEXT_INPUT]   = "TEXT_INPUT",
+  [NYA_EVENT_TEXT_EDITING] = "TEXT_EDITING",
+
+  [NYA_EVENT_WINDOW_CLOSE_REQUESTED]       = "WINDOW_CLOSE_REQUESTED",
+  [NYA_EVENT_WINDOW_DESTROYED]             = "WINDOW_DESTROYED",
+  [NYA_EVENT_WINDOW_DISPLAY_CHANGED]       = "WINDOW_DISPLAY_CHANGED",
+  [NYA_EVENT_WINDOW_DISPLAY_SCALE_CHANGED] = "WINDOW_DISPLAY_SCALE_CHANGED",
+  [NYA_EVENT_WINDOW_ENTER_FULLSCREEN]      = "WINDOW_ENTER_FULLSCREEN",
+  [NYA_EVENT_WINDOW_EXPOSED]               = "WINDOW_EXPOSED",
+  [NYA_EVENT_WINDOW_FOCUS_GAINED]          = "WINDOW_FOCUS_GAINED",
+  [NYA_EVENT_WINDOW_FOCUS_LOST]            = "WINDOW_FOCUS_LOST",
+  [NYA_EVENT_WINDOW_HDR_STATE_CHANGED]     = "WINDOW_HDR_STATE_CHANGED",
+  [NYA_EVENT_WINDOW_HIDDEN]                = "WINDOW_HIDDEN",
+  [NYA_EVENT_WINDOW_LEAVE_FULLSCREEN]      = "WINDOW_LEAVE_FULLSCREEN",
+  [NYA_EVENT_WINDOW_MAXIMIZED]             = "WINDOW_MAXIMIZED",
+  [NYA_EVENT_WINDOW_MINIMIZED]             = "WINDOW_MINIMIZED",
+  [NYA_EVENT_WINDOW_MOUSE_ENTER]           = "WINDOW_MOUSE_ENTER",
+  [NYA_EVENT_WINDOW_MOUSE_LEAVE]           = "WINDOW_MOUSE_LEAVE",
+  [NYA_EVENT_WINDOW_MOVED]                 = "WINDOW_MOVED",
+  [NYA_EVENT_WINDOW_OCCLUDED]              = "WINDOW_OCCLUDED",
+  [NYA_EVENT_WINDOW_PIXEL_SIZE_CHANGED]    = "WINDOW_PIXEL_SIZE_CHANGED",
+  [NYA_EVENT_WINDOW_RESIZED]               = "WINDOW_RESIZED",
+  [NYA_EVENT_WINDOW_RESTORED]              = "WINDOW_RESTORED",
+  [NYA_EVENT_WINDOW_SAFE_AREA_CHANGED]     = "WINDOW_SAFE_AREA_CHANGED",
+  [NYA_EVENT_WINDOW_SHOWN]                 = "WINDOW_SHOWN",
+};
+
+/*
+ * ─────────────────────────────────────────────────────────
+ * DISPLAY EVENT STRUCTS
+ * ─────────────────────────────────────────────────────────
+ */
+
+struct NYA_DisplayEvent {
+  u32 display_id;
+  s32 data1;
+  s32 data2;
+};
+
+/*
+ * ─────────────────────────────────────────────────────────
+ * DROP EVENT STRUCTS
+ * ─────────────────────────────────────────────────────────
+ */
+
+struct NYA_DropEvent {
+  void*            window_id;
+  NYA_ConstCString path;
+};
+
+struct NYA_DropPositionEvent {
+  void* window_id;
+  f32   x;
+  f32   y;
 };
 
 /*
@@ -221,6 +307,24 @@ struct NYA_WindowResizedEvent {
 
 /*
  * ─────────────────────────────────────────────────────────
+ * TEXT INPUT EVENT STRUCTS
+ * ─────────────────────────────────────────────────────────
+ */
+
+struct NYA_TextInputEvent {
+  void*            window_id;
+  NYA_ConstCString text;
+};
+
+struct NYA_TextEditingEvent {
+  void*            window_id;
+  NYA_ConstCString text;
+  s32              start;
+  s32              length;
+};
+
+/*
+ * ─────────────────────────────────────────────────────────
  * EVENT STRUCT
  * ─────────────────────────────────────────────────────────
  */
@@ -231,10 +335,15 @@ struct NYA_Event {
   u64           timestamp;
 
   union {
+    NYA_DisplayEvent       as_display_event;
+    NYA_DropEvent          as_drop_event;
+    NYA_DropPositionEvent  as_drop_position_event;
     NYA_KeyEvent           as_key_event;
     NYA_MouseButtonEvent   as_mouse_button_event;
     NYA_MouseMovedEvent    as_mouse_moved_event;
     NYA_MouseWheelEvent    as_mouse_wheel_event;
+    NYA_TextEditingEvent   as_text_editing_event;
+    NYA_TextInputEvent     as_text_input_event;
     NYA_WindowEvent        as_window_event;
     NYA_WindowMovedEvent   as_window_moved_event;
     NYA_WindowResizedEvent as_window_resized_event;
