@@ -36,8 +36,8 @@ void nya_system_events_init(void) {
   };
 
   app->event_system.event_queue           = nya_array_create(app->event_system.allocator, NYA_Event);
-  app->event_system.deferred_event_hooks  = nya_hmap_create(app->event_system.allocator, NYA_EventType, NYA_EventHookArrayPtr);
-  app->event_system.immediate_event_hooks = nya_hmap_create(app->event_system.allocator, NYA_EventType, NYA_EventHookArrayPtr);
+  app->event_system.deferred_event_hooks  = nya_hmap_create(app->event_system.allocator, NYA_EventType, NYA_EventHookArray);
+  app->event_system.immediate_event_hooks = nya_hmap_create(app->event_system.allocator, NYA_EventType, NYA_EventHookArray);
 
   nya_info("Event system initialized.");
 }
@@ -113,13 +113,13 @@ void nya_event_dispatch(NYA_Event event) {
 void nya_event_hook_register(NYA_EventHook hook) {
   NYA_App* app = nya_app_get();
 
-  NYA_EventHookArray** hook_array = nullptr;
+  NYA_EventHookArray* hook_array = nullptr;
   switch (hook.hook_type) {
     case NYA_EVENT_HOOK_TYPE_DEFERRED: {
       hook_array = nya_hmap_get(app->event_system.deferred_event_hooks, hook.event_type);
 
       if (!hook_array) {
-        NYA_EventHookArray* new_hook_array = nya_array_create(app->event_system.allocator, NYA_EventHook);
+        NYA_EventHookArray new_hook_array = nya_array_create_on_stack(app->event_system.allocator, NYA_EventHook);
         nya_hmap_set(app->event_system.deferred_event_hooks, hook.event_type, new_hook_array);
         hook_array = nya_hmap_get(app->event_system.deferred_event_hooks, hook.event_type);
       }
@@ -129,7 +129,7 @@ void nya_event_hook_register(NYA_EventHook hook) {
       hook_array = nya_hmap_get(app->event_system.immediate_event_hooks, hook.event_type);
 
       if (!hook_array) {
-        NYA_EventHookArray* new_hook_array = nya_array_create(app->event_system.allocator, NYA_EventHook);
+        NYA_EventHookArray new_hook_array = nya_array_create_on_stack(app->event_system.allocator, NYA_EventHook);
         nya_hmap_set(app->event_system.immediate_event_hooks, hook.event_type, new_hook_array);
         hook_array = nya_hmap_get(app->event_system.immediate_event_hooks, hook.event_type);
       }
@@ -139,13 +139,13 @@ void nya_event_hook_register(NYA_EventHook hook) {
   }
   static_assert(NYA_EVENT_HOOK_TYPE_COUNT == 2, "Unhandled NYA_EventHookType enum value.");
 
-  nya_array_push_back(*hook_array, hook);
+  nya_array_push_back(hook_array, hook);
 }
 
 void nya_event_hook_unregister(NYA_EventHook hook) {
   NYA_App* app = nya_app_get();
 
-  NYA_EventHookArray** hook_array = nullptr;
+  NYA_EventHookArray* hook_array = nullptr;
   switch (hook.hook_type) {
     case NYA_EVENT_HOOK_TYPE_DEFERRED: {
       hook_array = nya_hmap_get(app->event_system.deferred_event_hooks, hook.event_type);
@@ -160,7 +160,7 @@ void nya_event_hook_unregister(NYA_EventHook hook) {
   static_assert(NYA_EVENT_HOOK_TYPE_COUNT == 2, "Unhandled NYA_EventHookType enum value.");
   nya_assert(hook_array != nullptr, "Cannot unregister hook that was not registered.");
 
-  nya_array_remove_item(*hook_array, hook);
+  nya_array_remove_item(hook_array, hook);
 }
 
 /*
@@ -471,10 +471,10 @@ NYA_INTERNAL void _nya_event_notify_deferred_listeners(NYA_Event* event) {
 
   NYA_App* app = nya_app_get();
 
-  NYA_EventHookArray** hook_array = nya_hmap_get(app->event_system.deferred_event_hooks, event->type);
+  NYA_EventHookArray* hook_array = nya_hmap_get(app->event_system.deferred_event_hooks, event->type);
   if (!hook_array) return;
 
-  nya_array_foreach (*hook_array, hook) {
+  nya_array_foreach (hook_array, hook) {
     NYA_EventHookFn          fn           = nya_callback_get(hook->fn);
     NYA_EventHookConditionFn condition_fn = nya_callback_get(hook->condition_fn);
     if (condition_fn != nullptr && !condition_fn(event)) continue;
@@ -488,10 +488,10 @@ NYA_INTERNAL void _nya_event_notify_immediate_listeners(NYA_Event* event) {
 
   NYA_App* app = nya_app_get();
 
-  NYA_EventHookArray** hook_array = nya_hmap_get(app->event_system.immediate_event_hooks, event->type);
+  NYA_EventHookArray* hook_array = nya_hmap_get(app->event_system.immediate_event_hooks, event->type);
   if (!hook_array) return;
 
-  nya_array_foreach (*hook_array, hook) {
+  nya_array_foreach (hook_array, hook) {
     NYA_EventHookFn          fn           = nya_callback_get(hook->fn);
     NYA_EventHookConditionFn condition_fn = nya_callback_get(hook->condition_fn);
     if (condition_fn != nullptr && !condition_fn(event)) continue;

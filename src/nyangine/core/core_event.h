@@ -39,7 +39,7 @@ typedef struct NYA_WindowMovedEvent   NYA_WindowMovedEvent;
 typedef struct NYA_WindowResizedEvent NYA_WindowResizedEvent;
 nya_derive_array(NYA_Event);
 nya_derive_array(NYA_EventHook);
-nya_derive_hmap(NYA_EventType, NYA_EventHookArrayPtr);
+nya_derive_hmap(NYA_EventType, NYA_EventHookArray);
 
 typedef void (*NYA_EventHookFn)(NYA_Event*);
 typedef b8 (*NYA_EventHookConditionFn)(NYA_Event*);
@@ -57,8 +57,8 @@ struct NYA_EventSystem {
   NYA_EventArray* event_queue;
   u64             event_queue_read_index;
 
-  NYA_EventType_NYA_EventHookArrayPtr_HMap* deferred_event_hooks;
-  NYA_EventType_NYA_EventHookArrayPtr_HMap* immediate_event_hooks;
+  NYA_EventType_NYA_EventHookArray_HMap* deferred_event_hooks;
+  NYA_EventType_NYA_EventHookArray_HMap* immediate_event_hooks;
 };
 
 /*

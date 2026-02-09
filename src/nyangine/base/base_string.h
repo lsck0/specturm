@@ -35,6 +35,8 @@ NYA_API NYA_EXTERN b8               nya_string_contains(const NYA_String* str, c
 NYA_API NYA_EXTERN b8               nya_string_contains(NYA_ConstCString str, NYA_ConstCString substr) __attr_overloaded;
 NYA_API NYA_EXTERN NYA_String*      nya_string_create(NYA_Arena* arena);
 NYA_API NYA_EXTERN NYA_String*      nya_string_create_with_capacity(NYA_Arena* arena, u64 capacity);
+NYA_API NYA_EXTERN NYA_String       nya_string_create_on_stack(NYA_Arena* arena);
+NYA_API NYA_EXTERN NYA_String       nya_string_create_with_capacity_on_stack(NYA_Arena* arena, u64 capacity);
 NYA_API NYA_EXTERN b8               nya_string_ends_with(const NYA_String* str, NYA_ConstCString suffix);
 NYA_API NYA_EXTERN b8               nya_string_equals(NYA_ConstCString str1, NYA_ConstCString str2) __attr_overloaded;
 NYA_API NYA_EXTERN b8               nya_string_equals(const NYA_String* str1, NYA_ConstCString str2) __attr_overloaded;
@@ -58,6 +60,7 @@ NYA_API NYA_EXTERN u64              nya_string_count(const NYA_String* str, NYA_
 NYA_API NYA_EXTERN u64              nya_string_count(const NYA_String* str, const NYA_String* substr) __attr_overloaded;
 NYA_API NYA_EXTERN void             nya_string_clear(NYA_String* str);
 NYA_API NYA_EXTERN void             nya_string_destroy(NYA_String* str);
+NYA_API NYA_EXTERN void             nya_string_destroy_on_stack(NYA_String* str);
 NYA_API NYA_EXTERN void             nya_string_extend(NYA_String* str, NYA_ConstCString extension) __attr_overloaded;
 NYA_API NYA_EXTERN void             nya_string_extend(NYA_String* str, const NYA_String* extension) __attr_overloaded;
 NYA_API NYA_EXTERN void             nya_string_extend_front(NYA_String* str, NYA_ConstCString extension) __attr_overloaded;

@@ -35,7 +35,7 @@
 
 #define CC            "clang"
 #define CFLAGS        "-std=c23", "-ggdb", "-fenable-matrix", "-mavx", "-mavx2"
-#define WARNINGS      "-Wall", "-Wextra", "-Wshadow", "-Wstrict-prototypes", "-Wswitch-default", "-Wno-gnu", "-Wno-gcc-compat", "-Wno-initializer-overrides", "-Wno-keyword-macro"
+#define WARNINGS      "-Wall", "-Wextra", "-Wstrict-prototypes", "-Wswitch-default", "-Wno-gnu", "-Wno-gcc-compat", "-Wno-initializer-overrides", "-Wno-keyword-macro"
 #define INCLUDE_PATHS "-I./src/", "-I./", "-I./vendor/sdl/include/"
 #define LINKER_FLAGS  "-lm", "-pthread", "-lSDL3"
 #define NPROCS        "16"

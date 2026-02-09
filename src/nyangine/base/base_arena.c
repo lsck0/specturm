@@ -40,16 +40,24 @@ __attr_destructor NYA_INTERNAL void _nya_arena_shutdown(void) {
  */
 
 NYA_Arena* _nya_arena_nodebug_create_with_options(NYA_ArenaOptions options) {
+  NYA_Arena* arena = nya_malloc(sizeof(NYA_Arena));
+  *arena           = _nya_arena_nodebug_create_with_options_on_stack(options);
+
+  return arena;
+}
+
+NYA_Arena _nya_arena_nodebug_create_with_options_on_stack(NYA_ArenaOptions options) {
   nya_assert(options.region_size >= nya_kibyte_to_byte(4), "Minimum region size is 4 KiB.");
   nya_assert(options.alignment >= 8, "Minimum alignment is 8 bytes.");
   nya_assert(options.region_size % options.alignment == 0, "Region size must be divisible by alignment.");
   nya_assert(options.alignment % 2 == 0, "Alignment must be a power of two.");
   nya_assert(ASAN_PADDING % options.alignment == 0, "ASAN padding must be divisible by alignment.");
 
-  NYA_Arena* arena = nya_malloc(sizeof(NYA_Arena));
-  arena->options   = options;
-  arena->head      = nullptr;
-  arena->tail      = nullptr;
+  NYA_Arena arena = {
+    .options = options,
+    .head    = nullptr,
+    .tail    = nullptr,
+  };
 
   return arena;
 }
@@ -259,6 +267,14 @@ void _nya_arena_nodebug_garbage_collect(NYA_Arena* arena) {
 void _nya_arena_nodebug_destroy(NYA_Arena* arena) {
   nya_assert(arena != nullptr);
 
+  _nya_arena_nodebug_destroy_on_stack(arena);
+
+  nya_free(arena);
+}
+
+void _nya_arena_nodebug_destroy_on_stack(NYA_Arena* arena) {
+  nya_assert(arena != nullptr);
+
   for (NYA_ArenaRegion* region = arena->head; region != nullptr;) {
     NYA_ArenaRegion* next = region->next;
     _nya_arena_region_destroy(arena, region);
@@ -267,8 +283,6 @@ void _nya_arena_nodebug_destroy(NYA_Arena* arena) {
 
   arena->head = nullptr;
   arena->tail = nullptr;
-
-  nya_free(arena);
 }
 
 void* _nya_arena_nodebug_copy(NYA_Arena* dst, void* ptr, u64 size) {
@@ -313,6 +327,19 @@ NYA_Arena* _nya_arena_debug_create_with_options(NYA_ArenaOptions options, NYA_Co
   _nya_arena_action_insert(action);
 
   return _nya_arena_nodebug_create_with_options(options);
+}
+
+NYA_Arena _nya_arena_debug_create_with_options_on_stack(NYA_ArenaOptions options, const char* function, const char* file, u32 line) {
+  NYA_MemoryAction action = {
+    .type          = NYA_MEMORY_ACTION_ARENA_NEW,
+    .arena_name    = options.name,
+    .file_name     = file,
+    .line_number   = line,
+    .function_name = function,
+  };
+  _nya_arena_action_insert(action);
+
+  return _nya_arena_nodebug_create_with_options_on_stack(options);
 }
 
 void* _nya_arena_debug_alloc(NYA_Arena* arena, u64 size, NYA_ConstCString function, NYA_ConstCString file, u32 line) {
@@ -411,6 +438,19 @@ void _nya_arena_debug_destroy(NYA_Arena* arena, NYA_ConstCString function, NYA_C
   _nya_arena_action_insert(action);
 
   _nya_arena_nodebug_destroy(arena);
+}
+
+void _nya_arena_debug_destroy_on_stack(NYA_Arena* arena, const char* function, const char* file, u32 line) {
+  NYA_MemoryAction action = {
+    .type          = NYA_MEMORY_ACTION_ARENA_DESTROY,
+    .arena_name    = arena->options.name,
+    .file_name     = file,
+    .line_number   = line,
+    .function_name = function,
+  };
+  _nya_arena_action_insert(action);
+
+  _nya_arena_nodebug_destroy_on_stack(arena);
 }
 
 void* _nya_arena_debug_copy(NYA_Arena* dst, void* ptr, u64 size, NYA_ConstCString function, NYA_ConstCString file, u32 line) {

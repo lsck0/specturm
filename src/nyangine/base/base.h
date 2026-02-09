@@ -225,5 +225,7 @@ static_assert(ASAN_PADDING >= 0);
 #define true         ((b8)1)
 #define false        ((b8)0)
 
-#define CONCAT(a, b) a##b
+// the impl non-sense is such that not the symbol is concatenated but the value after the preprocessor replaces the symbol
+#define CONCAT(a, b)       _CONCAT_IMPL(a, b)
+#define _CONCAT_IMPL(a, b) a##b
 #define OUT

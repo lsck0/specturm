@@ -58,8 +58,7 @@
     item_type* items;                                                                                                                                \
     b8*        occupied;                                                                                                                             \
     NYA_Arena* arena;                                                                                                                                \
-  } item_type##HSet;                                                                                                                                 \
-  typedef item_type##HSet* item_type##_HSetPtr
+  } item_type##HSet;
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -71,15 +70,22 @@
 #define nya_hset_create_with_capacity(arena_ptr, item_type, initial_capacity)                                                                        \
   ({                                                                                                                                                 \
     item_type##HSet* _hset_ptr = (item_type##HSet*)nya_arena_alloc(arena_ptr, sizeof(item_type##HSet));                                              \
-    *_hset_ptr                 = (item_type##HSet){                                                                                                  \
-                      .length   = 0,                                                                                                                 \
-                      .capacity = (initial_capacity),                                                                                                \
-                      .arena    = (arena_ptr),                                                                                                       \
-                      .items    = nya_arena_alloc(arena_ptr, (initial_capacity) * sizeof(item_type)),                                                \
-                      .occupied = nya_arena_alloc(arena_ptr, (initial_capacity) * sizeof(b8)),                                                       \
-    };                                                                                                                                               \
-    nya_memset(_hset_ptr->occupied, 0, (initial_capacity) * sizeof(b8));                                                                             \
+    *_hset_ptr                 = nya_hset_create_with_capacity_on_stack(arena_ptr, item_type, initial_capacity);                                     \
     _hset_ptr;                                                                                                                                       \
+  })
+
+#define nya_hset_create_on_stack(arena_ptr, item_type) nya_hset_create_with_capacity_on_stack(arena_ptr, item_type, _NYA_HASHSET_DEFAULT_CAPACITY)
+#define nya_hset_create_with_capacity_on_stack(arena_ptr, item_type, initial_capacity)                                                               \
+  ({                                                                                                                                                 \
+    item_type##HSet _hset = {                                                                                                                        \
+      .length   = 0,                                                                                                                                 \
+      .capacity = (initial_capacity),                                                                                                                \
+      .arena    = (arena_ptr),                                                                                                                       \
+      .items    = nya_arena_alloc(arena_ptr, (initial_capacity) * sizeof(item_type)),                                                                \
+      .occupied = nya_arena_alloc(arena_ptr, (initial_capacity) * sizeof(b8)),                                                                       \
+    };                                                                                                                                               \
+    nya_memset(_hset.occupied, 0, (initial_capacity) * sizeof(b8));                                                                                  \
+    _hset;                                                                                                                                           \
   })
 
 #define nya_hset_clear(hset_ptr)                                                                                                                     \
@@ -94,6 +100,13 @@
     nya_arena_free((hset_ptr)->arena, (hset_ptr)->occupied, sizeof(*(hset_ptr)->occupied) * (hset_ptr)->capacity);                                   \
     nya_arena_free((hset_ptr)->arena, hset_ptr, sizeof(*(hset_ptr)));                                                                                \
     (hset_ptr) = nullptr;                                                                                                                            \
+  })
+
+#define nya_hset_destroy_on_stack(hset_ptr)                                                                                                          \
+  ({                                                                                                                                                 \
+    nya_arena_free((hset_ptr)->arena, (hset_ptr)->items, sizeof(*(hset_ptr)->items) * (hset_ptr)->capacity);                                         \
+    nya_arena_free((hset_ptr)->arena, (hset_ptr)->occupied, sizeof(*(hset_ptr)->occupied) * (hset_ptr)->capacity);                                   \
+    nya_memset(hset_ptr, 0, sizeof(*(hset_ptr)));                                                                                                    \
   })
 
 /*

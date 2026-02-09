@@ -195,6 +195,18 @@ NYA_String* nya_string_create_with_capacity(NYA_Arena* arena, u64 capacity) {
   return nya_array_create_with_capacity(arena, u8, capacity);
 }
 
+NYA_String nya_string_create_on_stack(NYA_Arena* arena) {
+  nya_assert(arena != nullptr);
+
+  return nya_array_create_on_stack(arena, u8);
+}
+
+NYA_String nya_string_create_with_capacity_on_stack(NYA_Arena* arena, u64 capacity) {
+  nya_assert(arena != nullptr);
+
+  return nya_array_create_with_capacity_on_stack(arena, u8, capacity);
+}
+
 NYA_String* nya_string_sprintf(NYA_Arena* arena, NYA_ConstCString fmt, ...) __attr_fmt_printf(2, 3) {
   nya_assert(arena != nullptr);
   nya_assert(fmt != nullptr);
@@ -405,6 +417,10 @@ void nya_string_extend_front(NYA_String* str, const NYA_String* extension) __att
 
 void nya_string_destroy(NYA_String* str) {
   nya_array_destroy(str);
+}
+
+void nya_string_destroy_on_stack(NYA_String* str) {
+  nya_array_destroy_on_stack(str);
 }
 
 void nya_string_print(const NYA_String* str) {
