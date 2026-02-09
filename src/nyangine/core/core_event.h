@@ -11,7 +11,9 @@
 #include "nyangine/base/base_keys.h"
 #include "nyangine/base/base_mouse.h"
 #include "nyangine/base/base_types.h"
+#include "nyangine/core/core_asset.h"
 #include "nyangine/core/core_callback.h"
+#include "nyangine/core/core_job.h"
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -28,6 +30,7 @@ typedef struct NYA_DropPositionEvent  NYA_DropPositionEvent;
 typedef struct NYA_Event              NYA_Event;
 typedef struct NYA_EventHook          NYA_EventHook;
 typedef struct NYA_EventSystem        NYA_EventSystem;
+typedef struct NYA_JobEvent           NYA_JobEvent;
 typedef struct NYA_KeyEvent           NYA_KeyEvent;
 typedef struct NYA_MouseButtonEvent   NYA_MouseButtonEvent;
 typedef struct NYA_MouseMovedEvent    NYA_MouseMovedEvent;
@@ -96,6 +99,9 @@ enum NYA_EventType {
   NYA_EVENT_DROP_BEGIN,
   NYA_EVENT_DROP_COMPLETE,
   NYA_EVENT_DROP_POSITION,
+
+  NYA_EVENT_JOB_STARTED,
+  NYA_EVENT_JOB_COMPLETED,
 
   NYA_EVENT_KEY_DOWN,
   NYA_EVENT_KEY_UP,
@@ -205,6 +211,16 @@ __attr_unused static NYA_ConstCString NYA_EVENT_NAME_MAP[] = {
 
 /*
  * ─────────────────────────────────────────────────────────
+ * ASSET EVENT STRUCTS
+ * ─────────────────────────────────────────────────────────
+ */
+
+struct NYA_AssetEvent {
+  NYA_CString asset_handle;
+};
+
+/*
+ * ─────────────────────────────────────────────────────────
  * DISPLAY EVENT STRUCTS
  * ─────────────────────────────────────────────────────────
  */
@@ -230,6 +246,16 @@ struct NYA_DropPositionEvent {
   void* window_id;
   f32   x;
   f32   y;
+};
+
+/*
+ * ─────────────────────────────────────────────────────────
+ * JOB EVENT STRUCTS
+ * ─────────────────────────────────────────────────────────
+ */
+
+struct NYA_JobEvent {
+  NYA_Job job;
 };
 
 /*
@@ -335,9 +361,11 @@ struct NYA_Event {
   u64           timestamp;
 
   union {
+    NYA_AssetEvent         as_asset_event;
     NYA_DisplayEvent       as_display_event;
     NYA_DropEvent          as_drop_event;
     NYA_DropPositionEvent  as_drop_position_event;
+    NYA_JobEvent           as_job_event;
     NYA_KeyEvent           as_key_event;
     NYA_MouseButtonEvent   as_mouse_button_event;
     NYA_MouseMovedEvent    as_mouse_moved_event;

@@ -6,6 +6,10 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
+void random_job_lol(NYA_Job* job) {
+  nya_info("Job ran: " FMTu64 "!", job->job_handle);
+}
+
 void gny_layer_game_on_create(void) {
   nya_asset_load((NYA_AssetLoadParameters){
       .type   = NYA_ASSET_TYPE_SHADER_VERTEX,
@@ -15,6 +19,14 @@ void gny_layer_game_on_create(void) {
   nya_asset_load((NYA_AssetLoadParameters){
       .type   = NYA_ASSET_TYPE_SHADER_FRAGMENT,
       .handle = NYA_ASSETS_SHADERS_SOURCE_SAMPLE_FRAG_HLSL,
+  });
+
+  nya_job_submit((NYA_Job){
+      .function = nya_callback(random_job_lol),
+  });
+
+  nya_job_submit((NYA_Job){
+      .function = nya_callback(random_job_lol),
   });
 }
 

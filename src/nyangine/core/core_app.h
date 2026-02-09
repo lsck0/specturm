@@ -27,6 +27,7 @@ struct NYA_AppConfig {
   u64 time_step_ns;
   u32 frame_rate_limit;
   b8  vsync_enabled;
+  u8  max_concurrent_jobs;
 };
 
 struct NYA_FrameStats {

@@ -15,9 +15,10 @@ void gnyame_init(s32 argc, NYA_CString* argv) {
   nya_unused(argc, argv);
 
   nya_app_init((NYA_AppConfig){
-      .time_step_ns     = nya_time_ms_to_ns(15),
-      .frame_rate_limit = 60,
-      .vsync_enabled    = false,
+      .time_step_ns        = nya_time_ms_to_ns(15),
+      .frame_rate_limit    = 60,
+      .vsync_enabled       = false,
+      .max_concurrent_jobs = 4,
   });
 
   gny_layers_init();

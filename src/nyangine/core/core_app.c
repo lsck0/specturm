@@ -25,6 +25,10 @@ NYA_INTERNAL void _nya_app_handle_shutdown_signal(NYA_Signal signal) {
  */
 
 void nya_app_init(NYA_AppConfig config) {
+  nya_assert(config.time_step_ns > 0, "time_step_ns must be greater than 0");
+  nya_assert(config.frame_rate_limit > 0, "frame_rate_limit must be greater than 0");
+  nya_assert(config.max_concurrent_jobs > 0, "max_concurrent_jobs must be greater than 0");
+
   NYA_App* app = &NYA_APP_INSTANCE;
 
   nya_signals_init();
@@ -212,6 +216,10 @@ NYA_App* nya_app_get(void) {
 }
 
 void nya_app_options_update(NYA_AppConfig config) {
+  nya_assert(config.time_step_ns > 0, "time_step_ns must be greater than 0");
+  nya_assert(config.frame_rate_limit > 0, "frame_rate_limit must be greater than 0");
+  nya_assert(config.max_concurrent_jobs > 0, "max_concurrent_jobs must be greater than 0");
+
   NYA_App* app = nya_app_get();
 
   nya_render_set_vsync(config.vsync_enabled);

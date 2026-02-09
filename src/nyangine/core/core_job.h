@@ -1,13 +1,13 @@
 #pragma once
 
-// TODO: wait for real usecases before implementing
-
 #include "SDL3/SDL_mutex.h"
 #include "SDL3/SDL_thread.h"
 
 #include "nyangine/base/base.h"
 #include "nyangine/base/base_arena.h"
 #include "nyangine/base/base_array.h"
+#include "nyangine/base/base_heap.h"
+#include "nyangine/core/core_callback.h"
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -15,13 +15,16 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
+typedef u64                  NYA_JobHandle;
+typedef enum NYA_JobPriority NYA_JobPriority;
 typedef struct NYA_JobSystem NYA_JobSystem;
 typedef struct NYA_Job       NYA_Job;
 typedef SDL_Thread*          SDL_ThreadPtr;
+nya_derive_heap(NYA_Job);
 nya_derive_array(NYA_Job);
 nya_derive_array(SDL_ThreadPtr);
 
-typedef void (*job_fn)(void* data);
+typedef int (*NYA_JobFn)(NYA_Job* job);
 
 /*
  * ─────────────────────────────────────────────────────────
@@ -32,8 +35,14 @@ typedef void (*job_fn)(void* data);
 struct NYA_JobSystem {
   NYA_Arena* allocator;
 
-  SDL_Mutex*    job_queue_mutex;
-  NYA_JobArray* job_queue;
+  SDL_Mutex*   job_queue_mutex;
+  NYA_JobHeap* job_queue;
+
+  SDL_Mutex*    job_active_mutex;
+  NYA_JobArray* job_active;
+
+  SDL_Thread* scheduler;
+  b8          scheduler_should_exit;
 };
 
 /*
@@ -42,10 +51,24 @@ struct NYA_JobSystem {
  * ─────────────────────────────────────────────────────────
  */
 
+enum NYA_JobPriority {
+  NYA_JOB_PRIORITY_NORMAL = 0,
+  NYA_JOB_PRIORITY_LOW,
+  NYA_JOB_PRIORITY_HIGH,
+  NYA_JOB_PRIORITY_COUNT,
+};
+
 struct NYA_Job {
-  job_fn job;
-  void*  data;
-  u64    size;
+  NYA_JobPriority    priority;
+  NYA_CallbackHandle function;
+  void*              in_data;
+  u64                in_size;
+  void**             out_data;
+  u64*               out_size;
+
+  /* set by the system */
+  NYA_JobHandle job_handle;
+  SDL_Thread*   sdl_thread;
 };
 
 /*
@@ -69,4 +92,14 @@ NYA_API NYA_EXTERN void nya_system_job_deinit(void);
  * ─────────────────────────────────────────────────────────
  */
 
-NYA_API NYA_EXTERN void nya_job_submit(job_fn function, void* data, u64 size);
+NYA_API NYA_EXTERN NYA_JobHandle nya_job_submit(NYA_Job job);
+NYA_API NYA_EXTERN void          nya_job_wait(NYA_JobHandle job_handle);
+NYA_API NYA_EXTERN b8            nya_job_is_done(NYA_JobHandle job_handle);
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * INTERNALS
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+s32 _nya_job_compare(const NYA_Job* a, const NYA_Job* b);
