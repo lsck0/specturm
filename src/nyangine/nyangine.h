@@ -37,6 +37,7 @@
 #include "nyangine/base/base_mouse.h"
 #include "nyangine/base/base_perf.h"
 #include "nyangine/base/base_random.h"
+#include "nyangine/base/base_ring.h"
 #include "nyangine/base/base_string.h"
 #include "nyangine/base/base_types.h"
 #include "nyangine/core/core_app.h"

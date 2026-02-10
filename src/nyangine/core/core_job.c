@@ -6,6 +6,7 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
+NYA_INTERNAL s32 _nya_job_compare(const NYA_Job* a, const NYA_Job* b);
 NYA_INTERNAL s32 _nya_job_scheduler(void* data);
 
 /*
@@ -149,10 +150,10 @@ NYA_INTERNAL s32 _nya_job_scheduler(void* data) {
       }
 
       // schedule new jobs
-      while (job_system->job_queue->length > 0 && job_system->job_active->length <= app->config.max_concurrent_jobs) {
+      while (job_system->job_queue->length > 0 && job_system->job_active->length < app->config.max_concurrent_jobs) {
         NYA_Job job = nya_heap_pop(job_system->job_queue);
         nya_array_push_back(job_system->job_active, job);
-        NYA_Job* job_ptr = &job_system->job_active->items[job_system->job_active->length - 1];
+        NYA_Job* job_ptr = nya_array_last(job_system->job_active);
 
         NYA_JobFn   function = nya_callback_get(job.function);
         SDL_Thread* thread   = SDL_CreateThread((int (*)(void*))function, nullptr, job_ptr);

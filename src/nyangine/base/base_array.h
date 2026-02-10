@@ -246,7 +246,7 @@ nya_derive_array(f128_4x4);
 #define nya_array_get(arr_ptr, index)                                                                                                                \
   ({                                                                                                                                                 \
     _nya_array_access_guard(index, (arr_ptr)->length);                                                                                               \
-    (arr_ptr)->items[index];                                                                                                                         \
+    &(arr_ptr)->items[index];                                                                                                                        \
   })
 
 #define nya_array_set(arr_ptr, index, item)                                                                                                          \

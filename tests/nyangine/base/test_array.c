@@ -286,9 +286,9 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   u32Array* access_arr = nya_array_create(arena, u32);
   nya_array_add_many(access_arr, 10U, 20U, 30U, 40U);
-  nya_assert(nya_array_get(access_arr, 0) == 10);
-  nya_assert(nya_array_get(access_arr, 1) == 20);
-  nya_assert(nya_array_get(access_arr, 3) == 40);
+  nya_assert(*nya_array_get(access_arr, 0) == 10);
+  nya_assert(*nya_array_get(access_arr, 1) == 20);
+  nya_assert(*nya_array_get(access_arr, 3) == 40);
   nya_array_set(access_arr, 0, 999U);
   nya_assert(access_arr->items[0] == 999);
   nya_array_set(access_arr, 2, 888U);
@@ -300,8 +300,8 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   u32Array* fl_arr = nya_array_create(arena, u32);
   nya_array_add_many(fl_arr, 100U, 200U, 300U);
-  nya_assert(nya_array_first(fl_arr) == 100);
-  nya_assert(nya_array_last(fl_arr) == 300);
+  nya_assert(*nya_array_first(fl_arr) == 100);
+  nya_assert(*nya_array_last(fl_arr) == 300);
   nya_array_destroy(fl_arr);
 
   // ─────────────────────────────────────────────────────────────────────────────

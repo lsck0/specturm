@@ -135,13 +135,15 @@ NYA_Window* nya_window_get(void* window_id) {
 f32 nya_window_get_display_scale(void* window_id) {
   nya_assert(window_id != nullptr);
   NYA_Window* window = nya_window_get(window_id);
+  nya_assert(window != nullptr);
   return SDL_GetWindowDisplayScale(window->sdl_window);
 }
 
 void nya_window_get_maximum_size(void* window_id, OUT u32* max_width, OUT u32* max_height) {
   nya_assert(window_id != nullptr);
   NYA_Window* window = nya_window_get(window_id);
-  s32         w, h;
+  nya_assert(window != nullptr);
+  s32 w, h;
   SDL_GetWindowMaximumSize(window->sdl_window, &w, &h);
   if (max_width) *max_width = (u32)w;
   if (max_height) *max_height = (u32)h;
@@ -150,7 +152,8 @@ void nya_window_get_maximum_size(void* window_id, OUT u32* max_width, OUT u32* m
 void nya_window_get_minimum_size(void* window_id, OUT u32* min_width, OUT u32* min_height) {
   nya_assert(window_id != nullptr);
   NYA_Window* window = nya_window_get(window_id);
-  s32         w, h;
+  nya_assert(window != nullptr);
+  s32 w, h;
   SDL_GetWindowMinimumSize(window->sdl_window, &w, &h);
   if (min_width) *min_width = (u32)w;
   if (min_height) *min_height = (u32)h;
@@ -159,12 +162,14 @@ void nya_window_get_minimum_size(void* window_id, OUT u32* min_width, OUT u32* m
 void nya_window_get_position(void* window_id, OUT s32* x, OUT s32* y) {
   nya_assert(window_id != nullptr);
   NYA_Window* window = nya_window_get(window_id);
+  nya_assert(window != nullptr);
   SDL_GetWindowPosition(window->sdl_window, x, y);
 }
 
 void nya_window_get_size(void* window_id, OUT u32* width, OUT u32* height) {
   nya_assert(window_id != nullptr);
   NYA_Window* window = nya_window_get(window_id);
+  nya_assert(window != nullptr);
   if (width) *width = window->width;
   if (height) *height = window->height;
 }
@@ -172,108 +177,126 @@ void nya_window_get_size(void* window_id, OUT u32* width, OUT u32* height) {
 b8 nya_window_has_focus(void* window_id) {
   nya_assert(window_id != nullptr);
   NYA_Window* window = nya_window_get(window_id);
+  nya_assert(window != nullptr);
   return SDL_GetWindowFlags(window->sdl_window) & SDL_WINDOW_INPUT_FOCUS;
 }
 
 void nya_window_hide(void* window_id) {
   nya_assert(window_id != nullptr);
   NYA_Window* window = nya_window_get(window_id);
+  nya_assert(window != nullptr);
   SDL_HideWindow(window->sdl_window);
 }
 
 b8 nya_window_is_fullscreen(void* window_id) {
   nya_assert(window_id != nullptr);
   NYA_Window* window = nya_window_get(window_id);
+  nya_assert(window != nullptr);
   return SDL_GetWindowFlags(window->sdl_window) & SDL_WINDOW_FULLSCREEN;
 }
 
 b8 nya_window_is_maximized(void* window_id) {
   nya_assert(window_id != nullptr);
   NYA_Window* window = nya_window_get(window_id);
+  nya_assert(window != nullptr);
   return SDL_GetWindowFlags(window->sdl_window) & SDL_WINDOW_MAXIMIZED;
 }
 
 b8 nya_window_is_minimized(void* window_id) {
   nya_assert(window_id != nullptr);
   NYA_Window* window = nya_window_get(window_id);
+  nya_assert(window != nullptr);
   return SDL_GetWindowFlags(window->sdl_window) & SDL_WINDOW_MINIMIZED;
 }
 
 b8 nya_window_is_visible(void* window_id) {
   nya_assert(window_id != nullptr);
   NYA_Window* window = nya_window_get(window_id);
+  nya_assert(window != nullptr);
   return !(SDL_GetWindowFlags(window->sdl_window) & SDL_WINDOW_HIDDEN);
 }
 
 void nya_window_maximize(void* window_id) {
   nya_assert(window_id != nullptr);
   NYA_Window* window = nya_window_get(window_id);
+  nya_assert(window != nullptr);
   SDL_MaximizeWindow(window->sdl_window);
 }
 
 void nya_window_minimize(void* window_id) {
   nya_assert(window_id != nullptr);
   NYA_Window* window = nya_window_get(window_id);
+  nya_assert(window != nullptr);
   SDL_MinimizeWindow(window->sdl_window);
 }
 
 void nya_window_raise(void* window_id) {
   nya_assert(window_id != nullptr);
   NYA_Window* window = nya_window_get(window_id);
+  nya_assert(window != nullptr);
   SDL_RaiseWindow(window->sdl_window);
 }
 
 void nya_window_restore(void* window_id) {
   nya_assert(window_id != nullptr);
   NYA_Window* window = nya_window_get(window_id);
+  nya_assert(window != nullptr);
   SDL_RestoreWindow(window->sdl_window);
 }
 
 void nya_window_set_always_on_top(void* window_id, b8 always_on_top) {
   nya_assert(window_id != nullptr);
   NYA_Window* window = nya_window_get(window_id);
+  nya_assert(window != nullptr);
   SDL_SetWindowAlwaysOnTop(window->sdl_window, always_on_top);
 }
 
 void nya_window_set_borderless(void* window_id, b8 borderless) {
   nya_assert(window_id != nullptr);
   NYA_Window* window = nya_window_get(window_id);
+  nya_assert(window != nullptr);
   SDL_SetWindowBordered(window->sdl_window, !borderless);
 }
 
 void nya_window_set_fullscreen(void* window_id, b8 fullscreen) {
   nya_assert(window_id != nullptr);
   NYA_Window* window = nya_window_get(window_id);
+  nya_assert(window != nullptr);
   SDL_SetWindowFullscreen(window->sdl_window, fullscreen);
 }
 
 void nya_window_set_maximum_size(void* window_id, u32 max_width, u32 max_height) {
   nya_assert(window_id != nullptr);
   NYA_Window* window = nya_window_get(window_id);
+  nya_assert(window != nullptr);
   SDL_SetWindowMaximumSize(window->sdl_window, (s32)max_width, (s32)max_height);
 }
 
 void nya_window_set_minimum_size(void* window_id, u32 min_width, u32 min_height) {
   nya_assert(window_id != nullptr);
   NYA_Window* window = nya_window_get(window_id);
+  nya_assert(window != nullptr);
   SDL_SetWindowMinimumSize(window->sdl_window, (s32)min_width, (s32)min_height);
 }
 
 void nya_window_set_position(void* window_id, s32 x, s32 y) {
   nya_assert(window_id != nullptr);
   NYA_Window* window = nya_window_get(window_id);
+  nya_assert(window != nullptr);
   SDL_SetWindowPosition(window->sdl_window, x, y);
 }
 
 void nya_window_set_resizable(void* window_id, b8 resizable) {
   nya_assert(window_id != nullptr);
   NYA_Window* window = nya_window_get(window_id);
+  nya_assert(window != nullptr);
   SDL_SetWindowResizable(window->sdl_window, resizable);
 }
 
 void nya_window_set_size(void* window_id, u32 width, u32 height) {
   nya_assert(window_id != nullptr);
   NYA_Window* window = nya_window_get(window_id);
+  nya_assert(window != nullptr);
   SDL_SetWindowSize(window->sdl_window, (s32)width, (s32)height);
   window->width  = width;
   window->height = height;
@@ -281,14 +304,18 @@ void nya_window_set_size(void* window_id, u32 width, u32 height) {
 
 void nya_window_set_title(void* window_id, NYA_ConstCString title) {
   nya_assert(window_id != nullptr);
+  nya_assert(title != nullptr);
+
   NYA_Window* window = nya_window_get(window_id);
+  nya_assert(window != nullptr);
+
   SDL_SetWindowTitle(window->sdl_window, title);
-  window->title = title;
 }
 
 void nya_window_show(void* window_id) {
   nya_assert(window_id != nullptr);
   NYA_Window* window = nya_window_get(window_id);
+  nya_assert(window != nullptr);
   SDL_ShowWindow(window->sdl_window);
 }
 
@@ -344,8 +371,8 @@ NYA_Layer nya_layer_pop(void* window_id) {
   NYA_Window* window = nya_window_get(window_id);
   nya_assert(window->layer_stack->length > 0, "Cannot pop layer: layer stack is empty.");
 
-  NYA_Layer            layer         = nya_array_last(window->layer_stack);
-  NYA_LayerOnDestroyFn on_destroy_fn = nya_callback_get(layer.on_destroy);
+  NYA_Layer*           layer         = nya_array_last(window->layer_stack);
+  NYA_LayerOnDestroyFn on_destroy_fn = nya_callback_get(layer->on_destroy);
   if (on_destroy_fn != nullptr) on_destroy_fn();
 
   return nya_array_pop_back(window->layer_stack);

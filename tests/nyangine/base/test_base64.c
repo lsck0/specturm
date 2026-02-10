@@ -203,6 +203,85 @@ s32 main(void) {
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: decode invalid characters (should gracefully handle)
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    NYA_String decoded = *nya_string_create(arena);
+    const u8   data[]  = "invalid!base64@chars";
+    nya_base64_decode(&decoded, data, 21);
+    // Should not crash, result may be empty or partial
+    nya_assert(decoded.length >= 0);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: encode very large data
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    NYA_String encoded = *nya_string_create(arena);
+
+    // Create 1KB of test data
+    u8* large_data = (u8*)nya_arena_alloc(arena, 1024);
+    for (s32 i = 0; i < 1024; i++) { large_data[i] = (u8)(i & 0xFF); }
+
+    nya_base64_encode(&encoded, large_data, 1024);
+
+    // Base64 encoding should increase size by approximately 4/3
+    nya_assert(encoded.length >= 1024);
+    nya_assert(encoded.length <= 1024 + 1024 / 3 + 10); // Allow some padding
+
+    // Test round-trip
+    NYA_String decoded = *nya_string_create(arena);
+    nya_base64_decode(&decoded, encoded.items, encoded.length);
+    nya_assert(decoded.length == 1024);
+    nya_assert(nya_memcmp(decoded.items, large_data, 1024) == 0);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: encode all possible byte values
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    NYA_String encoded = *nya_string_create(arena);
+
+    // Create data with all possible byte values 0-255
+    u8 all_bytes[256];
+    for (s32 i = 0; i < 256; i++) { all_bytes[i] = (u8)i; }
+
+    nya_base64_encode(&encoded, all_bytes, 256);
+
+    // Should encode successfully
+    nya_assert(encoded.length > 0);
+
+    // Test round-trip
+    NYA_String decoded = *nya_string_create(arena);
+    nya_base64_decode(&decoded, encoded.items, encoded.length);
+    nya_assert(decoded.length == 256);
+    nya_assert(nya_memcmp(decoded.items, all_bytes, 256) == 0);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: decode string without padding
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    NYA_String decoded = *nya_string_create(arena);
+    // "YWJj" is "abc" without padding
+    const u8   data[] = "YWJj";
+    nya_base64_decode(&decoded, data, 4);
+    nya_assert(decoded.length == 3);
+    nya_assert(nya_memcmp(decoded.items, "abc", 3) == 0);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: decode string with whitespace (should be handled or fail gracefully)
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    NYA_String decoded = *nya_string_create(arena);
+    const u8   data[]  = "Y W X J j"; // Should not crash
+    nya_base64_decode(&decoded, data, 7);
+    // Result may be empty or partial, but should not crash
+    nya_assert(decoded.length >= 0);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
   // CLEANUP
   // ─────────────────────────────────────────────────────────────────────────────
   nya_arena_destroy(arena);

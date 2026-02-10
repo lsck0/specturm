@@ -80,7 +80,7 @@ b8 nya_system_event_poll(OUT NYA_Event* out_event) {
     return false;
   }
 
-  *out_event = nya_array_get(nya_array, app->event_system.event_queue_read_index);
+  *out_event = *nya_array_get(nya_array, app->event_system.event_queue_read_index);
   app->event_system.event_queue_read_index++;
   SDL_UnlockMutex(app->event_system.event_queue_mutex);
 

@@ -95,11 +95,3 @@ NYA_API NYA_EXTERN void nya_system_job_deinit(void);
 NYA_API NYA_EXTERN NYA_JobHandle nya_job_submit(NYA_Job job);
 NYA_API NYA_EXTERN void          nya_job_wait(NYA_JobHandle job_handle);
 NYA_API NYA_EXTERN b8            nya_job_is_done(NYA_JobHandle job_handle);
-
-/*
- * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- * INTERNALS
- * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
- */
-
-s32 _nya_job_compare(const NYA_Job* a, const NYA_Job* b);
