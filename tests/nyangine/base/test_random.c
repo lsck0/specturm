@@ -242,5 +242,55 @@ s32 main(void) {
     nya_assert(val32 >= -1.0F && val32 <= 1.0F);
   }
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: Normal distribution produces finite values (no NaN/inf from log(0))
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    NYA_RNG             rng  = nya_rng_create(.seed = "FFFFFFFFFFFFFFFF");
+    NYA_RNGDistribution dist = {
+      .type   = NYA_RNG_DISTRIBUTION_NORMAL,
+      .normal = { .mean = 0.0, .stddev = 1.0 },
+    };
+    for (u32 i = 0; i < 100000; ++i) {
+      f64 val = nya_rng_sample_f64(&rng, dist);
+      nya_assert(!isnan(val), "Normal distribution produced NaN");
+      nya_assert(!isinf(val), "Normal distribution produced infinity");
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: Exponential distribution produces finite values (no NaN/inf)
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    NYA_RNG             rng  = nya_rng_create(.seed = "FFFFFFFFFFFFFFFF");
+    NYA_RNGDistribution dist = {
+      .type        = NYA_RNG_DISTRIBUTION_EXPONENTIAL,
+      .exponential = { .lambda = 1.0 },
+    };
+    for (u32 i = 0; i < 100000; ++i) {
+      f64 val = nya_rng_sample_f64(&rng, dist);
+      nya_assert(!isnan(val), "Exponential distribution produced NaN");
+      nya_assert(!isinf(val), "Exponential distribution produced infinity");
+      nya_assert(val >= 0.0);
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: Geometric distribution produces finite values (no NaN/inf)
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    NYA_RNG             rng  = nya_rng_create(.seed = "FFFFFFFFFFFFFFFF");
+    NYA_RNGDistribution dist = {
+      .type      = NYA_RNG_DISTRIBUTION_GEOMETRIC,
+      .geometric = { .p = 0.5 },
+    };
+    for (u32 i = 0; i < 100000; ++i) {
+      f64 val = nya_rng_sample_f64(&rng, dist);
+      nya_assert(!isnan(val), "Geometric distribution produced NaN");
+      nya_assert(!isinf(val), "Geometric distribution produced infinity");
+      nya_assert(val >= 1.0);
+    }
+  }
+
   return 0;
 }

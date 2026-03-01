@@ -1,10 +1,9 @@
+/**
+ * @file base.h
+ *
+ * Most basic includes, macros, and (compile-time) mode/platform/compiler detection.
+ * */
 #pragma once
-
-#if !defined(__clang__) || __STDC_VERSION__ <= 201703L
-#error "nyangine requires clang and at least C23, add -std=c23 to your clang compiler flags."
-#define thread_local _Thread_local
-#define typeof       __typeof__
-#endif
 
 #define _POSIX_C_SOURCE 200809L
 #define _XOPEN_SOURCE   700
@@ -32,10 +31,10 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-#if defined(IS_DEBUG) && IS_DEBUG
-#define NYA_IS_DEBUG 1
+#if defined(DEBUG) && DEBUG
+#define NYA_DEBUG 1
 #else
-#define NYA_IS_DEBUG 0
+#define NYA_DEBUG 0
 #endif
 
 #ifdef VERSION
@@ -49,6 +48,17 @@
 #else
 #define NYA_GIT_COMMIT "unknown"
 #endif
+
+typedef enum {
+  NYA_MODE_DEBUG,
+  NYA_MODE_RELEASE,
+  NYA_MODE_COUNT,
+#if NYA_DEBUG
+  NYA_MODE_CURRENT = NYA_MODE_DEBUG,
+#else
+  NYA_MODE_CURRENT = NYA_MODE_RELEASE,
+#endif
+} NYA_Mode;
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────

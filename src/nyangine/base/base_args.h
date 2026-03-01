@@ -51,22 +51,31 @@
  * };
  *
  *
- * int main(int argc, char** argv) {
- *   parser.executable_name  = argv[0];
- *   NYA_ArgCommand* command = nya_args_parse_argv(&parser, argc, argv);
+ * s32 main(s32 argc, NYA_CString* argv) {
+ *   parser.executable_name = argv[0];
+ *
+ *   NYA_ArgCommand* command;
+ *   NYA_Result      parse_result = nya_args_parse(&parser, argc, argv, &command);
+ *   if (parse_result.error != NYA_ERROR_NONE) {
+ *     (void)fprintf(stderr, "Error: %s\n\n", parse_result.message);
+ *     nya_args_print_usage(&parser, nullptr);
+ *     return EXIT_FAILURE;
+ *   }
  *
  *   if (help_flag.value.as_bool) {
  *     nya_args_print_usage(&parser, command);
  *     return EXIT_SUCCESS;
  *   }
  *
- *   if (!nya_args_run_command(command)) {
+ *   NYA_Result run_result = nya_args_run_command(command);
+ *   if (run_result.error != NYA_ERROR_NONE) {
+ *     (void)fprintf(stderr, "Error: %s\n\n", run_result.message);
  *     nya_args_print_usage(&parser, command);
  *     return EXIT_FAILURE;
  *   }
  *
  *   return EXIT_SUCCESS;
- *}
+ * }
  * ```
  *
  * For an more complete example see build.c.
@@ -74,6 +83,7 @@
 #pragma once
 
 #include "nyangine/base/base_build.h"
+#include "nyangine/base/base_object.h"
 #include "nyangine/base/base_string.h"
 #include "nyangine/base/base_types.h"
 
@@ -191,6 +201,6 @@ struct NYA_ArgParser {
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_API NYA_EXTERN NYA_ArgCommand* nya_args_parse_argv(NYA_ArgParser* parser, s32 argc, NYA_CString* argv);
-NYA_API NYA_EXTERN b8              nya_args_run_command(NYA_ArgCommand* command) __attr_no_discard;
-NYA_API NYA_EXTERN void            nya_args_print_usage(NYA_ArgParser* parser, NYA_ArgCommand* command_override);
+NYA_API NYA_EXTERN NYA_Result nya_args_parse(NYA_ArgParser* parser, s32 argc, NYA_CString* argv, OUT NYA_ArgCommand** out_command) __attr_no_discard;
+NYA_API NYA_EXTERN NYA_Result nya_args_run_command(NYA_ArgCommand* command) __attr_no_discard;
+NYA_API NYA_EXTERN void       nya_args_print_usage(NYA_ArgParser* parser, NYA_ArgCommand* command_override);

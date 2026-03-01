@@ -57,13 +57,13 @@ NYA_API NYA_EXTERN void nya_system_callback_deinit(void);
  * ─────────────────────────────────────────────────────────
  */
 
-#ifdef NYA_IS_DEBUG
+#ifdef NYA_DEBUG
 #define nya_callback(callback) _nya_callback((NYA_Callback){ .name = #callback, .fn = (void*)(callback) })
 NYA_API NYA_EXTERN void* nya_callback_get(NYA_CallbackHandle handle);
 #else
 #define nya_callback(callback)   ((u64)(callback))
 #define nya_callback_get(handle) ((void*)(handle))
-#endif // NYA_IS_DEBUG
+#endif // NYA_DEBUG
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────

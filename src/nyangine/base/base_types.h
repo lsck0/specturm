@@ -65,6 +65,9 @@ typedef f128* f128ptr;
 
 typedef wchar_t wchar;
 
+typedef char*       NYA_CString;
+typedef const char* NYA_ConstCString;
+
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  * TYPE ENUM AND VALUE UNION
@@ -126,10 +129,13 @@ typedef enum {
   NYA_TYPE_INTEGER,
   NYA_TYPE_FLOAT,
 
+  NYA_TYPE_OBJECT,
+  NYA_TYPE_ARRAY,
+
   NYA_TYPE_COUNT,
 } NYA_Type;
 
-__attr_unused static const char* NYA_TYPE_NAME_MAP[] = {
+__attr_unused static const char* NYA_TYPE_NAME_MAP[NYA_TYPE_COUNT] = {
   [NYA_TYPE_NULL] = "null",
 
   [NYA_TYPE_VOID]         = "void",
@@ -183,62 +189,13 @@ __attr_unused static const char* NYA_TYPE_NAME_MAP[] = {
   [NYA_TYPE_BOOL]    = "bool",
   [NYA_TYPE_INTEGER] = "integer",
   [NYA_TYPE_FLOAT]   = "float",
+
+  [NYA_TYPE_OBJECT] = "object",
+  [NYA_TYPE_ARRAY]  = "array",
 };
 
-typedef struct {
-  NYA_Type type;
-
-  union {
-    b8   as_b8;
-    b16  as_b16;
-    b32  as_b32;
-    b64  as_b64;
-    b128 as_b128;
-    u8   as_u8;
-    u16  as_u16;
-    u32  as_u32;
-    u64  as_u64;
-    u128 as_u128;
-    s8   as_s8;
-    s16  as_s16;
-    s32  as_s32;
-    s64  as_s64;
-    s128 as_s128;
-    f16  as_f16;
-    f32  as_f32;
-    f64  as_f64;
-    f128 as_f128;
-
-    b8ptr   as_b8ptr;
-    b16ptr  as_b16ptr;
-    b32ptr  as_b32ptr;
-    b64ptr  as_b64ptr;
-    b128ptr as_b128ptr;
-    u8ptr   as_u8ptr;
-    u16ptr  as_u16ptr;
-    u32ptr  as_u32ptr;
-    u64ptr  as_u64ptr;
-    u128ptr as_u128ptr;
-    s8ptr   as_s8ptr;
-    s16ptr  as_s16ptr;
-    s32ptr  as_s32ptr;
-    s64ptr  as_s64ptr;
-    s128ptr as_s128ptr;
-    f16ptr  as_f16ptr;
-    f32ptr  as_f32ptr;
-    f64ptr  as_f64ptr;
-    f128ptr as_f128ptr;
-
-    char   as_char;
-    wchar  as_wchar;
-    char*  as_string;
-    wchar* as_wstring;
-
-    b8  as_bool;
-    s64 as_integer;
-    f64 as_float;
-  };
-} NYA_Value;
+NYA_API NYA_EXTERN b8 nya_type_parse(NYA_Type target, const u8* data, u64 length, OUT void* out_value);
+NYA_API NYA_EXTERN b8 nya_type_name_parse(const u8* data, u64 length, OUT NYA_Type* out_type, OUT NYA_ConstCString* out_type_name);
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────

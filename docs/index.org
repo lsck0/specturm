@@ -1,7 +1,8 @@
 * PLAN
 
-- [ ] stack allocation variants for dynamic data structures (for putting into other data structures, for example)
-- [ ] callback lookup in release should be a noop
+- [ ] oneshot event handlers
+- [ ] events like layers, last in first served
+- [ ] add time since start to app
 - [ ] more asset system work (implement missing resource types, maybe priority system?)
 - [ ] render primitives (lines, circles, rectangles, etc)
 - [ ] font rendering
@@ -9,16 +10,12 @@
 - [ ] debug ui: profiling, memory, console
 - [ ] entity system
 - [ ] rendering system
+- [ ] animation system
 - [ ] audio system
 - [ ] physics system
-- [ ] animation system
-- [ ] save/load system
-- [ ] scenes
 
 * OTHER TODOs
 
 - [ ] buffered logging to file
-- [ ] job system / task / multithreadding scheduler
-- [ ] CI
 - [ ] basic nn library: tensors, layers, autograd --> NEAT implementation
 - [ ] building on w*ndows?

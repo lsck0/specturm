@@ -2,6 +2,7 @@
  * @file nyangine.h
  *
  * Compilation options:
+ * -DDEBUG=<true/false> : Compile in debug mode.
  * -DVERSION="<version_string>" : Set the engine version string.
  * -DGIT_COMMIT="<git_commit_hash>" : Set the git commit hash.
  * -DNYA_NO_ASSERT : Disable runtime assertions.
@@ -22,24 +23,32 @@
 #include "nyangine/base/base_base64.h"
 #include "nyangine/base/base_bits.h"
 #include "nyangine/base/base_build.h"
+#include "nyangine/base/base_color.h"
 #include "nyangine/base/base_crc.h"
+#include "nyangine/base/base_dict.h"
 #include "nyangine/base/base_dll.h"
+#include "nyangine/base/base_error.h"
 #include "nyangine/base/base_file.h"
 #include "nyangine/base/base_guard.h"
 #include "nyangine/base/base_hash.h"
 #include "nyangine/base/base_heap.h"
 #include "nyangine/base/base_hmap.h"
 #include "nyangine/base/base_hset.h"
+#include "nyangine/base/base_integrity.h"
 #include "nyangine/base/base_keys.h"
 #include "nyangine/base/base_lexer.h"
 #include "nyangine/base/base_logging.h"
 #include "nyangine/base/base_memory.h"
 #include "nyangine/base/base_mouse.h"
+#include "nyangine/base/base_noise.h"
+#include "nyangine/base/base_object.h"
 #include "nyangine/base/base_perf.h"
 #include "nyangine/base/base_random.h"
 #include "nyangine/base/base_ring.h"
 #include "nyangine/base/base_string.h"
+#include "nyangine/base/base_tween.h"
 #include "nyangine/base/base_types.h"
+#include "nyangine/base/base_uuid.h"
 #include "nyangine/core/core_app.h"
 #include "nyangine/core/core_asset.h"
 #include "nyangine/core/core_callback.h"

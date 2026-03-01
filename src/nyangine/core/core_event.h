@@ -11,7 +11,6 @@
 #include "nyangine/base/base_keys.h"
 #include "nyangine/base/base_mouse.h"
 #include "nyangine/base/base_types.h"
-#include "nyangine/core/core_asset.h"
 #include "nyangine/core/core_callback.h"
 #include "nyangine/core/core_job.h"
 

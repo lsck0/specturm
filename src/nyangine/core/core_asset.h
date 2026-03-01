@@ -5,14 +5,14 @@
 #include "nyangine/base/base.h"
 #include "nyangine/base/base_arena.h"
 #include "nyangine/base/base_array.h"
-#include "nyangine/base/base_hmap.h"
+#include "nyangine/base/base_dict.h"
 #include "nyangine/base/base_hset.h"
 #include "nyangine/base/base_string.h"
 #include "nyangine/core/core_event.h"
+#include "nyangine/core/core_window.h"
+#include "nyangine/renderer/renderer.h"
 
-#ifndef NYA_ASSET_MANIFEST_ALREADY_INCLUDED
 #include "../../../assets/assets.h"
-#endif // NYA_ASSET_MANIFEST_ALREADY_INCLUDED
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -29,7 +29,7 @@ typedef struct NYA_AssetLoadParameters NYA_AssetLoadParameters;
 typedef struct NYA_AssetSystem         NYA_AssetSystem;
 nya_derive_array(NYA_AssetHandle);
 nya_derive_array(NYA_AssetLoadParameters);
-nya_derive_hmap(NYA_AssetHandle, NYA_Asset);
+nya_derive_dict(NYA_Asset);
 
 /*
  * ─────────────────────────────────────────────────────────
@@ -40,9 +40,9 @@ nya_derive_hmap(NYA_AssetHandle, NYA_Asset);
 struct NYA_AssetSystem {
   NYA_Arena* allocator;
 
-  NYA_AssetHandle_NYA_Asset_HMap* assets;
-  NYA_AssetLoadParametersArray*   loading_queue;
-  NYA_AssetHandleArray*           unloading_queue;
+  NYA_CString_NYA_Asset_Dict*   assets;
+  NYA_AssetLoadParametersArray* loading_queue;
+  NYA_AssetHandleArray*         unloading_queue;
 
 #ifdef NYA_ASSET_BACKEND_FS
   NYA_AssetHandleArray* reload_queue;
@@ -77,8 +77,9 @@ enum NYA_AssetType {
   NYA_ASSET_TYPE_BUFFER_INDEX,
   NYA_ASSET_TYPE_BUFFER_UNIFORM,
 
-  // meta assets ? things that are made up of other assets
+  // things that are made up of other assets
   NYA_ASSET_TYPE_GRAPHICS_PIPELINE,
+  NYA_ASSET_TYPE_COMPUTE_PIPELINE,
 
   NYA_ASSET_TYPE_COUNT,
 };
@@ -101,6 +102,12 @@ struct NYA_AssetLoadParameters {
       u32 num_storage_buffers;
       u32 num_uniform_buffers;
     } as_shader;
+
+    struct {
+      NYA_Window*     window;
+      NYA_AssetHandle vertex_shader_handle;
+      NYA_AssetHandle fragment_shader_handle;
+    } as_graphics_pipeline;
   };
 };
 
@@ -117,16 +124,26 @@ struct NYA_Asset {
     } as_text;
 
     struct {
+    } as_sound;
+
+    struct {
       NYA_AssetHandle     compiled_handle;
       SDL_GPUShaderFormat format;
       SDL_GPUShader*      shader;
     } as_shader;
+
+    struct {
+      SDL_GPUGraphicsPipeline* pipeline;
+    } as_graphics_pipeline;
   };
 
   atomic u64 reference_count;
 
 #ifdef NYA_ASSET_BACKEND_FS
   u64 source_modification_time;
+
+  /** wait this many frames before actually doing the reload */
+  u64 reload_grace_frames;
 #endif // NYA_ASSET_BACKEND_FS
 };
 

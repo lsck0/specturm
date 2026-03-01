@@ -21,8 +21,8 @@ typedef struct NYA_WindowSystem NYA_WindowSystem;
 nya_derive_array(NYA_Layer);
 nya_derive_array(NYA_Window);
 
-typedef void (*NYA_LayerOnCreateFn)(void);
-typedef void (*NYA_LayerOnDestroyFn)(void);
+typedef void (*NYA_LayerOnCreateFn)(NYA_Window* window);
+typedef void (*NYA_LayerOnDestroyFn)(NYA_Window* window);
 typedef void (*NYA_LayerOnUpdateFn)(NYA_Window* window, f32 delta_time_s);
 typedef void (*NYA_LayerOnEventFn)(NYA_Window* window, NYA_Event* event);
 typedef void (*NYA_LayerOnRenderFn)(NYA_Window* window);
@@ -123,7 +123,7 @@ NYA_API NYA_EXTERN void nya_system_window_handle_event(NYA_Event* event);
  * ─────────────────────────────────────────────────────────
  */
 
-NYA_API NYA_EXTERN void*       nya_window_create(NYA_ConstCString title, u32 initial_width, u32 initial_height, NYA_WindowFlags flags, void* id);
+NYA_API NYA_EXTERN void*       nya_window_create(void* id, NYA_ConstCString title, u32 initial_width, u32 initial_height, NYA_WindowFlags flags);
 NYA_API NYA_EXTERN void        nya_window_destroy(void* window_id);
 NYA_API NYA_EXTERN NYA_Window* nya_window_get(void* window_id);
 

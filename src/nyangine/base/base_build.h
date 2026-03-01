@@ -58,5 +58,5 @@ struct NYA_BuildRule {
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_API NYA_EXTERN b8   nya_build(NYA_BuildRule* build_rule);
+NYA_API NYA_EXTERN NYA_Result nya_build(NYA_BuildRule* build_rule) __attr_no_discard;
 NYA_API NYA_EXTERN void nya_rebuild_yourself(s32* argc, NYA_CString* argv, NYA_Command cmd);

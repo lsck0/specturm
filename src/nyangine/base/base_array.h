@@ -463,12 +463,17 @@ nya_derive_array(f128_4x4);
 #define nya_array_move(arr_ptr, new_arena_ptr)                                                                                                       \
   ({                                                                                                                                                 \
     nya_assert_type_match(new_arena_ptr, (arr_ptr)->arena);                                                                                          \
-    *(arr_ptr) = (typeof(*(arr_ptr))){                                                                                                               \
-      .items    = nya_arena_move((arr_ptr)->arena, new_arena_ptr, (arr_ptr)->items, sizeof(*(arr_ptr)->items) * (arr_ptr)->capacity),                \
+    NYA_Arena* _arr_move_old_arena = (arr_ptr)->arena;                                                                                               \
+    typeof(*(arr_ptr)) _arr_move_tmp = {                                                                                                             \
+      .items    = nya_arena_move(_arr_move_old_arena, new_arena_ptr, (arr_ptr)->items, sizeof(*(arr_ptr)->items) * (arr_ptr)->capacity),             \
       .length   = (arr_ptr)->length,                                                                                                                 \
       .capacity = (arr_ptr)->capacity,                                                                                                               \
       .arena    = (new_arena_ptr)                                                                                                                    \
     };                                                                                                                                               \
+    typeof(arr_ptr) _arr_move_new_ptr = nya_arena_alloc(new_arena_ptr, sizeof(*(arr_ptr)));                                                          \
+    *_arr_move_new_ptr = _arr_move_tmp;                                                                                                              \
+    nya_arena_free(_arr_move_old_arena, arr_ptr, sizeof(*(arr_ptr)));                                                                                \
+    (arr_ptr) = _arr_move_new_ptr;                                                                                                                   \
   })
 
 /*

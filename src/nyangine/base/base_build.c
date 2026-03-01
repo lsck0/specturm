@@ -8,7 +8,7 @@
 
 #define _NYA_BUILD_MAX_BUILD_DEPTH 64
 
-NYA_INTERNAL b8 _nya_build_always(NYA_BuildRule* build_rule);
+NYA_INTERNAL NYA_Result _nya_build_always(NYA_BuildRule* build_rule);
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -16,7 +16,7 @@ NYA_INTERNAL b8 _nya_build_always(NYA_BuildRule* build_rule);
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-b8 nya_build(NYA_BuildRule* build_rule) {
+NYA_Result nya_build(NYA_BuildRule* build_rule) {
   nya_assert(build_rule != nullptr);
 
   switch (build_rule->policy) {
@@ -24,7 +24,7 @@ b8 nya_build(NYA_BuildRule* build_rule) {
 
     case NYA_BUILD_ONCE:   {
       nya_assert(build_rule->output_file, "NYA_BUILD_ONCE rules must specify an output_file.");
-      if (nya_filesystem_exists(build_rule->output_file)) return true;
+      if (nya_filesystem_exists(build_rule->output_file)) return NYA_OK;
       return _nya_build_always(build_rule);
     }
 
@@ -36,14 +36,12 @@ b8 nya_build(NYA_BuildRule* build_rule) {
 
       u64 input_mod_time  = 0;
       u64 output_mod_time = 0;
-      b8  ok1             = nya_filesystem_last_modified(build_rule->input_file, &input_mod_time);
-      b8  ok2             = nya_filesystem_last_modified(build_rule->output_file, &output_mod_time);
-      nya_assert(ok1, "Failed to get last modified time for input file: %s", build_rule->input_file);
-      nya_assert(ok2, "Failed to get last modified time for output file: %s", build_rule->output_file);
+      nya_expect(nya_filesystem_last_modified(build_rule->input_file, &input_mod_time));
+      nya_expect(nya_filesystem_last_modified(build_rule->output_file, &output_mod_time));
 
       if (input_mod_time > output_mod_time) return _nya_build_always(build_rule);
 
-      return true;
+      return NYA_OK;
     }
 
     default: nya_unreachable();
@@ -69,25 +67,22 @@ void nya_rebuild_yourself(s32* argc, NYA_CString* argv, NYA_Command cmd) {
   };
 
   // backup, build, restore
-  b8 ok;
 
   // need to not only copy backup, but also permissions and i cant be bothered
   NYA_Command copy_command = {
     .program   = "cp",
     .arguments = { argv[0], ".backup_build_executable" },
   };
-  nya_command_run(&copy_command);
+  nya_expect(nya_command_run(&copy_command));
   nya_assert(copy_command.exit_code == 0, "Failed to backup build executable before rebuild.");
 
-  ok = nya_build(&rule);
-  if (!ok) {
-    ok = nya_filesystem_move(".backup_build_executable", argv[0]);
-    nya_assert(ok, "Failed to restore backup build executable after failed rebuild.");
+  NYA_Result build_result = nya_build(&rule);
+  if (build_result.error != NYA_ERROR_NONE) {
+    nya_expect(nya_filesystem_move(".backup_build_executable", argv[0]));
     exit(1);
   }
 
-  ok = nya_filesystem_delete(".backup_build_executable");
-  nya_assert(ok, "Failed to delete backup build executable after successful rebuild.");
+  nya_expect(nya_filesystem_delete(".backup_build_executable"));
 
   // build new argv with marker
   NYA_CString* new_argv = nya_alloca((*argc + 2) * sizeof(NYA_CString));
@@ -108,7 +103,7 @@ void nya_rebuild_yourself(s32* argc, NYA_CString* argv, NYA_Command cmd) {
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-b8 _nya_build_always(NYA_BuildRule* build_rule) {
+NYA_Result _nya_build_always(NYA_BuildRule* build_rule) {
   static u64 depth = 0;
 
   nya_assert(build_rule != nullptr);
@@ -121,10 +116,10 @@ b8 _nya_build_always(NYA_BuildRule* build_rule) {
     if (!dependency) break;
 
     depth++;
-    b8 result = nya_build(dependency);
+    NYA_Result result = nya_build(dependency);
     depth--;
 
-    if (!result) return false;
+    if (result.error != NYA_ERROR_NONE) return result;
   }
 
   // pre-build hooks
@@ -151,7 +146,7 @@ b8 _nya_build_always(NYA_BuildRule* build_rule) {
   }
   printf("\n");
 
-  nya_command_run(&build_rule->command);
+  nya_expect(nya_command_run(&build_rule->command));
   ok = build_rule->command.exit_code == 0;
   if (ok) {
     printf("[OK] Took " FMTu64 " ms.\n\n", build_rule->command.execution_time_ms);
@@ -173,5 +168,5 @@ skip_build:
     hook(build_rule);
   }
 
-  return ok;
+  return ok ? NYA_OK : nya_err(NYA_ERROR_GENERIC, "Build rule '%s' failed with exit code %d.", build_rule->name, build_rule->command.exit_code);
 }

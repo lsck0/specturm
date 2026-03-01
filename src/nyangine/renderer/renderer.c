@@ -18,11 +18,11 @@
  * ─────────────────────────────────────────────────────────
  */
 
-void nya_system_render_init(void) {
+void nya_system_renderer_init(void) {
   NYA_App* app = nya_app_get();
 
   SDL_GPUDevice* gpu_device =
-      SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_METALLIB | SDL_GPU_SHADERFORMAT_SPIRV, NYA_IS_DEBUG, nullptr);
+      SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_METALLIB | SDL_GPU_SHADERFORMAT_SPIRV, NYA_DEBUG, nullptr);
   nya_assert(gpu_device != nullptr, "SDL_CreateGPUDevice() failed: %s", SDL_GetError());
 
   app->render_system = (NYA_RenderSystem){
@@ -32,7 +32,7 @@ void nya_system_render_init(void) {
   nya_info("Render system initialized.");
 }
 
-void nya_system_render_deinit(void) {
+void nya_system_renderer_deinit(void) {
   NYA_App* app = nya_app_get();
 
   SDL_WaitForGPUIdle(app->render_system.gpu_device);
@@ -41,7 +41,7 @@ void nya_system_render_deinit(void) {
   nya_info("Render system deinitialized.");
 }
 
-void nya_system_render_for_window_init(NYA_Window* window) {
+void nya_system_renderer_for_window_init(NYA_Window* window) {
   nya_assert(window != nullptr);
 
   NYA_App* app = nya_app_get();
@@ -55,7 +55,7 @@ void nya_system_render_for_window_init(NYA_Window* window) {
       app->render_system.gpu_device,
       window->sdl_window,
       SDL_GPU_SWAPCHAINCOMPOSITION_SDR,
-      app->config.vsync_enabled ? SDL_GPU_PRESENTMODE_VSYNC : SDL_GPU_PRESENTMODE_MAILBOX
+      app->options.vsync_enabled ? SDL_GPU_PRESENTMODE_VSYNC : SDL_GPU_PRESENTMODE_MAILBOX
   );
   nya_assert(ok, "SDL_SetGPUSwapchainParameters() failed: %s", SDL_GetError());
 
@@ -64,7 +64,7 @@ void nya_system_render_for_window_init(NYA_Window* window) {
   nya_info("Render system initialized for window '%s' (id: %p).", window->title, window->id);
 }
 
-void nya_system_render_for_window_deinit(NYA_Window* window) {
+void nya_system_renderer_for_window_deinit(NYA_Window* window) {
   nya_assert(window != nullptr);
 
   NYA_App* app = nya_app_get();
@@ -75,16 +75,10 @@ void nya_system_render_for_window_deinit(NYA_Window* window) {
   nya_info("Render system deinitialized for window '%s' (id: %p).", window->title, window->id);
 }
 
-/*
- * ─────────────────────────────────────────────────────────
- * RENDERING FUNCTIONS
- * ─────────────────────────────────────────────────────────
- */
-
-void nya_render_set_vsync(b8 enabled) {
+void nya_system_renderer_set_vsync(b8 enabled) {
   NYA_App* app = nya_app_get();
 
-  if (app->config.vsync_enabled != enabled) {
+  if (app->options.vsync_enabled != enabled) {
     nya_array_foreach (app->window_system.windows, window) {
       b8 ok = SDL_SetGPUSwapchainParameters(
           app->render_system.gpu_device,
@@ -97,13 +91,19 @@ void nya_render_set_vsync(b8 enabled) {
   }
 }
 
+/*
+ * ─────────────────────────────────────────────────────────
+ * RENDERING FUNCTIONS
+ * ─────────────────────────────────────────────────────────
+ */
+
 void nya_render_begin(NYA_Window* window) {
   nya_assert(window != nullptr);
 
   NYA_App* app = nya_app_get();
 
-  SDL_GPUCommandBuffer* command_buffer = SDL_AcquireGPUCommandBuffer(app->render_system.gpu_device);
-  window->render_system.command_buffer = command_buffer;
+  SDL_GPUCommandBuffer* command_buffer  = SDL_AcquireGPUCommandBuffer(app->render_system.gpu_device);
+  window->render_system.render_commands = command_buffer;
 
   SDL_GPUTexture* swapchain_texture;
   SDL_AcquireGPUSwapchainTexture(command_buffer, window->sdl_window, &swapchain_texture, &window->screen_width, &window->screen_height);
@@ -125,7 +125,7 @@ void nya_render_end(NYA_Window* window) {
   nya_assert(window != nullptr);
 
   SDL_EndGPURenderPass(window->render_system.render_pass);
-  SDL_SubmitGPUCommandBuffer(window->render_system.command_buffer);
+  SDL_SubmitGPUCommandBuffer(window->render_system.render_commands);
 }
 
 /*

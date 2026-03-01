@@ -17,9 +17,7 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-typedef u8Array     NYA_String;
-typedef char*       NYA_CString;
-typedef const char* NYA_ConstCString;
+typedef u8Array NYA_String;
 nya_derive_array(NYA_String);
 nya_derive_array(NYA_CString);
 nya_derive_array(NYA_ConstCString);
@@ -65,6 +63,8 @@ NYA_API NYA_EXTERN void             nya_string_extend(NYA_String* str, NYA_Const
 NYA_API NYA_EXTERN void             nya_string_extend(NYA_String* str, const NYA_String* extension) __attr_overloaded;
 NYA_API NYA_EXTERN void             nya_string_extend_front(NYA_String* str, NYA_ConstCString extension) __attr_overloaded;
 NYA_API NYA_EXTERN void             nya_string_extend_front(NYA_String* str, const NYA_String* extension) __attr_overloaded;
+NYA_API NYA_EXTERN void             nya_string_extend_front_sprintf(NYA_String* str, NYA_ConstCString fmt, ...) __attr_fmt_printf(2, 3);
+NYA_API NYA_EXTERN void             nya_string_extend_sprintf(NYA_String* str, NYA_ConstCString fmt, ...) __attr_fmt_printf(2, 3);
 NYA_API NYA_EXTERN void             nya_string_print(const NYA_String* str);
 NYA_API NYA_EXTERN void             nya_string_println(const NYA_String* str);
 NYA_API NYA_EXTERN void             nya_string_remove(NYA_String* str, NYA_ConstCString substr) __attr_overloaded;

@@ -109,14 +109,15 @@
 
 #define nya_ring_resize(ring_ptr, new_capacity)                                                                                                      \
   ({                                                                                                                                                 \
-    (ring_ptr)->items = nya_arena_realloc(                                                                                                           \
-        (ring_ptr)->arena,                                                                                                                           \
-        (ring_ptr)->items,                                                                                                                           \
-        (ring_ptr)->capacity * sizeof(*(ring_ptr)->items),                                                                                           \
-        (new_capacity) * sizeof(*(ring_ptr)->items)                                                                                                  \
-    );                                                                                                                                               \
+    u64                         _ring_old_cap  = (ring_ptr)->capacity;                                                                               \
+    u64                         _ring_old_head = (ring_ptr)->head;                                                                                   \
+    u64                         _ring_old_len  = (ring_ptr)->length;                                                                                 \
+    typeof(*(ring_ptr)->items)* _ring_new      = nya_arena_alloc((ring_ptr)->arena, (new_capacity) * sizeof(*(ring_ptr)->items));                    \
+    for (u64 _i = 0; _i < _ring_old_len; _i++) { _ring_new[_i] = (ring_ptr)->items[(_ring_old_head + _i) % _ring_old_cap]; }                         \
+    nya_arena_free((ring_ptr)->arena, (ring_ptr)->items, _ring_old_cap * sizeof(*(ring_ptr)->items));                                                \
+    (ring_ptr)->items    = _ring_new;                                                                                                                \
     (ring_ptr)->head     = 0;                                                                                                                        \
-    (ring_ptr)->tail     = (ring_ptr)->length;                                                                                                       \
+    (ring_ptr)->tail     = _ring_old_len;                                                                                                            \
     (ring_ptr)->capacity = (new_capacity);                                                                                                           \
   })
 
@@ -251,14 +252,19 @@
 #define nya_ring_move(ring_ptr, new_arena_ptr)                                                                                                       \
   ({                                                                                                                                                 \
     nya_assert_type_match(new_arena_ptr, (ring_ptr)->arena);                                                                                         \
-    *(ring_ptr) = (typeof(*(ring_ptr))){                                                                                                             \
-      .items    = nya_arena_move((ring_ptr)->arena, new_arena_ptr, (ring_ptr)->items, sizeof(*(ring_ptr)->items) * (ring_ptr)->capacity),            \
-      .head     = (ring_ptr)->head,                                                                                                                  \
-      .tail     = (ring_ptr)->tail,                                                                                                                  \
-      .length   = (ring_ptr)->length,                                                                                                                \
-      .capacity = (ring_ptr)->capacity,                                                                                                              \
-      .arena    = (new_arena_ptr)                                                                                                                    \
+    NYA_Arena*          _ring_move_old_arena = (ring_ptr)->arena;                                                                                    \
+    typeof(*(ring_ptr)) _ring_move_tmp       = {                                                                                                     \
+            .items    = nya_arena_move(_ring_move_old_arena, new_arena_ptr, (ring_ptr)->items, sizeof(*(ring_ptr)->items) * (ring_ptr)->capacity),   \
+            .head     = (ring_ptr)->head,                                                                                                            \
+            .tail     = (ring_ptr)->tail,                                                                                                            \
+            .length   = (ring_ptr)->length,                                                                                                          \
+            .capacity = (ring_ptr)->capacity,                                                                                                        \
+            .arena    = (new_arena_ptr)                                                                                                              \
     };                                                                                                                                               \
+    typeof(ring_ptr) _ring_move_new_ptr = nya_arena_alloc(new_arena_ptr, sizeof(*(ring_ptr)));                                                       \
+    *_ring_move_new_ptr                 = _ring_move_tmp;                                                                                            \
+    nya_arena_free(_ring_move_old_arena, ring_ptr, sizeof(*(ring_ptr)));                                                                             \
+    (ring_ptr) = _ring_move_new_ptr;                                                                                                                 \
   })
 
 /*

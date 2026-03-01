@@ -1,7 +1,6 @@
 #pragma once
 
 #include "nyangine/base/base_types.h"
-#include "nyangine/core/core_callback.h"
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -24,6 +23,7 @@ enum NYA_Signal {
 
   /** Terminal closed (SIGHUP / CTRL_LOGOFF_EVENT) */
   NYA_SIGNAL_HANGUP,
+
   NYA_SIGNAL_COUNT,
 };
 

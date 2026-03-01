@@ -25,7 +25,7 @@ typedef enum {
  * This will be executed before the panic function crashes the program.
  * If it returns true the crash will be prevented.
  * */
-typedef u8 (*NYA_PanicHook)(const char* function, const char* file, u32 line, const char* format, ...);
+typedef u8 (*NYA_PanicHook)(const char* function, const char* file, u32 line, const char* format, va_list args);
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────

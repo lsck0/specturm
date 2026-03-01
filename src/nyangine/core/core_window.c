@@ -63,7 +63,7 @@ void nya_system_window_handle_event(NYA_Event* event) {
  * ─────────────────────────────────────────────────────────
  */
 
-void* nya_window_create(NYA_ConstCString title, u32 initial_width, u32 initial_height, NYA_WindowFlags flags, void* id) {
+void* nya_window_create(void* id, NYA_ConstCString title, u32 initial_width, u32 initial_height, NYA_WindowFlags flags) {
   nya_assert(title != nullptr);
   nya_assert(initial_width > 0, "Initial width must be greater than 0.");
   nya_assert(initial_height > 0, "Initial height must be greater than 0.");
@@ -81,9 +81,9 @@ void* nya_window_create(NYA_ConstCString title, u32 initial_width, u32 initial_h
     .sdl_window  = sdl_window,
     .width       = initial_width,
     .height      = initial_height,
-    .layer_stack = nya_array_create(app->global_allocator, NYA_Layer),
+    .layer_stack = nya_array_create(app->window_system.allocator, NYA_Layer),
   };
-  nya_system_render_for_window_init(&nya_window);
+  nya_system_renderer_for_window_init(&nya_window);
 
   nya_array_push_back(app->window_system.windows, nya_window);
 
@@ -101,11 +101,11 @@ void nya_window_destroy(void* window_id) {
 
   nya_array_foreach_reverse (window->layer_stack, layer) {
     NYA_LayerOnDestroyFn on_destroy_fn = nya_callback_get(layer->on_destroy);
-    if (on_destroy_fn != nullptr) on_destroy_fn();
+    if (on_destroy_fn != nullptr) on_destroy_fn(window);
   }
   nya_array_destroy(window->layer_stack);
 
-  nya_system_render_for_window_deinit(window);
+  nya_system_renderer_for_window_deinit(window);
   SDL_DestroyWindow(window->sdl_window);
 
   nya_info("Destroyed window '%s' (id: %p).", window->title, window->id);
@@ -360,7 +360,7 @@ void nya_layer_push(void* window_id, NYA_Layer layer) {
   NYA_Window* window = nya_window_get(window_id);
 
   NYA_LayerOnCreateFn on_create_fn = nya_callback_get(layer.on_create);
-  if (on_create_fn != nullptr) on_create_fn();
+  if (on_create_fn != nullptr) on_create_fn(window);
 
   nya_array_push_back(window->layer_stack, layer);
 }
@@ -373,7 +373,7 @@ NYA_Layer nya_layer_pop(void* window_id) {
 
   NYA_Layer*           layer         = nya_array_last(window->layer_stack);
   NYA_LayerOnDestroyFn on_destroy_fn = nya_callback_get(layer->on_destroy);
-  if (on_destroy_fn != nullptr) on_destroy_fn();
+  if (on_destroy_fn != nullptr) on_destroy_fn(window);
 
   return nya_array_pop_back(window->layer_stack);
 }

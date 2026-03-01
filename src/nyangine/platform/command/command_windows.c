@@ -26,7 +26,7 @@ NYA_INTERNAL NYA_String* _nya_command_build_command_line(NYA_Command* command, N
   }
 
   // Null terminate
-  nya_string_extend(cmdline, "\0");
+  nya_string_extend(cmdline, &(NYA_String){ .items = (u8[]){'\0'}, .length = 1 });
   return cmdline;
 }
 
@@ -38,7 +38,7 @@ NYA_INTERNAL void _nya_command_setup_environment(NYA_Command* command) {
   }
 }
 
-void nya_command_run(NYA_Command* command) {
+NYA_Result nya_command_run(NYA_Command* command) {
   nya_assert(command != nullptr);
   nya_assert(command->program);
 
@@ -62,29 +62,25 @@ void nya_command_run(NYA_Command* command) {
     command->stderr_content = nya_string_create(command->arena);
 
     if (!CreatePipe(&stdout_read, &stdout_write, &sa, 0)) {
-      command->exit_code = 255;
-      return;
+      return nya_err(NYA_ERROR_IO, "Failed to create stdout pipe.");
     }
     if (!SetHandleInformation(stdout_read, HANDLE_FLAG_INHERIT, 0)) {
       CloseHandle(stdout_read);
       CloseHandle(stdout_write);
-      command->exit_code = 255;
-      return;
+      return nya_err(NYA_ERROR_IO, "Failed to set stdout pipe handle information.");
     }
 
     if (!CreatePipe(&stderr_read, &stderr_write, &sa, 0)) {
       CloseHandle(stdout_read);
       CloseHandle(stdout_write);
-      command->exit_code = 255;
-      return;
+      return nya_err(NYA_ERROR_IO, "Failed to create stderr pipe.");
     }
     if (!SetHandleInformation(stderr_read, HANDLE_FLAG_INHERIT, 0)) {
       CloseHandle(stdout_read);
       CloseHandle(stdout_write);
       CloseHandle(stderr_read);
       CloseHandle(stderr_write);
-      command->exit_code = 255;
-      return;
+      return nya_err(NYA_ERROR_IO, "Failed to set stderr pipe handle information.");
     }
   }
 
@@ -147,8 +143,7 @@ void nya_command_run(NYA_Command* command) {
     if (stdout_read) CloseHandle(stdout_read);
     if (stderr_read) CloseHandle(stderr_read);
     if (env) FreeEnvironmentStringsA((LPCH)env);
-    command->exit_code = 255;
-    return;
+    return nya_err(NYA_ERROR_IO, "Failed to create process for '%s'.", command->program);
   }
 
   // Read output if capturing
@@ -195,6 +190,8 @@ void nya_command_run(NYA_Command* command) {
 
   u64 end_time               = nya_clock_get_timestamp_ms();
   command->execution_time_ms = end_time - start_time;
+
+  return NYA_OK;
 }
 
 void nya_command_destroy(NYA_Command* command) {

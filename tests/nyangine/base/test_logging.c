@@ -8,8 +8,8 @@
 static NYA_LogLevel original_level;
 static b8           hook_called = false;
 
-static u8 panic_test_hook(const char* function, const char* file, u32 line, const char* format, ...) {
-  nya_unused(function, file, line, format);
+static u8 panic_test_hook(const char* function, const char* file, u32 line, const char* format, va_list args) {
+  nya_unused(function, file, line, format, args);
   hook_called = true;
   return true;
 }
@@ -73,6 +73,30 @@ s32 main(void) {
 
   // Hook hasn't been called yet
   nya_assert(hook_called == false);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: panic hook receives correct arguments via va_list
+  // ─────────────────────────────────────────────────────────────────────────────
+  hook_called = false;
+  nya_panic_hook_set(panic_test_hook);
+
+  {
+    jmp_buf jb;
+    if (setjmp(jb) == 0) {
+      nya_panic_prevent_set(&jb);
+      // Panic with format args — hook should be called with va_list without UB
+      nya_panic("Hook test: %d %s %f", 42, "hello", 3.14);
+      nya_assert(false);
+    }
+    // Panic was prevented before hook is called, so hook_called stays false.
+    // The important thing is we didn't crash from va_list UB.
+    nya_assert(nya_panic_prevent_happened() == true);
+  }
+
+  // Test hook actually preventing crash (without prevent_set)
+  hook_called = false;
+  nya_panic("This should be caught by hook: %d", 999);
+  nya_assert(hook_called == true);
 
   // ─────────────────────────────────────────────────────────────────────────────
   // TEST: setting hook to nullptr

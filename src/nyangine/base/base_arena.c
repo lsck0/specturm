@@ -1,3 +1,5 @@
+#include "SDL3/SDL_atomic.h"
+
 #include "nyangine/nyangine.h"
 
 /*
@@ -6,20 +8,20 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-#define _NYA_ARENA_ACTION_ARRAY_DEFAULT_CAPACITY 8
-
 NYA_INTERNAL void  _nya_arena_align_and_pad_size(NYA_Arena* arena, u64* size);
 NYA_INTERNAL void  _nya_arena_region_destroy(NYA_Arena* arena, NYA_ArenaRegion* region);
-NYA_INTERNAL void* _nya_arena_free_list_find(NYA_ArenaFreeList* free_list, u32 size) __attr_no_discard;
-NYA_INTERNAL void  _nya_arena_free_list_add(NYA_ArenaRegion* region, void* ptr, u32 size);
+NYA_INTERNAL void* _nya_arena_free_list_find(NYA_ArenaFreeList* free_list, u64 size) __attr_no_discard;
+NYA_INTERNAL void  _nya_arena_free_list_add(NYA_ArenaRegion* region, void* ptr, u64 size);
 NYA_INTERNAL void  _nya_arena_free_list_defragment(NYA_ArenaFreeList* free_list);
 NYA_INTERNAL void  _nya_arena_free_list_destroy(NYA_ArenaFreeList* free_list);
 
-NYA_INTERNAL NYA_MemoryActionArray _nya_arena_memory_actions = { 0 };
-NYA_INTERNAL void                  _nya_arena_action_insert(NYA_MemoryAction action);
+NYA_INTERNAL NYA_ArenaActionCallback _nya_arena_action_callback     = nullptr;
+NYA_INTERNAL NYA_ArenaActionArray    _nya_arena_memory_actions      = { 0 };
+NYA_INTERNAL SDL_SpinLock            _nya_arena_memory_actions_lock = 0;
+NYA_INTERNAL void                    _nya_arena_action_insert(NYA_ArenaAction action);
 
-NYA_Arena* nya_arena_global;
-NYA_Arena* nya_arena_temp;
+NYA_Arena* nya_arena_global = nullptr;
+NYA_Arena* nya_arena_temp   = nullptr;
 
 __attr_constructor NYA_INTERNAL void _nya_arena_init(void) {
   nya_arena_global = nya_arena_create(.name = "global_arena");
@@ -42,14 +44,13 @@ __attr_destructor NYA_INTERNAL void _nya_arena_shutdown(void) {
 NYA_Arena* _nya_arena_nodebug_create_with_options(NYA_ArenaOptions options) {
   NYA_Arena* arena = nya_malloc(sizeof(NYA_Arena));
   *arena           = _nya_arena_nodebug_create_with_options_on_stack(options);
-
   return arena;
 }
 
 NYA_Arena _nya_arena_nodebug_create_with_options_on_stack(NYA_ArenaOptions options) {
-  nya_assert(options.region_size >= nya_kibyte_to_byte(4), "Minimum region size is 4 KiB.");
-  nya_assert(options.alignment >= 8, "Minimum alignment is 8 bytes.");
+  nya_assert(options.region_size >= nya_kibyte_to_byte(4), "Region size must be at least 4 KiB.");
   nya_assert(options.region_size % options.alignment == 0, "Region size must be divisible by alignment.");
+  nya_assert(options.alignment >= 8, "Alignment must be at least 8 bytes.");
   nya_assert(options.alignment % 2 == 0, "Alignment must be a power of two.");
   nya_assert(ASAN_PADDING % options.alignment == 0, "ASAN padding must be divisible by alignment.");
 
@@ -87,7 +88,7 @@ void* _nya_arena_nodebug_alloc(NYA_Arena* arena, u64 size) __attr_malloc {
     if (region->capacity - region->used >= size) {
       u8* ptr = region->memory + region->used;
 
-      // align pointer to arena alignment requirement
+      // align pointer
       uintptr_t aligned_ptr = ((uintptr_t)ptr + (arena->options.alignment - 1)) & ~(arena->options.alignment - 1);
       u64       padding     = aligned_ptr - (uintptr_t)ptr;
 
@@ -108,13 +109,13 @@ void* _nya_arena_nodebug_alloc(NYA_Arena* arena, u64 size) __attr_malloc {
 
 skip_search:
   // we didnt find a region with enough space or didnt want to search
-  u32              new_region_size   = nya_max(arena->options.region_size, size);
+  u64              new_region_size   = nya_max(arena->options.region_size, size);
   NYA_ArenaRegion* new_region        = nya_malloc(sizeof(NYA_ArenaRegion));
   u8*              new_region_memory = nya_malloc(new_region_size);
   nya_assert(new_region != nullptr);
   nya_assert(new_region_memory != nullptr);
 
-  // align the initial pointer to arena alignment requirement
+  // align the initial pointer
   uintptr_t aligned_memory  = ((uintptr_t)new_region_memory + (arena->options.alignment - 1)) & ~(arena->options.alignment - 1);
   u64       initial_padding = aligned_memory - (uintptr_t)new_region_memory;
 
@@ -158,7 +159,9 @@ void* _nya_arena_nodebug_realloc(NYA_Arena* arena, void* ptr, u64 old_size, u64 
     asan_poison_memory_region(old_ptr + new_size - ASAN_PADDING, ASAN_PADDING);
 
     // only free the excess if it's larger than ASAN_PADDING
-    if (old_size - new_size > ASAN_PADDING) { _nya_arena_nodebug_free(arena, old_ptr + new_size, old_size - new_size - ASAN_PADDING); }
+    if (old_size - new_size > ASAN_PADDING) { /**/
+      _nya_arena_nodebug_free(arena, old_ptr + new_size, old_size - new_size - ASAN_PADDING);
+    }
 
     return old_ptr;
   }
@@ -167,7 +170,7 @@ void* _nya_arena_nodebug_realloc(NYA_Arena* arena, void* ptr, u64 old_size, u64 
   nya_dll_foreach (arena, region) {
     if (!(region->memory <= old_ptr && old_ptr < region->memory + region->capacity)) continue;
 
-    // no checking if we are followed by big freed memory, makes free list much more complex
+    // no checking if there is a free slot after in the free list
 
     // if its the last allocation in the region, we can maybe just extend it
     if (old_ptr + old_size == region->memory + region->used && region->used + (new_size - old_size) <= region->capacity) {
@@ -220,7 +223,7 @@ void _nya_arena_nodebug_free(NYA_Arena* arena, void* ptr, u64 size) {
     return;
   }
 
-  // nya_unreachable(); // Temporarily commented out for debugging
+  nya_unreachable();
 }
 
 void _nya_arena_nodebug_free_all(NYA_Arena* arena) {
@@ -317,8 +320,8 @@ void* _nya_arena_nodebug_move(NYA_Arena* src, NYA_Arena* dst, void* ptr, u64 siz
  */
 
 NYA_Arena* _nya_arena_debug_create_with_options(NYA_ArenaOptions options, NYA_ConstCString function, NYA_ConstCString file, u32 line) {
-  NYA_MemoryAction action = {
-    .type          = NYA_MEMORY_ACTION_ARENA_NEW,
+  NYA_ArenaAction action = {
+    .type          = NYA_ARENA_ACTION_ARENA_NEW,
     .arena_name    = options.name,
     .file_name     = file,
     .line_number   = line,
@@ -330,8 +333,8 @@ NYA_Arena* _nya_arena_debug_create_with_options(NYA_ArenaOptions options, NYA_Co
 }
 
 NYA_Arena _nya_arena_debug_create_with_options_on_stack(NYA_ArenaOptions options, const char* function, const char* file, u32 line) {
-  NYA_MemoryAction action = {
-    .type          = NYA_MEMORY_ACTION_ARENA_NEW,
+  NYA_ArenaAction action = {
+    .type          = NYA_ARENA_ACTION_ARENA_NEW,
     .arena_name    = options.name,
     .file_name     = file,
     .line_number   = line,
@@ -346,16 +349,16 @@ void* _nya_arena_debug_alloc(NYA_Arena* arena, u64 size, NYA_ConstCString functi
   void* ptr = _nya_arena_nodebug_alloc(arena, size);
   if (ptr == nullptr) return nullptr;
 
-  NYA_MemoryAction action = {
-      .type          = NYA_MEMORY_ACTION_ALLOC,
+  NYA_ArenaAction action = {
+      .type          = NYA_ARENA_ACTION_ALLOC,
       .arena_name    = arena->options.name,
       .file_name     = file,
       .line_number   = line,
       .function_name = function,
-      .alloc         = {
-                        .ptr  = ptr,
-                        .size = size,
-                        },
+      .as_alloc      = {
+          .ptr  = ptr,
+          .size = size,
+      },
   };
   _nya_arena_action_insert(action);
 
@@ -366,18 +369,18 @@ void* _nya_arena_debug_realloc(NYA_Arena* arena, void* ptr, u64 old_size, u64 ne
   void* new_ptr = _nya_arena_nodebug_realloc(arena, ptr, old_size, new_size);
   if (new_ptr == nullptr && new_size != 0) return nullptr;
 
-  NYA_MemoryAction action = {
-      .type          = NYA_MEMORY_ACTION_REALLOC,
+  NYA_ArenaAction action = {
+      .type          = NYA_ARENA_ACTION_REALLOC,
       .arena_name    = arena->options.name,
       .file_name     = file,
       .line_number   = line,
       .function_name = function,
-      .realloc       = {
-                        .old_ptr  = ptr,
-                        .old_size = old_size,
-                        .new_ptr  = new_ptr,
-                        .new_size = new_size,
-                        },
+      .as_realloc    = {
+          .old_ptr  = ptr,
+          .old_size = old_size,
+          .new_ptr  = new_ptr,
+          .new_size = new_size,
+      },
   };
   _nya_arena_action_insert(action);
 
@@ -385,16 +388,16 @@ void* _nya_arena_debug_realloc(NYA_Arena* arena, void* ptr, u64 old_size, u64 ne
 }
 
 void _nya_arena_debug_free(NYA_Arena* arena, void* ptr, u64 size, NYA_ConstCString function, NYA_ConstCString file, u32 line) {
-  NYA_MemoryAction action = {
-      .type          = NYA_MEMORY_ACTION_FREE,
+  NYA_ArenaAction action = {
+      .type          = NYA_ARENA_ACTION_FREE,
       .arena_name    = arena->options.name,
       .file_name     = file,
       .line_number   = line,
       .function_name = function,
-      .free          = {
-                        .ptr  = ptr,
-                        .size = size,
-                        },
+      .as_free       = {
+          .ptr  = ptr,
+          .size = size,
+      },
   };
   _nya_arena_action_insert(action);
 
@@ -402,8 +405,8 @@ void _nya_arena_debug_free(NYA_Arena* arena, void* ptr, u64 size, NYA_ConstCStri
 }
 
 void _nya_arena_debug_free_all(NYA_Arena* arena, NYA_ConstCString function, NYA_ConstCString file, u32 line) {
-  NYA_MemoryAction action = {
-    .type          = NYA_MEMORY_ACTION_FREE_ALL,
+  NYA_ArenaAction action = {
+    .type          = NYA_ARENA_ACTION_FREE_ALL,
     .arena_name    = arena->options.name,
     .file_name     = file,
     .line_number   = line,
@@ -415,8 +418,8 @@ void _nya_arena_debug_free_all(NYA_Arena* arena, NYA_ConstCString function, NYA_
 }
 
 void _nya_arena_debug_garbage_collect(NYA_Arena* arena, NYA_ConstCString function, NYA_ConstCString file, u32 line) {
-  NYA_MemoryAction action = {
-    .type          = NYA_MEMORY_ACTION_FREE_ALL,
+  NYA_ArenaAction action = {
+    .type          = NYA_ARENA_ACTION_GARBAGE_COLLECT,
     .arena_name    = arena->options.name,
     .file_name     = file,
     .line_number   = line,
@@ -428,8 +431,8 @@ void _nya_arena_debug_garbage_collect(NYA_Arena* arena, NYA_ConstCString functio
 }
 
 void _nya_arena_debug_destroy(NYA_Arena* arena, NYA_ConstCString function, NYA_ConstCString file, u32 line) {
-  NYA_MemoryAction action = {
-    .type          = NYA_MEMORY_ACTION_ARENA_DESTROY,
+  NYA_ArenaAction action = {
+    .type          = NYA_ARENA_ACTION_ARENA_DESTROY,
     .arena_name    = arena->options.name,
     .file_name     = file,
     .line_number   = line,
@@ -441,8 +444,8 @@ void _nya_arena_debug_destroy(NYA_Arena* arena, NYA_ConstCString function, NYA_C
 }
 
 void _nya_arena_debug_destroy_on_stack(NYA_Arena* arena, const char* function, const char* file, u32 line) {
-  NYA_MemoryAction action = {
-    .type          = NYA_MEMORY_ACTION_ARENA_DESTROY,
+  NYA_ArenaAction action = {
+    .type          = NYA_ARENA_ACTION_ARENA_DESTROY,
     .arena_name    = arena->options.name,
     .file_name     = file,
     .line_number   = line,
@@ -457,17 +460,17 @@ void* _nya_arena_debug_copy(NYA_Arena* dst, void* ptr, u64 size, NYA_ConstCStrin
   void* copy_ptr = _nya_arena_nodebug_copy(dst, ptr, size);
   if (copy_ptr == nullptr) return nullptr;
 
-  NYA_MemoryAction action = {
-      .type          = NYA_MEMORY_ACTION_COPY,
+  NYA_ArenaAction action = {
+      .type          = NYA_ARENA_ACTION_COPY,
       .arena_name    = dst->options.name,
       .file_name     = file,
       .line_number   = line,
       .function_name = function,
-      .copy          = {
-                        .ptr      = ptr,
-                        .size     = size,
-                        .copy_ptr = copy_ptr,
-                        },
+      .as_copy       = {
+          .ptr      = ptr,
+          .size     = size,
+          .copy_ptr = copy_ptr,
+      },
   };
   _nya_arena_action_insert(action);
 
@@ -478,18 +481,18 @@ void* _nya_arena_debug_move(NYA_Arena* src, NYA_Arena* dst, void* ptr, u64 size,
   void* move_ptr = _nya_arena_nodebug_move(src, dst, ptr, size);
   if (move_ptr == nullptr) return nullptr;
 
-  NYA_MemoryAction action = {
-      .type          = NYA_MEMORY_ACTION_MOVE,
+  NYA_ArenaAction action = {
+      .type          = NYA_ARENA_ACTION_MOVE,
       .arena_name    = dst->options.name,
       .file_name     = file,
       .line_number   = line,
       .function_name = function,
-      .move          = {
-                        .ptr               = ptr,
-                        .size              = size,
-                        .move_arena_name = dst->options.name,
-                        .move_ptr          = move_ptr,
-                        },
+      .as_move       = {
+          .ptr             = ptr,
+          .size            = size,
+          .move_arena_name = dst->options.name,
+          .move_ptr        = move_ptr,
+      },
   };
   _nya_arena_action_insert(action);
 
@@ -502,13 +505,17 @@ void* _nya_arena_debug_move(NYA_Arena* src, NYA_Arena* dst, void* ptr, u64 size,
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_MemoryActionArray* nya_arena_get_memory_actions(void) {
+NYA_ArenaActionArray* nya_arena_actions_get(void) {
   if (_nya_arena_memory_actions.items == nullptr) return nullptr;
 
   return &_nya_arena_memory_actions;
 }
 
-u64 nya_arena_memory_usage_bytes(NYA_Arena* arena) __attr_no_discard {
+void nya_arena_actions_set_callback(NYA_ArenaActionCallback callback) {
+  _nya_arena_action_callback = callback;
+}
+
+u64 nya_arena_memory_usage_bytes(NYA_Arena* arena) {
   nya_assert(arena != nullptr);
 
   u64 total_usage = 0;
@@ -540,7 +547,7 @@ NYA_INTERNAL void _nya_arena_region_destroy(NYA_Arena* arena, NYA_ArenaRegion* r
   nya_free(region);
 }
 
-NYA_INTERNAL void* _nya_arena_free_list_find(NYA_ArenaFreeList* free_list, u32 size) {
+NYA_INTERNAL void* _nya_arena_free_list_find(NYA_ArenaFreeList* free_list, u64 size) {
   nya_assert(free_list != nullptr);
 
   nya_dll_foreach (free_list, node) {
@@ -576,7 +583,7 @@ NYA_INTERNAL void* _nya_arena_free_list_find(NYA_ArenaFreeList* free_list, u32 s
   return nullptr;
 }
 
-NYA_INTERNAL void _nya_arena_free_list_add(NYA_ArenaRegion* region, void* ptr, u32 size) {
+NYA_INTERNAL void _nya_arena_free_list_add(NYA_ArenaRegion* region, void* ptr, u64 size) {
   nya_assert(ptr != nullptr);
 
   if (region->free_list == nullptr) {
@@ -632,7 +639,7 @@ NYA_INTERNAL void _nya_arena_free_list_defragment(NYA_ArenaFreeList* free_list) 
     // check if current node is directly before the next node
     if ((u8*)node->ptr + node->size == (u8*)node->next->ptr) {
       NYA_ArenaFreeListNode* next      = node->next;
-      u32                    next_size = next->size;
+      u64                    next_size = next->size;
 
       // merge nodes
       node->size += next_size;
@@ -667,23 +674,32 @@ NYA_INTERNAL void _nya_arena_free_list_destroy(NYA_ArenaFreeList* free_list) {
   nya_free(free_list);
 }
 
-void _nya_arena_action_insert(NYA_MemoryAction action) {
-  NYA_MemoryActionArray* array = &_nya_arena_memory_actions;
+void _nya_arena_action_insert(NYA_ArenaAction action) {
+  if (_nya_arena_action_callback) {
+    _nya_arena_action_callback(action);
+    return;
+  }
+
+  SDL_LockSpinlock(&_nya_arena_memory_actions_lock);
+
+  NYA_ArenaActionArray* array = &_nya_arena_memory_actions;
 
   if (array->items == nullptr) {
-    array->capacity = _NYA_ARENA_ACTION_ARRAY_DEFAULT_CAPACITY;
+    array->capacity = _NYA_ARRAY_DEFAULT_CAPACITY;
     array->length   = 0;
-    array->items    = nya_malloc(sizeof(NYA_MemoryAction) * array->capacity);
+    array->items    = nya_malloc(sizeof(NYA_ArenaAction) * array->capacity);
     nya_assert(array->items);
   }
 
   if (array->length >= array->capacity) {
     array->capacity *= 2;
 
-    void* new_items = nya_realloc(array->items, sizeof(NYA_MemoryAction) * array->capacity);
+    void* new_items = nya_realloc(array->items, sizeof(NYA_ArenaAction) * array->capacity);
     nya_assert(new_items != nullptr);
-    array->items = (NYA_MemoryAction*)new_items;
+    array->items = (NYA_ArenaAction*)new_items;
   }
 
   array->items[array->length++] = action;
+
+  SDL_UnlockSpinlock(&_nya_arena_memory_actions_lock);
 }

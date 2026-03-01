@@ -308,13 +308,18 @@
 #define nya_hset_move(hset_ptr, new_arena_ptr)                                                                                                       \
   ({                                                                                                                                                 \
     nya_assert_type_match(new_arena_ptr, (hset_ptr)->arena);                                                                                         \
-    *(hset_ptr) = (typeof(*(hset_ptr))){                                                                                                             \
-      .items    = nya_arena_move((hset_ptr)->arena, new_arena_ptr, (hset_ptr)->items, sizeof(*(hset_ptr)->items) * (hset_ptr)->capacity),            \
-      .occupied = nya_arena_move((hset_ptr)->arena, new_arena_ptr, (hset_ptr)->occupied, sizeof(*(hset_ptr)->occupied) * (hset_ptr)->capacity),      \
+    NYA_Arena* _hset_move_old_arena = (hset_ptr)->arena;                                                                                             \
+    typeof(*(hset_ptr)) _hset_move_tmp = {                                                                                                           \
+      .items    = nya_arena_move(_hset_move_old_arena, new_arena_ptr, (hset_ptr)->items, sizeof(*(hset_ptr)->items) * (hset_ptr)->capacity),         \
+      .occupied = nya_arena_move(_hset_move_old_arena, new_arena_ptr, (hset_ptr)->occupied, sizeof(*(hset_ptr)->occupied) * (hset_ptr)->capacity),   \
       .length   = (hset_ptr)->length,                                                                                                                \
       .capacity = (hset_ptr)->capacity,                                                                                                              \
       .arena    = new_arena_ptr                                                                                                                      \
     };                                                                                                                                               \
+    typeof(hset_ptr) _hset_move_new_ptr = nya_arena_alloc(new_arena_ptr, sizeof(*(hset_ptr)));                                                       \
+    *_hset_move_new_ptr = _hset_move_tmp;                                                                                                            \
+    nya_arena_free(_hset_move_old_arena, hset_ptr, sizeof(*(hset_ptr)));                                                                             \
+    (hset_ptr) = _hset_move_new_ptr;                                                                                                                 \
   })
 
 /*

@@ -43,7 +43,7 @@ void nya_signals_set_handler(NYA_Signal sig, NYA_SignalHandler handler) {
   NYA_SIGNALS_TO_CALLBACK_MAP[sig] = handler;
 
   int native_sig = _nya_signal_to_native(sig);
-  if (native_sig >= 0) { /**/
+  if (native_sig >= 0) {
     __sighandler_t ok = signal(native_sig, _nya_signal_handler);
     nya_assert(ok != SIG_ERR, "Failed to set signal handler for signal %d: %s", native_sig, strerror(errno));
   }

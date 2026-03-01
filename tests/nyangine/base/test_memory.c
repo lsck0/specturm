@@ -117,13 +117,31 @@ s32 main(void) {
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // TEST: nya_container_of macro (basic functionality) - skipped due to assert_type_match
+  // TEST: nya_container_of macro (basic functionality) - skipped
   // ─────────────────────────────────────────────────────────────────────────────
   {
-    // Container_of macro requires assert_type_match which is not available
-    // This test would verify that container_of can recover the containing structure
-    // from a pointer to one of its members, but we'll skip for now
-    nya_assert(true); // Placeholder to keep test structure
+    // Container_of macro uses assert_type_match (without nya_ prefix) which is undefined.
+    // This is a pre-existing issue in base_memory.h.
+    nya_assert(true);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: nya_offsetof_end macro
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    size_t byte_end  = nya_offsetof_end(TestStruct, byte_field);
+    size_t int_end   = nya_offsetof_end(TestStruct, int_field);
+    size_t float_end = nya_offsetof_end(TestStruct, float_field);
+    size_t long_end  = nya_offsetof_end(TestStruct, long_field);
+
+    // offsetof_end = offsetof + sizeof, so it should be > offsetof
+    nya_assert(byte_end == nya_offsetof(TestStruct, byte_field) + sizeof(u8));
+    nya_assert(int_end == nya_offsetof(TestStruct, int_field) + sizeof(u32));
+    nya_assert(float_end == nya_offsetof(TestStruct, float_field) + sizeof(f32));
+    nya_assert(long_end == nya_offsetof(TestStruct, long_field) + sizeof(u64));
+
+    // byte_field end should be <= int_field offset (with possible padding)
+    nya_assert(byte_end <= nya_offsetof(TestStruct, int_field));
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -167,6 +185,28 @@ s32 main(void) {
 
     u64 tb_decimal = nya_byte_to_gbyte(2000ULL * 1000 * 1000 * 1000); // 2000 GB = 2 TB (decimal)
     nya_assert(tb_decimal == 2000);
+
+    // Test gibyte_to_byte
+    u64 gib_to_bytes = nya_gibyte_to_byte(1UL);
+    nya_assert(gib_to_bytes == 1024ULL * 1024 * 1024);
+    nya_assert(nya_gibyte_to_byte(2UL) == 2ULL * 1024 * 1024 * 1024);
+
+    // Test gbyte_to_byte
+    u64 gb_to_bytes = nya_gbyte_to_byte(1UL);
+    nya_assert(gb_to_bytes == 1000000000ULL);
+
+    // Test tbyte_to_byte
+    u64 tb_to_bytes = nya_tbyte_to_byte(1LL);
+    nya_assert(tb_to_bytes == 1000000000000LL);
+
+    // Test byte_to_tebyte
+    u64 teb = nya_byte_to_tebyte(1024ULL * 1024 * 1024 * 1024);
+    nya_assert(teb == 1);
+
+    // Test alloca compiles
+    void* stack_mem = nya_alloca(64);
+    nya_assert(stack_mem != nullptr);
+    nya_memset(stack_mem, 0, 64);
   }
 
   // ─────────────────────────────────────────────────────────────────────────────

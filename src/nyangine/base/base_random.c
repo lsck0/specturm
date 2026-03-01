@@ -295,7 +295,7 @@ f64 nya_rng_sample_f64(NYA_RNG* rng, NYA_RNGDistribution distribution) {
       u64 r2;
       nya_rng_gen_bytes(rng, (u8*)&r1, sizeof(u64));
       nya_rng_gen_bytes(rng, (u8*)&r2, sizeof(u64));
-      f64 u1 = (f64)r1 / (f64)U64_MAX;
+      f64 u1 = ((f64)r1 + 0.5) / ((f64)U64_MAX + 1.0);
       f64 u2 = (f64)r2 / (f64)U64_MAX;
 
       f64 z0     = sqrt(-2.0 * log(u1)) * cos(2.0 * M_PI * u2);
@@ -311,7 +311,7 @@ f64 nya_rng_sample_f64(NYA_RNG* rng, NYA_RNGDistribution distribution) {
 
       u64 r;
       nya_rng_gen_bytes(rng, (u8*)&r, sizeof(u64));
-      f64 u = (f64)r / (f64)U64_MAX;
+      f64 u = ((f64)r + 0.5) / ((f64)U64_MAX + 1.0);
 
       f64 result = -log(1.0 - u) / lambda;
       return result;
@@ -361,7 +361,7 @@ f64 nya_rng_sample_f64(NYA_RNG* rng, NYA_RNGDistribution distribution) {
 
       u64 r;
       nya_rng_gen_bytes(rng, (u8*)&r, sizeof(u64));
-      f64 u = (f64)r / (f64)U64_MAX;
+      f64 u = ((f64)r + 0.5) / ((f64)U64_MAX + 1.0);
 
       return floor(log(1.0 - u) / log(1.0 - p)) + 1.0;
     } break;

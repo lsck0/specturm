@@ -1,11 +1,14 @@
 /**
  * @file base_lexer.h
  *
- * Simple lexer/tokenizer.
+ * Simple lexer/tokenizer. Supports identifiers, integers (decimal, hex 0x, binary 0b),
+ * floats, symbols, and double-quoted string literals with escape sequences.
+ *
+ * Supported string escape sequences: \", \\, \n, \t, \r
  *
  * Example:
  * ```c
- * NYA_Lexer nya_lexer_create("let x = 42;");
+ * NYA_Lexer lexer = nya_lexer_create("name = \"hello world\";");
  * nya_lexer_run(&lexer);
  *
  * nya_array_foreach (lexer.tokens, token) { ... }
@@ -38,6 +41,7 @@ enum NYA_TokenType {
   NYA_TOKEN_IDENT,
   NYA_TOKEN_NUMBER_INTEGER,
   NYA_TOKEN_NUMBER_FLOAT,
+  NYA_TOKEN_STRING,
 
   NYA_TOKEN_COUNT,
 };
@@ -53,6 +57,13 @@ struct NYA_Token {
   union {
     u8 symbol;
   };
+
+  /**
+   * For NYA_TOKEN_STRING: source_location points to the first character after the
+   * opening quote, and length is the raw content length (not including quotes).
+   * Escape sequences (e.g. \", \\) are preserved as-is in the source and must be
+   * processed when consuming the token value.
+   * */
 };
 
 struct NYA_Lexer {
@@ -78,3 +89,11 @@ struct NYA_Lexer {
 NYA_API NYA_EXTERN NYA_Lexer nya_lexer_create(NYA_ConstCString source);
 NYA_API NYA_EXTERN void      nya_lexer_run(NYA_Lexer* lexer);
 NYA_API NYA_EXTERN void      nya_lexer_destroy(NYA_Lexer* lexer);
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * INTERNAL
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+NYA_DEFINE_CLEANUP_FN(nya_lexer_destroy, NYA_Lexer, lexer, nya_lexer_destroy(&lexer))

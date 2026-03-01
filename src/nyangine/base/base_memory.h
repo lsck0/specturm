@@ -30,7 +30,7 @@
 #define nya_typeof_field(type, member) typeof(((type*)0)->member)
 #define nya_sizeof_field(type, member) sizeof((((type*)0)->member))
 #define nya_offsetof(type, member)     __builtin_offsetof(type, member)
-#define nya_offsetof_end(type, member) (offsetof(type, member) + sizeof_field(type, member))
+#define nya_offsetof_end(type, member) (offsetof(type, member) + nya_sizeof_field(type, member))
 #define nya_container_of(ptr, type, member)                                                                                                          \
   _Generic(                                                                                                                                          \
       ptr,                                                                                                                                           \

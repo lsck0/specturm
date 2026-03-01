@@ -2,9 +2,10 @@
 
 #pragma once
 
-char* NYA_ASSETS_SHADERS_SOURCE_SAMPLE_FRAG_HLSL = "./assets/shaders/source/sample.frag.hlsl";
-char* NYA_ASSETS_SHADERS_SOURCE_SAMPLE_VERT_HLSL = "./assets/shaders/source/sample.vert.hlsl";
-char* NYA_ASSETS_ICON_ICON_ICO                   = "./assets/icon/icon.ico";
-char* NYA_ASSETS_ICON_ICON_RC                    = "./assets/icon/icon.rc";
-char* NYA_ASSETS_ICON_ICON_RES                   = "./assets/icon/icon.res";
-char* NYA_ASSETS_TEXTS_HELLO_TXT                 = "./assets/texts/hello.txt";
+#define NYA_ASSETS_ICON_ICON_ICO      "./assets/icon/icon.ico"
+#define NYA_ASSETS_ICON_ICON_RES      "./assets/icon/icon.res"
+#define NYA_ASSETS_ICON_ICON_BMP      "./assets/icon/icon.bmp"
+#define NYA_ASSETS_ICON_ICON_RC       "./assets/icon/icon.rc"
+#define NYA_ASSETS_SHADER_SAMPLE_VERT "./assets/shader/source/sample.vert.hlsl"
+#define NYA_ASSETS_SHADER_SAMPLE_FRAG "./assets/shader/source/sample.frag.hlsl"
+#define NYA_ASSETS_SHADER_SAMPLE_COMP "./assets/shader/source/sample.comp.hlsl"

@@ -297,14 +297,19 @@
 #define nya_hmap_move(hmap_ptr, new_arena_ptr)                                                                                                       \
   ({                                                                                                                                                 \
     nya_assert_type_match(new_arena_ptr, (hmap_ptr)->arena);                                                                                         \
-    *(hmap_ptr) = (typeof(*(hmap_ptr))){                                                                                                             \
-      .keys     = nya_arena_move((hmap_ptr)->arena, new_arena_ptr, (hmap_ptr)->keys, sizeof(*(hmap_ptr)->keys) * (hmap_ptr)->capacity),              \
-      .values   = nya_arena_move((hmap_ptr)->arena, new_arena_ptr, (hmap_ptr)->values, sizeof(*(hmap_ptr)->values) * (hmap_ptr)->capacity),          \
-      .occupied = nya_arena_move((hmap_ptr)->arena, new_arena_ptr, (hmap_ptr)->occupied, sizeof(*(hmap_ptr)->occupied) * (hmap_ptr)->capacity),      \
+    NYA_Arena* _hmap_move_old_arena = (hmap_ptr)->arena;                                                                                             \
+    typeof(*(hmap_ptr)) _hmap_move_tmp = {                                                                                                           \
+      .keys     = nya_arena_move(_hmap_move_old_arena, new_arena_ptr, (hmap_ptr)->keys, sizeof(*(hmap_ptr)->keys) * (hmap_ptr)->capacity),           \
+      .values   = nya_arena_move(_hmap_move_old_arena, new_arena_ptr, (hmap_ptr)->values, sizeof(*(hmap_ptr)->values) * (hmap_ptr)->capacity),       \
+      .occupied = nya_arena_move(_hmap_move_old_arena, new_arena_ptr, (hmap_ptr)->occupied, sizeof(*(hmap_ptr)->occupied) * (hmap_ptr)->capacity),   \
       .length   = (hmap_ptr)->length,                                                                                                                \
       .capacity = (hmap_ptr)->capacity,                                                                                                              \
       .arena    = (new_arena_ptr)                                                                                                                    \
     };                                                                                                                                               \
+    typeof(hmap_ptr) _hmap_move_new_ptr = nya_arena_alloc(new_arena_ptr, sizeof(*(hmap_ptr)));                                                       \
+    *_hmap_move_new_ptr = _hmap_move_tmp;                                                                                                            \
+    nya_arena_free(_hmap_move_old_arena, hmap_ptr, sizeof(*(hmap_ptr)));                                                                             \
+    (hmap_ptr) = _hmap_move_new_ptr;                                                                                                                 \
   })
 
 /*

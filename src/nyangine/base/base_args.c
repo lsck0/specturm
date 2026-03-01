@@ -11,7 +11,6 @@
 NYA_INTERNAL void _nya_args_validate_parser(NYA_ArgParser* parser);
 NYA_INTERNAL void _nya_args_validate_command_tree(NYA_ArgCommand* command);
 NYA_INTERNAL void _nya_args_print_command_path(NYA_ArgParser* parser, NYA_ArgCommand* command);
-NYA_INTERNAL void _nya_args_print_error_and_exit(NYA_ConstCString format, ...) __attr_fmt_printf(1, 2);
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -19,7 +18,7 @@ NYA_INTERNAL void _nya_args_print_error_and_exit(NYA_ConstCString format, ...) _
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_ArgCommand* nya_args_parse_argv(NYA_ArgParser* parser, s32 argc, NYA_CString* argv) {
+NYA_Result nya_args_parse(NYA_ArgParser* parser, s32 argc, NYA_CString* argv, OUT NYA_ArgCommand** out_command) {
   _nya_args_validate_parser(parser);
 
   NYA_ArgCommand* command_to_execute         = nullptr;
@@ -29,7 +28,7 @@ NYA_ArgCommand* nya_args_parse_argv(NYA_ArgParser* parser, s32 argc, NYA_CString
   // exec name
   if (parser->executable_name != nullptr) {
     if (!nya_string_equals(argv[0], parser->executable_name)) {
-      _nya_args_print_error_and_exit("Executable name mismatch. Expected '%s' but got '%s'.", parser->executable_name, argv[0]);
+      return nya_err(NYA_ERROR_PARSE_ERROR, "Executable name mismatch. Expected '%s' but got '%s'.", parser->executable_name, argv[0]);
     }
   }
 
@@ -90,7 +89,7 @@ subcommand_matching:
       if (param != nullptr) {
         param->was_matched = true;
       } else {
-        _nya_args_print_error_and_exit("Unexpected flag: '--%s'.", flag_name);
+        return nya_err(NYA_ERROR_PARSE_ERROR, "Unexpected flag: '--%s'.", flag_name);
       }
 
       // match on type
@@ -109,7 +108,7 @@ subcommand_matching:
           } else if (!flag_value_str || nya_string_starts_with(flag_value_str, "--")) {
             param->value.as_bool = true;
           } else {
-            _nya_args_print_error_and_exit("Failed to parse boolean value for flag '--%s': '%s'.", param->name, flag_value_str);
+            return nya_err(NYA_ERROR_PARSE_ERROR, "Failed to parse boolean value for flag '--%s': '%s'.", param->name, flag_value_str);
           }
         } break;
 
@@ -118,13 +117,13 @@ subcommand_matching:
           if (arg_index + 1 < argc) {
             flag_value_str = argv[arg_index + 1];
           } else {
-            _nya_args_print_error_and_exit("Flag '--%s' expects a value, but none was provided.", param->name);
+            return nya_err(NYA_ERROR_PARSE_ERROR, "Flag '--%s' expects a value, but none was provided.", param->name);
           }
 
           char* end_ptr = nullptr;
           s64   value   = strtol(flag_value_str, &end_ptr, 10);
           if (end_ptr == flag_value_str || *end_ptr != '\0') {
-            _nya_args_print_error_and_exit("Failed to parse integer value for flag '--%s': '%s'.", param->name, flag_value_str);
+            return nya_err(NYA_ERROR_PARSE_ERROR, "Failed to parse integer value for flag '--%s': '%s'.", param->name, flag_value_str);
           }
           param->value.as_integer = value;
           arg_index++;
@@ -135,13 +134,13 @@ subcommand_matching:
           if (arg_index + 1 < argc) {
             flag_value_str = argv[arg_index + 1];
           } else {
-            _nya_args_print_error_and_exit("Flag '--%s' expects a value, but none was provided.", param->name);
+            return nya_err(NYA_ERROR_PARSE_ERROR, "Flag '--%s' expects a value, but none was provided.", param->name);
           }
 
           char* end_ptr = nullptr;
           f64   value   = strtod(flag_value_str, &end_ptr);
           if (end_ptr == flag_value_str || *end_ptr != '\0') {
-            _nya_args_print_error_and_exit("Failed to parse float value for flag '--%s': '%s'.", param->name, flag_value_str);
+            return nya_err(NYA_ERROR_PARSE_ERROR, "Failed to parse float value for flag '--%s': '%s'.", param->name, flag_value_str);
           }
           param->value.as_float = value;
           arg_index++;
@@ -152,7 +151,7 @@ subcommand_matching:
           if (arg_index + 1 < argc) {
             flag_value_str = argv[arg_index + 1];
           } else {
-            _nya_args_print_error_and_exit("Flag '--%s' expects a value, but none was provided.", param->name);
+            return nya_err(NYA_ERROR_PARSE_ERROR, "Flag '--%s' expects a value, but none was provided.", param->name);
           }
 
           param->value.as_string = flag_value_str;
@@ -181,7 +180,7 @@ subcommand_matching:
       if (param != nullptr) {
         param->was_matched = true;
       } else {
-        _nya_args_print_error_and_exit("Unexpected positional argument: '%s'.", argv[arg_index]);
+        return nya_err(NYA_ERROR_PARSE_ERROR, "Unexpected positional argument: '%s'.", argv[arg_index]);
       }
 
       // handle variadic
@@ -201,7 +200,7 @@ subcommand_matching:
               } else if (nya_string_equals(argv[arg_index], "false")) {
                 param->values[param->values_count].as_bool = false;
               } else {
-                _nya_args_print_error_and_exit("Failed to parse boolean value for argument '%s': '%s'.", param->name, argv[arg_index]);
+                return nya_err(NYA_ERROR_PARSE_ERROR, "Failed to parse boolean value for argument '%s': '%s'.", param->name, argv[arg_index]);
               }
             } break;
 
@@ -209,7 +208,7 @@ subcommand_matching:
               char* end_ptr = nullptr;
               s64   value   = strtol(argv[arg_index], &end_ptr, 10);
               if (end_ptr == argv[arg_index] || *end_ptr != '\0') {
-                _nya_args_print_error_and_exit("Failed to parse integer value for argument '%s': '%s'.", param->name, argv[arg_index]);
+                return nya_err(NYA_ERROR_PARSE_ERROR, "Failed to parse integer value for argument '%s': '%s'.", param->name, argv[arg_index]);
               }
               param->values[param->values_count].as_integer = value;
             } break;
@@ -218,7 +217,8 @@ subcommand_matching:
               char* end_ptr = nullptr;
               f64   value   = strtod(argv[arg_index], &end_ptr);
               if (end_ptr == argv[arg_index] || *end_ptr != '\0') {
-                _nya_args_print_error_and_exit("Failed to parse float value for argument '%s': '%s'.", param->name, argv[arg_index]);
+                // _nya_args_print_error_and_exit("Failed to parse float value for argument '%s': '%s'.", param->name, argv[arg_index]);
+                return nya_err(NYA_ERROR_PARSE_ERROR, "Failed to parse float value for argument '%s': '%s'.", param->name, argv[arg_index]);
               }
               param->values[param->values_count].as_float = value;
             } break;
@@ -244,7 +244,7 @@ subcommand_matching:
             } else if (nya_string_equals(argv[arg_index], "false")) {
               param->value.as_bool = false;
             } else {
-              _nya_args_print_error_and_exit("Failed to parse boolean value for argument '%s': '%s'.", param->name, argv[arg_index]);
+              return nya_err(NYA_ERROR_PARSE_ERROR, "Failed to parse boolean value for argument '%s': '%s'.", param->name, argv[arg_index]);
             }
           } break;
 
@@ -252,7 +252,7 @@ subcommand_matching:
             char* end_ptr = nullptr;
             s64   value   = strtol(argv[arg_index], &end_ptr, 10);
             if (end_ptr == argv[arg_index] || *end_ptr != '\0') {
-              _nya_args_print_error_and_exit("Failed to parse integer value for argument '%s': '%s'.", param->name, argv[arg_index]);
+              return nya_err(NYA_ERROR_PARSE_ERROR, "Failed to parse integer value for argument '%s': '%s'.", param->name, argv[arg_index]);
             }
             param->value.as_integer = value;
           } break;
@@ -261,7 +261,7 @@ subcommand_matching:
             char* end_ptr = nullptr;
             f64   value   = strtod(argv[arg_index], &end_ptr);
             if (end_ptr == argv[arg_index] || *end_ptr != '\0') {
-              _nya_args_print_error_and_exit("Failed to parse float value for argument '%s': '%s'.", param->name, argv[arg_index]);
+              return nya_err(NYA_ERROR_PARSE_ERROR, "Failed to parse float value for argument '%s': '%s'.", param->name, argv[arg_index]);
             }
             param->value.as_float = value;
           } break;
@@ -305,7 +305,8 @@ subcommand_matching:
       } else if (param->kind == NYA_ARG_PARAMETER_KIND_POSITIONAL && param->variadic) {
         // variadic positional arguments are optional by default (values_count stays 0)
       } else if (!help_requested) {
-        _nya_args_print_error_and_exit(
+        return nya_err(
+            NYA_ERROR_PARSE_ERROR,
             "Missing required parameter '%s' for command '%s'.",
             param->name,
             command_to_execute->name ? command_to_execute->name : "root"
@@ -314,26 +315,26 @@ subcommand_matching:
     }
   }
 
-  return command_to_execute;
+  *out_command = command_to_execute;
+  return NYA_OK;
 }
 
-b8 nya_args_run_command(NYA_ArgCommand* command) {
+NYA_Result nya_args_run_command(NYA_ArgCommand* command) {
   nya_assert(command);
 
   if (command->incomplete) {
-    printf("Error: No subcommand provided for command '%s'.\n\n", command->name ? command->name : "root");
-    return false;
+    return nya_err(NYA_ERROR_PARSE_ERROR, "No subcommand provided for command '%s'.", command->name ? command->name : "root");
   }
 
   if (command->handler != nullptr) {
     command->handler(command);
   } else if (command->build_rule != nullptr) {
-    nya_build(command->build_rule);
+    nya_try(nya_build(command->build_rule));
   } else {
     nya_panic("Command '%s' has neither a handler nor a build rule.", command->name ? command->name : "root");
   }
 
-  return true;
+  return NYA_OK;
 }
 
 void nya_args_print_usage(NYA_ArgParser* parser, NYA_ArgCommand* command_override) {
@@ -547,18 +548,18 @@ void _nya_args_validate_command_tree(NYA_ArgCommand* command) {
         );
       }
     }
+  }
 
-    // validate subcommands
-    for (u32 subcommand_index = 0; subcommand_index < NYA_ARG_MAX_COMMANDS; subcommand_index++) {
-      NYA_ArgCommand* subcommand = command->subcommands[subcommand_index];
-      if (subcommand == nullptr) break;
+  // validate subcommands
+  for (u32 subcommand_index = 0; subcommand_index < NYA_ARG_MAX_COMMANDS; subcommand_index++) {
+    NYA_ArgCommand* subcommand = command->subcommands[subcommand_index];
+    if (subcommand == nullptr) break;
 
-      if (has_positionals) {
-        nya_panic("Command '%s' cannot have both positional parameters and subcommands.", command->name ? command->name : "root");
-      }
-
-      _nya_args_validate_command_tree(subcommand);
+    if (has_positionals) {
+      nya_panic("Command '%s' cannot have both positional parameters and subcommands.", command->name ? command->name : "root");
     }
+
+    _nya_args_validate_command_tree(subcommand);
   }
 
   if (has_positionals) {
@@ -575,9 +576,9 @@ void _nya_args_print_command_path(NYA_ArgParser* parser, NYA_ArgCommand* command
   static u32             path_length = 0;
   static b8              found       = false;
 
-  if (path_length == 0) path[path_length++] = parser->root_command;
+  b8 is_top_level = (path_length == 0);
+  if (is_top_level) path[path_length++] = parser->root_command;
 
-  // depth first search
   for (u32 subcommand_index = 0; subcommand_index < NYA_ARG_MAX_COMMANDS; subcommand_index++) {
     NYA_ArgCommand* subcommand = path[path_length - 1]->subcommands[subcommand_index];
     if (subcommand == nullptr) continue;
@@ -589,30 +590,17 @@ void _nya_args_print_command_path(NYA_ArgParser* parser, NYA_ArgCommand* command
       for (u32 path_index = 0; path_index < path_length; path_index++) {
         if (path[path_index]->name) printf("%s ", path[path_index]->name);
       }
-      return;
+      break;
     }
 
     _nya_args_print_command_path(parser, command);
-    if (found) return;
+    if (found) break;
     path_length--;
   }
 
-  if (path_length == 1) {
+  if (is_top_level) {
     if (!found) nya_panic("Command '%s' not found in parser '%s'.", command->name, parser->name);
-
-    // reset for next use
     path_length = 0;
     found       = false;
   }
-}
-
-void _nya_args_print_error_and_exit(NYA_ConstCString format, ...) {
-  va_list args;
-  va_start(args, format);
-  printf("Error: ");
-  vprintf(format, args);
-  printf("\n\n");
-  va_end(args);
-
-  exit(EXIT_FAILURE);
 }

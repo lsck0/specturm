@@ -9,14 +9,9 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_INTERNAL NYA_App NYA_APP_INSTANCE;
+NYA_INTERNAL NYA_App _NYA_APP_INSTANCE;
 
-NYA_INTERNAL void _nya_app_handle_shutdown_signal(NYA_Signal signal) {
-  nya_unused(signal);
-
-  NYA_App* app     = nya_app_get();
-  app->should_quit = true;
-}
+NYA_INTERNAL void _nya_app_handle_shutdown_signal(NYA_Signal signal);
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -24,12 +19,12 @@ NYA_INTERNAL void _nya_app_handle_shutdown_signal(NYA_Signal signal) {
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-void nya_app_init(NYA_AppConfig config) {
-  nya_assert(config.time_step_ns > 0, "time_step_ns must be greater than 0");
-  nya_assert(config.frame_rate_limit > 0, "frame_rate_limit must be greater than 0");
-  nya_assert(config.max_concurrent_jobs > 0, "max_concurrent_jobs must be greater than 0");
+void nya_app_init_with_options(NYA_AppOptions options) {
+  nya_assert(options.time_step_ns > 0, "time_step_ns must be greater than 0");
+  nya_assert(options.frame_rate_limit > 0, "frame_rate_limit must be greater than 0");
+  nya_assert(options.max_concurrent_jobs > 0, "max_concurrent_jobs must be greater than 0");
 
-  NYA_App* app = &NYA_APP_INSTANCE;
+  nya_integrity_assert();
 
   nya_signals_init();
   nya_signals_set_handler(NYA_SIGNAL_HANGUP, _nya_app_handle_shutdown_signal);
@@ -39,19 +34,21 @@ void nya_app_init(NYA_AppConfig config) {
   b8 ok = SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO | SDL_INIT_AUDIO);
   nya_assert(ok, "SDL_Init() failed: %s", SDL_GetError());
 
-  *app = (NYA_App){
-    .initialized                   = true,
-    .config                        = config,
-    .global_allocator              = nya_arena_create(.name = "global_allocator"),
-    .frame_allocator               = nya_arena_create(.name = "frame_allocator"),
-    .frame_stats.min_frame_time_ns = 1'000'000'000 / (u64)config.frame_rate_limit,
+  NYA_App* app = &_NYA_APP_INSTANCE;
+  *app         = (NYA_App){
+            .initialized                    = true,
+            .options                        = options,
+            .frame_allocator                = nya_arena_create(.name = "frame_allocator"),
+            .frame_stats.started_ns         = nya_clock_get_timestamp_ns(),
+            .frame_stats.prev_frame_time_ns = nya_clock_get_timestamp_ns(),
+            .frame_stats.min_frame_time_ns  = 1'000'000'000 / (u64)options.frame_rate_limit,
   };
 
   nya_info("Nyangine initialized. Initializing subsystems...");
 
   nya_system_job_init();
   nya_system_callback_init();
-  nya_system_render_init();
+  nya_system_renderer_init();
   nya_system_window_init();
   nya_system_events_init();
   nya_system_input_init();
@@ -71,13 +68,12 @@ void nya_app_deinit(void) {
   nya_system_input_deinit();
   nya_system_events_deinit();
   nya_system_window_deinit();
-  nya_system_render_deinit();
+  nya_system_renderer_deinit();
   nya_system_job_deinit();
   nya_system_callback_deinit();
 
   nya_info("Subsystems deinitialized successfully.");
 
-  nya_arena_destroy(app->global_allocator);
   nya_arena_destroy(app->frame_allocator);
 
   SDL_Quit();
@@ -101,7 +97,8 @@ void nya_app_run(void) {
           .type = NYA_EVENT_FRAME_STARTED,
       });
 
-      app->frame_stats.frame_start_time_ns  = SDL_GetTicksNS();
+      app->frame_stats.now_ns               = nya_clock_get_timestamp_ns() - app->frame_stats.started_ns;
+      app->frame_stats.frame_start_time_ns  = nya_clock_get_timestamp_ns();
       app->frame_stats.elapsed_ns           = app->frame_stats.frame_start_time_ns - app->frame_stats.prev_frame_time_ns;
       app->frame_stats.time_behind_ns      += (s64)app->frame_stats.elapsed_ns;
     }
@@ -144,7 +141,7 @@ void nya_app_run(void) {
 
     // updating
     {
-      while (app->frame_stats.time_behind_ns >= (s64)app->config.time_step_ns) {
+      while (app->frame_stats.time_behind_ns >= (s64)app->options.time_step_ns) {
         nya_perf_time_this_scope("frame_updating");
         nya_event_dispatch((NYA_Event){
             .type = NYA_EVENT_UPDATING_STARTED,
@@ -154,13 +151,13 @@ void nya_app_run(void) {
           nya_array_foreach (window->layer_stack, layer) {
             NYA_LayerOnUpdateFn on_update_fn = nya_callback_get(layer->on_update);
             if (layer->enabled && on_update_fn != nullptr) { /**/
-              app->frame_stats.delta_time_s = (f32)nya_time_ns_to_s(app->config.time_step_ns);
+              app->frame_stats.delta_time_s = (f32)nya_time_ns_to_s(app->options.time_step_ns);
               on_update_fn(window, app->frame_stats.delta_time_s);
             }
           }
         }
 
-        app->frame_stats.time_behind_ns -= (s64)app->config.time_step_ns;
+        app->frame_stats.time_behind_ns -= (s64)app->options.time_step_ns;
         nya_event_dispatch((NYA_Event){
             .type = NYA_EVENT_UPDATING_ENDED,
         });
@@ -176,10 +173,13 @@ void nya_app_run(void) {
 
       nya_array_foreach (app->window_system.windows, window) {
         nya_render_begin(window);
+        if (window->render_system.render_pass == nullptr) continue;
+
         nya_array_foreach (window->layer_stack, layer) {
           NYA_LayerOnRenderFn on_render_fn = nya_callback_get(layer->on_render);
           if (layer->enabled && on_render_fn != nullptr) on_render_fn(window);
         }
+
         nya_render_end(window);
       }
 
@@ -190,7 +190,7 @@ void nya_app_run(void) {
 
     // end of frame tasks
     {
-      app->frame_stats.frame_end_time_ns  = SDL_GetTicksNS();
+      app->frame_stats.frame_end_time_ns  = nya_clock_get_timestamp_ns();
       app->frame_stats.prev_frame_time_ns = app->frame_stats.frame_start_time_ns;
       app->frame_stats.fps                = 1.0F / (f32)nya_time_ns_to_s(app->frame_stats.elapsed_ns);
 
@@ -202,7 +202,7 @@ void nya_app_run(void) {
     }
 
     // framerate limiting
-    if (!app->config.vsync_enabled && app->config.frame_rate_limit > 0) {
+    if (!app->options.vsync_enabled && app->options.frame_rate_limit > 0) {
       if (app->frame_stats.elapsed_ns < app->frame_stats.min_frame_time_ns) { /**/
         SDL_DelayNS(app->frame_stats.min_frame_time_ns - app->frame_stats.elapsed_ns);
       }
@@ -211,19 +211,32 @@ void nya_app_run(void) {
 }
 
 NYA_App* nya_app_get(void) {
-  nya_assert(NYA_APP_INSTANCE.initialized);
-  return &NYA_APP_INSTANCE;
+  nya_assert(_NYA_APP_INSTANCE.initialized);
+  return &_NYA_APP_INSTANCE;
 }
 
-void nya_app_options_update(NYA_AppConfig config) {
-  nya_assert(config.time_step_ns > 0, "time_step_ns must be greater than 0");
-  nya_assert(config.frame_rate_limit > 0, "frame_rate_limit must be greater than 0");
-  nya_assert(config.max_concurrent_jobs > 0, "max_concurrent_jobs must be greater than 0");
+void nya_app_options_update(NYA_AppOptions options) {
+  nya_assert(options.time_step_ns > 0, "time_step_ns must be greater than 0");
+  nya_assert(options.frame_rate_limit > 0, "frame_rate_limit must be greater than 0");
+  nya_assert(options.max_concurrent_jobs > 0, "max_concurrent_jobs must be greater than 0");
 
   NYA_App* app = nya_app_get();
 
-  nya_render_set_vsync(config.vsync_enabled);
+  nya_system_renderer_set_vsync(options.vsync_enabled);
 
-  app->config                        = config;
-  app->frame_stats.min_frame_time_ns = 1'000'000'000 / (u64)config.frame_rate_limit;
+  app->options                       = options;
+  app->frame_stats.min_frame_time_ns = 1'000'000'000 / (u64)options.frame_rate_limit;
+}
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * PRIVATE API IMPLEMENTATION
+ * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+NYA_INTERNAL void _nya_app_handle_shutdown_signal(NYA_Signal signal) {
+  nya_unused(signal);
+
+  NYA_App* app     = nya_app_get();
+  app->should_quit = true;
 }

@@ -102,9 +102,8 @@ void nya_event_dispatch(NYA_Event event) {
 
   SDL_LockMutex(app->event_system.event_queue_mutex);
   nya_array_push_back(app->event_system.event_queue, event);
-  SDL_UnlockMutex(app->event_system.event_queue_mutex);
-
   _nya_event_notify_immediate_listeners(&event);
+  SDL_UnlockMutex(app->event_system.event_queue_mutex);
 
   if (NYA_EVENT_LIFECYCLE_EVENTS_BEGIN <= event.type && event.type <= NYA_EVENT_LIFECYCLE_EVENTS_END) return;
   nya_trace("Event dispatched: %s", NYA_EVENT_NAME_MAP[event.type]);

@@ -6,7 +6,8 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-void gny_layer_ui_on_create(void) {
+void gny_layer_ui_on_create(NYA_Window* window) {
+  nya_unused(window);
 }
 
 /*
@@ -15,7 +16,8 @@ void gny_layer_ui_on_create(void) {
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-void gny_layer_ui_on_destroy(void) {
+void gny_layer_ui_on_destroy(NYA_Window* window) {
+  nya_unused(window);
 }
 
 /*

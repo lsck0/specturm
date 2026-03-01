@@ -124,18 +124,18 @@ static_assert(_NYA_RNG_BUFFER_SIZE % 128 == 0, "RNG buffer size must be a multip
  */
 
 #define nya_rng_create(...) nya_rng_create_with_options((NYA_RNGOptions){ _NYA_RNG_DEFAULT_OPTIONS, __VA_ARGS__ })
-NYA_API NYA_EXTERN NYA_RNG nya_rng_create_with_options(NYA_RNGOptions options) __attr_no_discard;
+NYA_API NYA_EXTERN NYA_RNG nya_rng_create_with_options(NYA_RNGOptions options);
 
 NYA_API NYA_EXTERN void nya_rng_gen_bytes(NYA_RNG* rng, u8 buffer[], u64 size);
-NYA_API NYA_EXTERN b8   nya_rng_gen_bool(NYA_RNG* rng, f32 true_chance) __attr_no_discard;
-NYA_API NYA_EXTERN u8   nya_rng_sample_u8(NYA_RNG* rng, NYA_RNGDistribution distribution) __attr_no_discard;
-NYA_API NYA_EXTERN u16  nya_rng_sample_u16(NYA_RNG* rng, NYA_RNGDistribution distribution) __attr_no_discard;
-NYA_API NYA_EXTERN u32  nya_rng_sample_u32(NYA_RNG* rng, NYA_RNGDistribution distribution) __attr_no_discard;
-NYA_API NYA_EXTERN u64  nya_rng_sample_u64(NYA_RNG* rng, NYA_RNGDistribution distribution) __attr_no_discard;
-NYA_API NYA_EXTERN s8   nya_rng_sample_s8(NYA_RNG* rng, NYA_RNGDistribution distribution) __attr_no_discard;
-NYA_API NYA_EXTERN s16  nya_rng_sample_s16(NYA_RNG* rng, NYA_RNGDistribution distribution) __attr_no_discard;
-NYA_API NYA_EXTERN s32  nya_rng_sample_s32(NYA_RNG* rng, NYA_RNGDistribution distribution) __attr_no_discard;
-NYA_API NYA_EXTERN s64  nya_rng_sample_s64(NYA_RNG* rng, NYA_RNGDistribution distribution) __attr_no_discard;
-NYA_API NYA_EXTERN f16  nya_rng_sample_f16(NYA_RNG* rng, NYA_RNGDistribution distribution) __attr_no_discard;
-NYA_API NYA_EXTERN f32  nya_rng_sample_f32(NYA_RNG* rng, NYA_RNGDistribution distribution) __attr_no_discard;
-NYA_API NYA_EXTERN f64  nya_rng_sample_f64(NYA_RNG* rng, NYA_RNGDistribution distribution) __attr_no_discard;
+NYA_API NYA_EXTERN b8   nya_rng_gen_bool(NYA_RNG* rng, f32 true_chance);
+NYA_API NYA_EXTERN u8   nya_rng_sample_u8(NYA_RNG* rng, NYA_RNGDistribution distribution);
+NYA_API NYA_EXTERN u16  nya_rng_sample_u16(NYA_RNG* rng, NYA_RNGDistribution distribution);
+NYA_API NYA_EXTERN u32  nya_rng_sample_u32(NYA_RNG* rng, NYA_RNGDistribution distribution);
+NYA_API NYA_EXTERN u64  nya_rng_sample_u64(NYA_RNG* rng, NYA_RNGDistribution distribution);
+NYA_API NYA_EXTERN s8   nya_rng_sample_s8(NYA_RNG* rng, NYA_RNGDistribution distribution);
+NYA_API NYA_EXTERN s16  nya_rng_sample_s16(NYA_RNG* rng, NYA_RNGDistribution distribution);
+NYA_API NYA_EXTERN s32  nya_rng_sample_s32(NYA_RNG* rng, NYA_RNGDistribution distribution);
+NYA_API NYA_EXTERN s64  nya_rng_sample_s64(NYA_RNG* rng, NYA_RNGDistribution distribution);
+NYA_API NYA_EXTERN f16  nya_rng_sample_f16(NYA_RNG* rng, NYA_RNGDistribution distribution);
+NYA_API NYA_EXTERN f32  nya_rng_sample_f32(NYA_RNG* rng, NYA_RNGDistribution distribution);
+NYA_API NYA_EXTERN f64  nya_rng_sample_f64(NYA_RNG* rng, NYA_RNGDistribution distribution);

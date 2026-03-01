@@ -1,5 +1,6 @@
 #pragma once
 
+#include "nyangine/base/base_error.h"
 #include "nyangine/base/base_string.h"
 
 /*
@@ -53,5 +54,5 @@ struct NYA_Command {
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-NYA_API NYA_EXTERN void nya_command_run(NYA_Command* command);
-NYA_API NYA_EXTERN void nya_command_destroy(NYA_Command* command);
+NYA_API NYA_EXTERN NYA_Result nya_command_run(NYA_Command* command) __attr_no_discard;
+NYA_API NYA_EXTERN void       nya_command_destroy(NYA_Command* command);

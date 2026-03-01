@@ -415,6 +415,45 @@ void nya_string_extend_front(NYA_String* str, const NYA_String* extension) __att
   str->length = new_length;
 }
 
+void nya_string_extend_front_sprintf(NYA_String* str, NYA_ConstCString fmt, ...) __attr_fmt_printf(2, 3) {
+  nya_assert(str != nullptr);
+  nya_assert(fmt != nullptr);
+
+  va_list args;
+  va_start(args, fmt);
+  u64 length = vsnprintf(nullptr, 0, fmt, args);
+  va_end(args);
+
+  nya_array_reserve(str, str->length + length);
+
+  // shift existing content to make room for new formatted string at the front
+  nya_memmove(str->items + length, str->items, str->length);
+
+  va_start(args, fmt);
+  (void)vsnprintf((NYA_CString)str->items, length + 1, fmt, args);
+  va_end(args);
+
+  str->length += length;
+}
+
+void nya_string_extend_sprintf(NYA_String* str, NYA_ConstCString fmt, ...) __attr_fmt_printf(2, 3) {
+  nya_assert(str != nullptr);
+  nya_assert(fmt != nullptr);
+
+  va_list args;
+  va_start(args, fmt);
+  u64 length = vsnprintf(nullptr, 0, fmt, args);
+  va_end(args);
+
+  nya_array_reserve(str, str->length + length + 1);
+
+  va_start(args, fmt);
+  (void)vsnprintf((NYA_CString)(str->items + str->length), length + 1, fmt, args);
+  va_end(args);
+
+  str->length += length;
+}
+
 void nya_string_destroy(NYA_String* str) {
   nya_array_destroy(str);
 }

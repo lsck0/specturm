@@ -9,7 +9,7 @@ s32 main(void) {
   // ─────────────────────────────────────────────────────────────────────────────
   // TEST: Basic lexer - mixed input
   // ─────────────────────────────────────────────────────────────────────────────
-  NYA_Lexer lexer = nya_lexer_create("a+b\nc \"2134.34 = .234. asdf! __asd__a __ sad__");
+  NYA_Lexer lexer = nya_lexer_create("a+b\nc '2134.34 = .234. asdf! __asd__a __ sad__");
   nya_lexer_run(&lexer);
 
   NYA_Token token0  = lexer.tokens->items[0];
@@ -45,7 +45,7 @@ s32 main(void) {
   nya_assert(nya_memcmp(lexer.source + token3.source_location, "c", 1) == 0);
 
   nya_assert(token4.type == NYA_TOKEN_SYMBOL);
-  nya_assert(token4.symbol == '"');
+  nya_assert(token4.symbol == '\'');
 
   nya_assert(token5.type == NYA_TOKEN_NUMBER_FLOAT);
   nya_assert(token5.length == 7);
@@ -225,6 +225,31 @@ s32 main(void) {
   nya_assert(single_sym_lexer.tokens->items[0].type == NYA_TOKEN_SYMBOL);
   nya_assert(single_sym_lexer.tokens->items[0].symbol == '+');
   nya_lexer_destroy(&single_sym_lexer);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: String literals
+  // ─────────────────────────────────────────────────────────────────────────────
+  NYA_Lexer str_lexer = nya_lexer_create("x = \"hello world\"");
+  nya_lexer_run(&str_lexer);
+  nya_assert(str_lexer.tokens->length == 4);
+  nya_assert(str_lexer.tokens->items[0].type == NYA_TOKEN_IDENT);
+  nya_assert(str_lexer.tokens->items[1].type == NYA_TOKEN_SYMBOL);
+  nya_assert(str_lexer.tokens->items[2].type == NYA_TOKEN_STRING);
+  nya_assert(str_lexer.tokens->items[2].length == 11);
+  nya_assert(nya_memcmp(str_lexer.source + str_lexer.tokens->items[2].source_location, "hello world", 11) == 0);
+  nya_assert(str_lexer.tokens->items[3].type == NYA_TOKEN_EOF);
+  nya_lexer_destroy(&str_lexer);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: String literal with escape sequences
+  // ─────────────────────────────────────────────────────────────────────────────
+  NYA_Lexer esc_lexer = nya_lexer_create("\"hello\\\"world\"");
+  nya_lexer_run(&esc_lexer);
+  nya_assert(esc_lexer.tokens->length == 2);
+  nya_assert(esc_lexer.tokens->items[0].type == NYA_TOKEN_STRING);
+  nya_assert(esc_lexer.tokens->items[0].length == 12);
+  nya_assert(nya_memcmp(esc_lexer.source + esc_lexer.tokens->items[0].source_location, "hello\\\"world", 12) == 0);
+  nya_lexer_destroy(&esc_lexer);
 
   return 0;
 }

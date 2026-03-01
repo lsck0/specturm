@@ -78,9 +78,11 @@ ForEachMacros:
   - nya_hmap_foreach_key
   - nya_hmap_foreach_value
   - nya_hset_foreach
-  - nya_range_for
-  - nya_range_for_t
 TypenameMacros:
   - nya_derive_array
+  - nya_derive_dict
+  - nya_derive_heap
   - nya_derive_hmap
   - nya_derive_hset
+  - nya_derive_maybe
+  - nya_derive_ring

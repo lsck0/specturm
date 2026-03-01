@@ -6,7 +6,7 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-#if !NYA_IS_DEBUG
+#if !NYA_DEBUG
 #include "nyangine/nyangine.c"
 #include "nyangine/nyangine.h"
 
@@ -20,7 +20,7 @@ s32 main(s32 argc, NYA_CString* argv) {
 
   return EXIT_SUCCESS;
 }
-#endif // !NYA_IS_DEBUG
+#endif // !NYA_DEBUG
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -28,12 +28,11 @@ s32 main(s32 argc, NYA_CString* argv) {
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-#if NYA_IS_DEBUG
+#if NYA_DEBUG
 #include <dlfcn.h>
 #include <pthread.h>
 #include <sys/stat.h>
 
-#define NYA_ASSET_MANIFEST_ALREADY_INCLUDED
 #include "nyangine/nyangine.c"
 #include "nyangine/nyangine.h"
 
@@ -105,8 +104,7 @@ s32 main(s32 argc, NYA_CString* argv) {
 
 void dll_load(void) {
   u64 gnyame_dll_last_modified_temp;
-  b8  ok = nya_filesystem_last_modified(DLL_PATH, &gnyame_dll_last_modified_temp);
-  nya_assert(ok, "Failed to get last modified time for %s.", DLL_PATH);
+  nya_expect(nya_filesystem_last_modified(DLL_PATH, &gnyame_dll_last_modified_temp));
   gnyame_dll_last_modified = gnyame_dll_last_modified_temp;
 
   gnyame_dll = dlopen(DLL_PATH, RTLD_NOW | RTLD_GLOBAL);
@@ -134,13 +132,15 @@ void* dll_watch_thread_fn(void* arg) {
   nya_unused(arg);
 
   while (!gnyame_dll_watch_thread_should_exit) {
-    u64 last_modified;
-    b8  ok = nya_filesystem_last_modified(DLL_PATH, &last_modified);
+    u64        last_modified;
+    NYA_Result result = nya_filesystem_last_modified(DLL_PATH, &last_modified);
 
-    if (ok && last_modified != gnyame_dll_last_modified && !gnyame_dll_reload_requested) {
+    if (result.error == NYA_ERROR_NONE && last_modified != gnyame_dll_last_modified && !gnyame_dll_reload_requested) {
       nya_debug("%s was changed, requesting reload.", DLL_PATH);
       gnyame_dll_reload_requested = true;
       nya_app->should_quit        = true;
+    } else {
+      // compilation might've failed and the DLL might be gone because of that
     }
 
     struct timespec ts = { 0 };
@@ -167,4 +167,4 @@ void dll_update_callback_pointers(void) {
   }
 }
 
-#endif // NYA_IS_DEBUG
+#endif // NYA_DEBUG

@@ -10,6 +10,10 @@
  * ...
  * nya_arena_destroy(arena);
  * ```
+ *
+ * In debug, or when forced, all arena functions are proxied and logged. You can get the logged actions with
+ * `nya_arena_get_memory_actions` or register a callback with `nya_arena_memory_actions_set_callback`.
+ * When a callback is registered, the actions will not be stored in the array, so use either the callback or the array, not both.
  * */
 #pragma once
 
@@ -25,14 +29,14 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-typedef enum NYA_MemoryActionType    NYA_MemoryActionType;
+typedef enum NYA_ArenaActionType     NYA_ArenaActionType;
 typedef struct NYA_Arena             NYA_Arena;
+typedef struct NYA_ArenaActionArray  NYA_ArenaActionArray;
 typedef struct NYA_ArenaFreeList     NYA_ArenaFreeList;
 typedef struct NYA_ArenaFreeListNode NYA_ArenaFreeListNode;
 typedef struct NYA_ArenaOptions      NYA_ArenaOptions;
 typedef struct NYA_ArenaRegion       NYA_ArenaRegion;
-typedef struct NYA_MemoryAction      NYA_MemoryAction;
-typedef struct NYA_MemoryActionArray NYA_MemoryActionArray;
+typedef struct NYA_ArneaAction       NYA_ArenaAction;
 
 /*
  * ─────────────────────────────────────────────────────────
@@ -41,7 +45,7 @@ typedef struct NYA_MemoryActionArray NYA_MemoryActionArray;
  */
 
 #define _NYA_ARENA_DEFAULT_OPTIONS                                                                                                                   \
-  .name = nullptr, .alignment = 8, .region_size = nya_gibyte_to_byte(1UL), .defragmentation_enabled = true, .defragmentation_threshold = 16,         \
+  .name = nullptr, .alignment = 16, .region_size = nya_gibyte_to_byte(1UL), .defragmentation_enabled = true, .defragmentation_threshold = 16,        \
   .garbage_collection_enabled = true, .garbage_collection_threshold = 3
 
 struct NYA_ArenaOptions {
@@ -103,21 +107,23 @@ struct NYA_ArenaFreeListNode {
  * ─────────────────────────────────────────────────────────
  */
 
-enum NYA_MemoryActionType {
-  NYA_MEMORY_ACTION_ARENA_NEW,
-  NYA_MEMORY_ACTION_ALLOC,
-  NYA_MEMORY_ACTION_REALLOC,
-  NYA_MEMORY_ACTION_FREE,
-  NYA_MEMORY_ACTION_FREE_ALL,
-  NYA_MEMORY_ACTION_GARBAGE_COLLECT,
-  NYA_MEMORY_ACTION_ARENA_DESTROY,
-  NYA_MEMORY_ACTION_COPY,
-  NYA_MEMORY_ACTION_MOVE,
-  NYA_MEMORY_ACTION_COUNT,
+typedef void (*NYA_ArenaActionCallback)(NYA_ArenaAction action);
+
+enum NYA_ArenaActionType {
+  NYA_ARENA_ACTION_ARENA_NEW,
+  NYA_ARENA_ACTION_ALLOC,
+  NYA_ARENA_ACTION_REALLOC,
+  NYA_ARENA_ACTION_FREE,
+  NYA_ARENA_ACTION_FREE_ALL,
+  NYA_ARENA_ACTION_GARBAGE_COLLECT,
+  NYA_ARENA_ACTION_ARENA_DESTROY,
+  NYA_ARENA_ACTION_COPY,
+  NYA_ARENA_ACTION_MOVE,
+  NYA_ARENA_ACTION_COUNT,
 };
 
-struct NYA_MemoryAction {
-  NYA_MemoryActionType type;
+struct NYA_ArneaAction {
+  NYA_ArenaActionType type;
 
   const char* arena_name;
   const char* file_name;
@@ -128,37 +134,37 @@ struct NYA_MemoryAction {
     struct {
       u8* ptr;
       u64 size;
-    } alloc, free;
+    } as_alloc, as_free;
 
     struct {
       u8* old_ptr;
       u64 old_size;
       u8* new_ptr;
       u64 new_size;
-    } realloc;
+    } as_realloc;
 
     struct {
       u8* ptr;
       u64 size;
       u8* copy_ptr;
-    } copy;
+    } as_copy;
 
     struct {
       u8*         ptr;
       u64         size;
       const char* move_arena_name;
       u8*         move_ptr;
-    } move;
+    } as_move;
   };
 };
 
 /**
- * This structure is not compatiple with base_array.h!
+ * This structure cannot be modified using macros from base_array.h!
  * */
-struct NYA_MemoryActionArray {
-  u64               length;
-  u64               capacity;
-  NYA_MemoryAction* items;
+struct NYA_ArenaActionArray {
+  u64              length;
+  u64              capacity;
+  NYA_ArenaAction* items;
 };
 
 /*
@@ -176,10 +182,10 @@ NYA_API NYA_EXTERN NYA_Arena* nya_arena_temp;
 
 /**
  * In debug builds, all arena functions are proxied through a debug variant which logs that action.
- * `nya_arena_get_memory_actions` gives you an array of those actions.
+ * `nya_arena_get_memory_actions` gives you an array of those actions. In addition, you can register a callback.
  * */
 // clang-format off
-#if (NYA_IS_DEBUG || defined(NYA_ARENA_FORCE_DEBUG)) && !defined(NYA_ARENA_FORCE_NODEBUG)
+#if (NYA_DEBUG || defined(NYA_ARENA_FORCE_DEBUG)) && !defined(NYA_ARENA_FORCE_NODEBUG)
 #define nya_arena_create(...)                             _nya_arena_debug_create_with_options((NYA_ArenaOptions){ _NYA_ARENA_DEFAULT_OPTIONS, __VA_ARGS__ }, __FUNCTION__, __FILE__, __LINE__)
 #define nya_arena_create_on_stack(...)                    _nya_arena_debug_create_with_options_on_stack((NYA_ArenaOptions){ _NYA_ARENA_DEFAULT_OPTIONS, __VA_ARGS__ }, __FUNCTION__, __FILE__, __LINE__)
 #define nya_arena_create_with_options(options)            _nya_arena_debug_create_with_options(options, __FUNCTION__, __FILE__, __LINE__)
@@ -207,11 +213,12 @@ NYA_API NYA_EXTERN NYA_Arena* nya_arena_temp;
 #define nya_arena_destroy_on_stack             _nya_arena_nodebug_destroy_on_stack
 #define nya_arena_copy                         _nya_arena_nodebug_copy
 #define nya_arena_move                         _nya_arena_nodebug_move
-#endif // (NYA_IS_DEBUG || defined(NYA_ARENA_FORCE_DEBUG)) && !defined(NYA_ARENA_FORCE_NODEBUG)
+#endif // (NYA_DEBUG || defined(NYA_ARENA_FORCE_DEBUG)) && !defined(NYA_ARENA_FORCE_NODEBUG)
 // clang-format on
 
-NYA_API NYA_EXTERN u64                    nya_arena_memory_usage_bytes(NYA_Arena* arena) __attr_no_discard;
-NYA_API NYA_EXTERN NYA_MemoryActionArray* nya_arena_get_memory_actions(void) __attr_no_discard;
+NYA_API NYA_EXTERN u64                   nya_arena_memory_usage_bytes(NYA_Arena* arena);
+NYA_API NYA_EXTERN NYA_ArenaActionArray* nya_arena_actions_get(void);
+NYA_API NYA_EXTERN void                  nya_arena_actions_set_callback(NYA_ArenaActionCallback callback);
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -246,3 +253,4 @@ NYA_API NYA_EXTERN void*      _nya_arena_nodebug_move(NYA_Arena* src, NYA_Arena*
 // clang-format on
 
 NYA_DEFINE_CLEANUP_FN(nya_arena_destroy, NYA_Arena*, arena, nya_arena_destroy(arena))
+NYA_DEFINE_CLEANUP_FN(nya_arena_destroy_on_stack, NYA_Arena, arena, nya_arena_destroy_on_stack(&arena))

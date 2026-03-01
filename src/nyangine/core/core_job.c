@@ -150,7 +150,7 @@ NYA_INTERNAL s32 _nya_job_scheduler(void* data) {
       }
 
       // schedule new jobs
-      while (job_system->job_queue->length > 0 && job_system->job_active->length < app->config.max_concurrent_jobs) {
+      while (job_system->job_queue->length > 0 && job_system->job_active->length < app->options.max_concurrent_jobs) {
         NYA_Job job = nya_heap_pop(job_system->job_queue);
         nya_array_push_back(job_system->job_active, job);
         NYA_Job* job_ptr = nya_array_last(job_system->job_active);

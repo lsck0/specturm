@@ -3,7 +3,7 @@
         specturm
     </h1>
     <h3 align="center">
-        SDL3 w/ GPU API 2D Engine + Game
+        2D Game Engine + Game
     </h3>
 </div>
 
@@ -24,7 +24,7 @@ git submodule update --init --recursive
 and bootstrap the build system with
 
 ```bash
-clang build.c -o build -std=c23 -fenable-matrix -I./src 2> /dev/null
+clang build.c -o build -std=c23 -fenable-matrix -I./src -lm -lSDL3 2> /dev/null
 ```
 
 then run

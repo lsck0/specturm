@@ -5,18 +5,15 @@
 
 #include "nyangine/nyangine.h"
 
-void nya_command_run(NYA_Command* command) {
+NYA_Result nya_command_run(NYA_Command* command) {
   nya_assert(command != nullptr);
-  nya_assert(command->program);
+  nya_assert(command->program != nullptr && strlen(command->program) != 0);
 
   u64 start_time = nya_clock_get_timestamp_ms();
 
   s32 stdout_pipe[2];
   s32 stderr_pipe[2];
-  if (pipe(stdout_pipe) != 0 || pipe(stderr_pipe) != 0) {
-    command->exit_code = 255;
-    return;
-  }
+  if (pipe(stdout_pipe) != 0 || pipe(stderr_pipe) != 0) return nya_result_from_errno();
 
   if (nya_flag_check(command->flags, NYA_COMMAND_FLAG_OUTPUT_CAPTURE)) {
     nya_assert(command->arena != nullptr, "Arena must be provided when capturing output.");
@@ -25,10 +22,7 @@ void nya_command_run(NYA_Command* command) {
   }
 
   pid_t pid = fork();
-  if (pid < 0) {
-    command->exit_code = 255;
-    return;
-  }
+  if (pid < 0) return nya_result_from_errno();
 
   // CHILD
   if (pid == 0) {
@@ -84,11 +78,8 @@ void nya_command_run(NYA_Command* command) {
 
   // read stdout and stderr
   if (nya_flag_check(command->flags, NYA_COMMAND_FLAG_OUTPUT_CAPTURE)) {
-    b8 ok1 = nya_fd_read(stdout_pipe[0], command->stdout_content);
-    b8 ok2 = nya_fd_read(stderr_pipe[0], command->stderr_content);
-
-    nya_assert(ok1, "Failed to read stdout from command.");
-    nya_assert(ok2, "Failed to read stderr from command.");
+    nya_try(nya_fd_read(stdout_pipe[0], command->stdout_content));
+    nya_try(nya_fd_read(stderr_pipe[0], command->stderr_content));
   }
   close(stdout_pipe[0]);
   close(stderr_pipe[0]);
@@ -104,6 +95,8 @@ void nya_command_run(NYA_Command* command) {
 
   u64 end_time               = nya_clock_get_timestamp_ms();
   command->execution_time_ms = end_time - start_time;
+
+  return NYA_OK;
 }
 
 void nya_command_destroy(NYA_Command* command) {

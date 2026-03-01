@@ -17,7 +17,7 @@ s32 main(void) {
       .program   = "echo",
       .arguments = { "hello", "world", nullptr },
     };
-    nya_command_run(&cmd);
+    nya_expect(nya_command_run(&cmd));
     nya_assert(cmd.exit_code == 0);
   }
 
@@ -31,7 +31,8 @@ s32 main(void) {
       .program   = "echo",
       .arguments = { "captured", "output", nullptr },
     };
-    nya_command_run(&cmd);
+    NYA_Result result = nya_command_run(&cmd);
+    nya_assert(result.error == NYA_ERROR_NONE);
     nya_assert(cmd.exit_code == 0);
     nya_assert(cmd.stdout_content != nullptr);
     nya_assert(cmd.stdout_content->length > 0);
@@ -48,7 +49,7 @@ s32 main(void) {
       .program   = "false", // Always returns exit code 1
       .arguments = { nullptr },
     };
-    nya_command_run(&cmd);
+    nya_expect(nya_command_run(&cmd));
     nya_assert(cmd.exit_code == 1);
   }
 
@@ -61,7 +62,7 @@ s32 main(void) {
       .program   = "sleep",
       .arguments = { "0.1", nullptr },
     };
-    nya_command_run(&cmd);
+    nya_expect(nya_command_run(&cmd));
     nya_assert(cmd.exit_code == 0);
     nya_assert(cmd.execution_time_ms >= 100); // Should take at least 100ms
     nya_assert(cmd.execution_time_ms < 1000); // Sanity check
@@ -78,7 +79,7 @@ s32 main(void) {
       .program           = "pwd",
       .arguments         = { nullptr },
     };
-    nya_command_run(&cmd);
+    nya_expect(nya_command_run(&cmd));
     nya_assert(cmd.exit_code == 0);
     nya_assert(cmd.stdout_content != nullptr);
     nya_assert(nya_string_contains(cmd.stdout_content, "/tmp") == true);
@@ -94,7 +95,7 @@ s32 main(void) {
       .program   = "printf",
       .arguments = { "%s %s %s", "one", "two", "three", nullptr },
     };
-    nya_command_run(&cmd);
+    nya_expect(nya_command_run(&cmd));
     nya_assert(cmd.exit_code == 0);
     nya_assert(nya_string_contains(cmd.stdout_content, "one two three") == true);
   }
@@ -109,7 +110,7 @@ s32 main(void) {
       .program   = "ls",
       .arguments = { "/nonexistent_directory_12345", nullptr },
     };
-    nya_command_run(&cmd);
+    nya_expect(nya_command_run(&cmd));
     nya_assert(cmd.exit_code != 0);
     // stderr might be captured depending on the implementation
   }
@@ -127,7 +128,7 @@ s32 main(void) {
     // Note: Setting environment variables in NYA_Command would require
     // setting up the environment array, which might not be fully supported
     // This test just verifies the basic structure works
-    nya_command_run(&cmd);
+    nya_expect(nya_command_run(&cmd));
     // Exit code should be 0 regardless of whether the var is set
   }
 
@@ -153,11 +154,69 @@ s32 main(void) {
       .program   = "seq",
       .arguments = { "1", "5", nullptr },
     };
-    nya_command_run(&cmd);
+    nya_expect(nya_command_run(&cmd));
     nya_assert(cmd.exit_code == 0);
     nya_assert(cmd.stdout_content != nullptr);
     nya_assert(nya_string_contains(cmd.stdout_content, "1") == true);
     nya_assert(nya_string_contains(cmd.stdout_content, "5") == true);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: Command with output suppressed
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    NYA_Command cmd = {
+      .arena     = arena,
+      .flags     = NYA_COMMAND_FLAG_OUTPUT_SUPPRESS,
+      .program   = "echo",
+      .arguments = { "suppressed", nullptr },
+    };
+    nya_expect(nya_command_run(&cmd));
+    nya_assert(cmd.exit_code == 0);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: Non-zero exit code does not produce error result
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    NYA_Command cmd = {
+      .arena     = arena,
+      .program   = "false",
+      .arguments = { nullptr },
+    };
+    NYA_Result result = nya_command_run(&cmd);
+    nya_assert(result.error == NYA_ERROR_NONE);
+    nya_assert(cmd.exit_code != 0);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: Command with no arguments (program only)
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    NYA_Command cmd = {
+      .arena     = arena,
+      .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
+      .program   = "uname",
+    };
+    nya_expect(nya_command_run(&cmd));
+    nya_assert(cmd.exit_code == 0);
+    nya_assert(cmd.stdout_content != nullptr);
+    nya_assert(cmd.stdout_content->length > 0);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEST: Captured output preserves newlines
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    NYA_Command cmd = {
+      .arena     = arena,
+      .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
+      .program   = "printf",
+      .arguments = { "line1\nline2\nline3", nullptr },
+    };
+    nya_expect(nya_command_run(&cmd));
+    nya_assert(cmd.exit_code == 0);
+    nya_assert(nya_string_contains(cmd.stdout_content, "line1\nline2\nline3") == true);
   }
 
   // ─────────────────────────────────────────────────────────────────────────────

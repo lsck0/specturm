@@ -81,23 +81,48 @@ void nya_lexer_run(NYA_Lexer* lexer) {
       continue;
     }
 
-    // lex number
+    // lex number (decimal, hex, binary)
     if (('0' <= current_char && current_char <= '9')) {
       u32 start_cursor      = lexer->cursor;
       u32 start_char_number = lexer->current_char_number;
       u32 start_line_number = lexer->current_line_number;
       b8  is_float          = false;
+      b8  is_hex            = false;
+      b8  is_binary         = false;
+
+      // check for hex (0x) or binary (0b) prefix
+      if (current_char == '0' && lexer->source[lexer->cursor + 1] != '\0') {
+        u8 next_char = lexer->source[lexer->cursor + 1];
+        if (next_char == 'x' || next_char == 'X') {
+          is_hex                      = true;
+          lexer->cursor              += 2;
+          lexer->current_char_number += 2;
+        } else if (next_char == 'b' || next_char == 'B') {
+          is_binary                   = true;
+          lexer->cursor              += 2;
+          lexer->current_char_number += 2;
+        }
+      }
 
       while (true) {
         current_char = lexer->source[lexer->cursor];
-        if (current_char == '.') {
-          if (is_float) break;
-          is_float                    = true;
-          lexer->cursor              += 1;
-          lexer->current_char_number += 1;
-          continue;
+        if (is_hex) {
+          if (!(('0' <= current_char && current_char <= '9') || ('a' <= current_char && current_char <= 'f') ||
+                ('A' <= current_char && current_char <= 'F'))) {
+            break;
+          }
+        } else if (is_binary) {
+          if (!(current_char == '0' || current_char == '1')) { break; }
+        } else {
+          if (current_char == '.') {
+            if (is_float) break;
+            is_float                    = true;
+            lexer->cursor              += 1;
+            lexer->current_char_number += 1;
+            continue;
+          }
+          if (!('0' <= current_char && current_char <= '9')) break;
         }
-        if (!('0' <= current_char && current_char <= '9')) break;
         lexer->cursor              += 1;
         lexer->current_char_number += 1;
       }
@@ -116,6 +141,50 @@ void nya_lexer_run(NYA_Lexer* lexer) {
         .type            = is_float ? NYA_TOKEN_NUMBER_FLOAT : NYA_TOKEN_NUMBER_INTEGER,
         .source_location = start_cursor,
         .length          = lexer->cursor - start_cursor,
+        .line_number     = start_line_number,
+        .char_number     = start_char_number,
+      };
+      nya_array_push_back(lexer->tokens, token);
+
+      continue;
+    }
+
+    // lex string literal
+    if (current_char == '"') {
+      u32 start_cursor      = lexer->cursor + 1;
+      u32 start_char_number = lexer->current_char_number;
+      u32 start_line_number = lexer->current_line_number;
+
+      lexer->cursor              += 1;
+      lexer->current_char_number += 1;
+
+      while (true) {
+        current_char = lexer->source[lexer->cursor];
+        if (current_char == '\0') break;
+        if (current_char == '\\' && lexer->source[lexer->cursor + 1] != '\0') {
+          lexer->cursor              += 2;
+          lexer->current_char_number += 2;
+          continue;
+        }
+        if (current_char == '"') {
+          lexer->cursor              += 1;
+          lexer->current_char_number += 1;
+          break;
+        }
+        if (current_char == '\n') {
+          lexer->cursor              += 1;
+          lexer->current_line_number += 1;
+          lexer->current_char_number  = 1;
+        } else {
+          lexer->cursor              += 1;
+          lexer->current_char_number += 1;
+        }
+      }
+
+      NYA_Token token = {
+        .type            = NYA_TOKEN_STRING,
+        .source_location = start_cursor,
+        .length          = lexer->cursor - start_cursor - (current_char == '"' ? 1 : 0),
         .line_number     = start_line_number,
         .char_number     = start_char_number,
       };

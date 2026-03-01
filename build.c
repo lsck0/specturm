@@ -3,7 +3,11 @@
 #include "nyangine/base/base_arena.c"
 #include "nyangine/base/base_args.c"
 #include "nyangine/base/base_build.c"
+#include "nyangine/base/base_crc.c"
+#include "nyangine/base/base_error.c"
 #include "nyangine/base/base_file.c"
+#include "nyangine/base/base_integrity.c"
+#include "nyangine/base/base_lexer.c"
 #include "nyangine/base/base_logging.c"
 #include "nyangine/base/base_perf.c"
 #include "nyangine/base/base_string.c"
@@ -36,25 +40,26 @@
 #define CC            "clang"
 #define CFLAGS        "-std=c23", "-ggdb", "-fenable-matrix", "-mavx", "-mavx2"
 #define WARNINGS      "-Wall", "-Wextra", "-Wstrict-prototypes", "-Wswitch-default", "-Wno-gnu", "-Wno-gcc-compat", "-Wno-initializer-overrides", "-Wno-keyword-macro"
-#define INCLUDE_PATHS "-I./src/", "-I./", "-I./vendor/sdl/include/"
-#define LINKER_FLAGS  "-lm", "-pthread", "-lSDL3"
+#define INCLUDE_PATHS "-I./", "-I./src/", "-I./vendor/sdl/include/"
+#define LINKER_FLAGS  "-lm", "-pthread"
 #define NPROCS        "16"
 
-#define FLAGS_DEBUG          "-DIS_DEBUG=true", "-DNYA_ASSET_BACKEND_FS", "-O0", "-fuse-ld=mold", "-rdynamic"
+#define FLAGS_DEBUG          "-DDEBUG=true", "-O0", "-fuse-ld=mold", "-rdynamic", "-DNYA_ASSET_BACKEND_FS"
 #define FLAGS_DLL            "-fPIC", "-shared"
 #define FLAGS_SANITIZE       "-fno-omit-frame-pointer", "-fno-optimize-sibling-calls", "-fno-sanitize-recover=all", "-fsanitize=address,leak,undefined,signed-integer-overflow,unsigned-integer-overflow,shift,float-cast-overflow,float-divide-by-zero,pointer-overflow"
-#define FLAGS_RELEASE        "-O3", "-fuse-ld=lld", "-flto", "-fPIE", "-DNYA_ASSET_BACKEND_BLOB", "-D_FORTIFY_SOURCE=2", "-fcf-protection=full", "-fstack-protector-strong", "-fno-omit-frame-pointer"
-#define FLAGS_WINDOWS_X86_64 "--target=x86_64-w64-mingw32", "-Wl,-subsystem,windows", "-static", "-L./vendor/sdl/build-window-x86_64/", "-lcomdlg32", "-ldxguid", "-lgdi32", "-limm32", "-lkernel32", "-lole32", "-loleaut32", "-lsetupapi", "-luser32", "-luuid", "-lversion", "-lwinmm"
-#define FLAGS_LINUX_X86_64   "-Wl,-rpath,$ORIGIN", "-L./vendor/sdl/build-linux-x86_64/"
+#define FLAGS_RELEASE        "-O3", "-flto", "-fPIE", "-fuse-ld=lld", "-DNYA_ASSET_BACKEND_BLOB", "-D_FORTIFY_SOURCE=2", "-fcf-protection=full", "-fstack-protector-strong", "-fno-omit-frame-pointer"
+#define FLAGS_WINDOWS_X86_64 "--target=x86_64-w64-mingw32", "-Wl,-subsystem,windows", "-static", "-L./vendor/sdl/build-window-x86_64/", "-lSDL3", "-lcomdlg32", "-ldxguid", "-lgdi32", "-limm32", "-lkernel32", "-lole32", "-loleaut32", "-lsetupapi", "-luser32", "-luuid", "-lversion", "-lwinmm"
+#define FLAGS_LINUX_X86_64   "-Wl,-rpath,$ORIGIN", "-L./vendor/sdl/build-linux-x86_64/", "-lSDL3"
 // clang-format on
 
 NYA_INTERNAL void hook_add_version_flag_and_git_hash(NYA_BuildRule* rule);
+NYA_INTERNAL void hook_remove_output_file(NYA_BuildRule* rule);
 NYA_INTERNAL void hook_bundle_project(NYA_BuildRule* rule);
 NYA_INTERNAL void hook_convert_perf_data_to_plain(NYA_BuildRule* rule);
-NYA_INTERNAL void hook_remove_output_file(NYA_BuildRule* rule);
 NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule);
 NYA_INTERNAL void hook_index_assets(NYA_BuildRule* rule);
 NYA_INTERNAL void hook_bundle_assets(NYA_BuildRule* rule);
+NYA_INTERNAL void hook_insert_integrity_hash(NYA_BuildRule* rule);
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -72,8 +77,8 @@ NYA_Command build_rebuild_command = {
         INCLUDE_PATHS,
         LINKER_FLAGS,
         FLAGS_DEBUG,
-        FLAGS_LINUX_X86_64,
         FLAGS_SANITIZE,
+        FLAGS_LINUX_X86_64,
     },
 };
 
@@ -222,8 +227,8 @@ NYA_BuildRule build_windows_icon = {
 NYA_BuildRule build_shaders = {
     .name            = "build_shaders",
     .is_metarule     = true,
-    .dependencies    = { &build_shadercross_linux_x86_64, },
     .pre_build_hooks = { &hook_compile_shaders, },
+    .dependencies    = { &build_shadercross_linux_x86_64, },
 };
 
 NYA_BuildRule index_assets = {
@@ -300,8 +305,9 @@ NYA_BuildRule build_project_debug = {
 };
 
 NYA_BuildRule build_project_linux_x86_64 = {
-    .name   = "build_project_linux_x86_64",
-    .policy = NYA_BUILD_ALWAYS,
+    .name        = "build_project_linux_x86_64",
+    .policy      = NYA_BUILD_ALWAYS,
+    .output_file = LINUX_X86_64_BINARY,
 
     .command = {
         .program   = CC,
@@ -317,13 +323,15 @@ NYA_BuildRule build_project_linux_x86_64 = {
         },
     },
 
-    .pre_build_hooks = { &hook_add_version_flag_and_git_hash, },
-    .dependencies    = { &build_linux_x64_64_sdl, &bundle_assets, &index_assets, },
+    .pre_build_hooks  = { &hook_add_version_flag_and_git_hash, },
+    .dependencies     = { &build_linux_x64_64_sdl, &bundle_assets, &index_assets, },
+    .post_build_hooks = { &hook_insert_integrity_hash, },
 };
 
 NYA_BuildRule build_project_windows_x86_64 = {
-    .name   = "build_project_windows_x86_64",
-    .policy = NYA_BUILD_ALWAYS,
+    .name        = "build_project_windows_x86_64",
+    .policy      = NYA_BUILD_ALWAYS,
+    .output_file = WINDOWS_X86_64_BINARY,
 
     .command = {
         .program   = CC,
@@ -340,23 +348,21 @@ NYA_BuildRule build_project_windows_x86_64 = {
         },
     },
 
-    .pre_build_hooks = { &hook_add_version_flag_and_git_hash, },
-    .dependencies    = { &build_windows_x86_64_sdl, &bundle_assets, &index_assets, },
+    .pre_build_hooks  = { &hook_add_version_flag_and_git_hash, },
+    .dependencies     = { &build_windows_x86_64_sdl, &bundle_assets, &index_assets, },
+    .post_build_hooks = { &hook_insert_integrity_hash, },
 };
 
 NYA_BuildRule build_project = {
     .name         = "build_project",
     .is_metarule  = true,
-    .dependencies = {
-        &build_project_linux_x86_64,
-        &build_project_windows_x86_64,
-    },
+    .dependencies = { &build_project_linux_x86_64, &build_project_windows_x86_64, },
 };
 
 NYA_BuildRule bundle_project = {
-    .name         = "bundle_project",
-    .is_metarule  = true,
-    .dependencies = { &build_project, },
+    .name             = "bundle_project",
+    .is_metarule      = true,
+    .dependencies     = { &build_project, },
     .post_build_hooks = { &hook_bundle_project, },
 };
 
@@ -398,8 +404,7 @@ NYA_BuildRule run_debug = {
         },
     },
 
-    .dependencies = { &build_project_debug, },
-
+    .dependencies     = { &build_project_debug, },
     .post_build_hooks = { &hook_convert_perf_data_to_plain, },
 };
 
@@ -491,7 +496,7 @@ NYA_INTERNAL void hook_add_version_flag_and_git_hash(NYA_BuildRule* rule) {
       .program   = "git",
       .arguments = { "rev-parse", "HEAD" },
     };
-    nya_command_run(&git_hash_command);
+    nya_expect(nya_command_run(&git_hash_command));
     nya_assert(git_hash_command.exit_code == 0, "Failed to get git commit hash.");
 
     nya_string_trim_whitespace(git_hash_command.stdout_content);
@@ -510,20 +515,11 @@ NYA_INTERNAL void hook_add_version_flag_and_git_hash(NYA_BuildRule* rule) {
   rule->command.arguments[length + 1] = VERSION_FLAG;
 }
 
-NYA_INTERNAL void hook_convert_perf_data_to_plain(NYA_BuildRule* rule) {
+NYA_INTERNAL void hook_remove_output_file(NYA_BuildRule* rule) {
   nya_assert(rule != nullptr);
+  nya_assert(rule->output_file);
 
-  NYA_Command convert_command = {
-    .arena     = nya_arena_global,
-    .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
-    .program   = "perf",
-    .arguments = { "script", "-i", "./perf.data" },
-  };
-  nya_command_run(&convert_command);
-  nya_assert(convert_command.exit_code == 0, "Failed to convert perf data to plain text.");
-
-  b8 ok = nya_file_write("./perf.data.txt", convert_command.stdout_content);
-  nya_assert(ok, "Failed to write perf data to text file.");
+  nya_expect(nya_filesystem_delete(rule->output_file));
 }
 
 // we just need to move everything into the right place
@@ -538,14 +534,14 @@ NYA_INTERNAL void hook_bundle_project(NYA_BuildRule* rule) {
     .program   = "rm",
     .arguments = { "-rf", dist_path },
   };
-  nya_command_run(&clean_dist_command);
+  nya_expect(nya_command_run(&clean_dist_command));
   nya_assert(clean_dist_command.exit_code == 0, "Failed to clean dist directory.");
 
   NYA_Command create_dirs_command = {
     .program   = "mkdir",
     .arguments = { "-p", linux_path, windows_path, },
   };
-  nya_command_run(&create_dirs_command);
+  nya_expect(nya_command_run(&create_dirs_command));
   nya_assert(create_dirs_command.exit_code == 0, "Failed to create dist directories.");
 
   // LINUX
@@ -554,15 +550,23 @@ NYA_INTERNAL void hook_bundle_project(NYA_BuildRule* rule) {
     .program   = "cp",
     .arguments = { LINUX_X86_64_BINARY, linux_path, },
   };
-  nya_command_run(&copy_linux_binary_command);
+  nya_expect(nya_command_run(&copy_linux_binary_command));
   nya_assert(copy_linux_binary_command.exit_code == 0, "Failed to copy linux binary.");
 
   NYA_Command copy_steam_sdk_linux_command = {
     .program   = "cp",
     .arguments = { "./vendor/steam/redistributable_bin/linux64/libsteam_api.so", linux_path, },
   };
-  nya_command_run(&copy_steam_sdk_linux_command);
+  nya_expect(nya_command_run(&copy_steam_sdk_linux_command));
   nya_assert(copy_steam_sdk_linux_command.exit_code == 0, "Failed to copy steam sdk for linux.");
+
+  NYA_Command zip_linux_command = {
+    .program           = "zip",
+    .arguments         = { "-r", "../" PROJECT_NAME "." VERSION ".linux-x86_64.zip", "." },
+    .working_directory = linux_path,
+  };
+  nya_expect(nya_command_run(&zip_linux_command));
+  nya_assert(zip_linux_command.exit_code == 0, "Failed to create linux zip.");
 
   // WINDOWS
 
@@ -570,37 +574,50 @@ NYA_INTERNAL void hook_bundle_project(NYA_BuildRule* rule) {
     .program   = "cp",
     .arguments = { WINDOWS_X86_64_BINARY, windows_path, },
   };
-  nya_command_run(&copy_windows_binary_command);
+  nya_expect(nya_command_run(&copy_windows_binary_command));
   nya_assert(copy_windows_binary_command.exit_code == 0, "Failed to copy windows binary.");
 
   NYA_Command copy_steam_sdk_windows_command = {
     .program   = "cp",
     .arguments = { "./vendor/steam/redistributable_bin/win64/steam_api64.dll", windows_path, },
   };
-  nya_command_run(&copy_steam_sdk_windows_command);
+  nya_expect(nya_command_run(&copy_steam_sdk_windows_command));
   nya_assert(copy_steam_sdk_windows_command.exit_code == 0, "Failed to copy steam sdk for windows.");
+
+  NYA_Command zip_windows_command = {
+    .program           = "zip",
+    .arguments         = { "-r", "../" PROJECT_NAME "." VERSION ".windows-x86_64.zip", "." },
+    .working_directory = windows_path,
+  };
+  nya_expect(nya_command_run(&zip_windows_command));
+  nya_assert(zip_windows_command.exit_code == 0, "Failed to create windows zip.");
 }
 
-NYA_INTERNAL void hook_remove_output_file(NYA_BuildRule* rule) {
+NYA_INTERNAL void hook_convert_perf_data_to_plain(NYA_BuildRule* rule) {
   nya_assert(rule != nullptr);
-  nya_assert(rule->output_file);
 
-  b8 ok = nya_filesystem_delete(rule->output_file);
-  nya_assert(ok, "Failed to remove output file: %s", rule->output_file);
+  NYA_Command convert_command = {
+    .arena     = nya_arena_global,
+    .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
+    .program   = "perf",
+    .arguments = { "script", "-i", "./perf.data" },
+  };
+  nya_expect(nya_command_run(&convert_command));
+  nya_assert(convert_command.exit_code == 0, "Failed to convert perf data to plain text.");
+
+  nya_expect(nya_file_write("./perf.data.txt", convert_command.stdout_content));
 }
 
 NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
   nya_assert(rule != nullptr);
 
-  b8 ok;
-
   NYA_Command find_source_shaders_command = {
     .arena     = nya_arena_global,
     .flags     = NYA_COMMAND_FLAG_OUTPUT_CAPTURE,
     .program   = "find",
-    .arguments = { "./assets/shaders/source/", "-name", "*.hlsl", },
+    .arguments = { "./assets/shader/source/", "-name", "*.hlsl", },
   };
-  nya_command_run(&find_source_shaders_command);
+  nya_expect(nya_command_run(&find_source_shaders_command));
   nya_assert(find_source_shaders_command.exit_code == 0, "Failed to find source shaders.");
   NYA_StringArray* shaders = nya_string_split_lines(nya_arena_global, find_source_shaders_command.stdout_content);
 
@@ -608,9 +625,9 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
     if (nya_string_is_empty(shader)) continue;
 
     NYA_CString source = nya_string_to_cstring(nya_arena_global, shader);
-    nya_string_strip_prefix(shader, "./assets/shaders/source/");
+    nya_string_strip_prefix(shader, "./assets/shader/source/");
     nya_string_strip_suffix(shader, ".hlsl");
-    nya_string_extend_front(shader, "./assets/shaders/compiled/");
+    nya_string_extend_front(shader, "./assets/shader/compiled/");
 
     nya_string_extend(shader, ".dxil");
     NYA_CString target_dxil = nya_string_to_cstring(nya_arena_global, shader);
@@ -628,10 +645,10 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
         .program   = "mkdir",
         .arguments = {
             "-p",
-            "./assets/shaders/compiled/",
+            "./assets/shader/compiled/",
         },
     };
-    nya_command_run(&create_dirs_command);
+    nya_expect(nya_command_run(&create_dirs_command));
     nya_assert(create_dirs_command.exit_code == 0, "Failed to create shader output directories.");
 
     // compile to DXIL
@@ -651,8 +668,7 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
             },
         },
     };
-    ok = nya_build(&compile_to_dxil_rule);
-    nya_assert(ok, "Failed to compile shader to DXIL: %s", source);
+    nya_expect(nya_build(&compile_to_dxil_rule));
 
     // compile to Metal
     NYA_String* compile_to_metal_name = nya_string_sprintf(nya_arena_global, "%s -> %s", source, target_metal);
@@ -671,8 +687,7 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
             },
         },
     };
-    ok = nya_build(&compile_to_metal_rule);
-    nya_assert(ok, "Failed to compile shader to Metal: %s", source);
+    nya_expect(nya_build(&compile_to_metal_rule));
 
     // compile to SPIR-V
     NYA_String* compile_to_spirv_name = nya_string_sprintf(nya_arena_global, "%s -> %s", source, target_spirv);
@@ -691,8 +706,7 @@ NYA_INTERNAL void hook_compile_shaders(NYA_BuildRule* rule) {
             },
         },
     };
-    ok = nya_build(&compile_to_spirv_rule);
-    nya_assert(ok, "Failed to compile shader to SPIR-V: %s", source);
+    nya_expect(nya_build(&compile_to_spirv_rule));
   }
 }
 
@@ -717,7 +731,7 @@ NYA_INTERNAL void hook_index_assets(NYA_BuildRule* rule) {
           "-not", "-name", ".keep",
       },
   };
-  nya_command_run(&find_assets_command);
+  nya_expect(nya_command_run(&find_assets_command));
   NYA_StringArray* files = nya_string_split_lines(arena, find_assets_command.stdout_content);
   nya_string_extend(result, "/* THIS FILE IS GENERATED. DO NYAT TOUCH. */\n\n");
   nya_string_extend(result, "#pragma once\n\n");
@@ -726,9 +740,15 @@ NYA_INTERNAL void hook_index_assets(NYA_BuildRule* rule) {
     if (nya_string_is_empty(file)) continue;
 
     // ignore compiled shaders, since they are then picked by the asset system depending on the platform
-    if (nya_string_contains(file, "/shaders/compiled/")) continue;
+    if (nya_string_contains(file, "/shader/compiled/")) continue;
 
     NYA_String* var_name = nya_string_clone(arena, file);
+
+    // strip unnecessary infomations
+    nya_string_replace(var_name, "shader/source", "shader");
+    nya_string_strip_suffix(var_name, ".hlsl");
+
+    // cleanup and convert to a valid C identifier
     nya_string_strip_prefix(var_name, "./");
     nya_string_replace(var_name, "/", "_");
     nya_string_replace(var_name, ".", "_");
@@ -736,19 +756,21 @@ NYA_INTERNAL void hook_index_assets(NYA_BuildRule* rule) {
     nya_string_replace(var_name, " ", "_");
     nya_string_to_upper(var_name);
 
-    NYA_String* declaration =
-        nya_string_sprintf(arena, "char* NYA_" NYA_FMT_STRING " = \"" NYA_FMT_STRING "\";\n", NYA_FMT_STRING_ARG(var_name), NYA_FMT_STRING_ARG(file));
-    nya_string_extend(result, declaration);
+    nya_string_extend_sprintf(
+        result,
+        "#define NYA_" NYA_FMT_STRING " \"" NYA_FMT_STRING "\"\n",
+        NYA_FMT_STRING_ARG(var_name),
+        NYA_FMT_STRING_ARG(file)
+    );
   }
 
-  b8 ok = nya_file_write(output_file, result);
-  nya_assert(ok);
+  nya_expect(nya_file_write(output_file, result));
 
   NYA_Command format_command = {
     .program   = "clang-format",
     .arguments = { "-i", output_file, },
   };
-  nya_command_run(&format_command);
+  nya_expect(nya_command_run(&format_command));
 }
 
 NYA_INTERNAL void hook_bundle_assets(NYA_BuildRule* rule) {
@@ -775,7 +797,7 @@ NYA_INTERNAL void hook_bundle_assets(NYA_BuildRule* rule) {
           "-not", "-name", ".keep",
       },
   };
-  nya_command_run(&find_assets_command);
+  nya_expect(nya_command_run(&find_assets_command));
   NYA_StringArray* files = nya_string_split_lines(arena, find_assets_command.stdout_content);
   nya_string_extend(result, "/* THIS FILE IS GENERATED. DO NYAT TOUCH. */\n\n");
   nya_string_extend(result, "#include \"nyangine/nyangine.h\"\n\n");
@@ -788,12 +810,9 @@ NYA_INTERNAL void hook_bundle_assets(NYA_BuildRule* rule) {
     if (nya_string_is_empty(file)) continue;
 
     NYA_String* content = nya_string_create(arena);
-    b8          ok      = nya_file_read(file, content);
-    nya_assert(ok);
+    nya_expect(nya_file_read(file, content));
 
-    NYA_String* header_element_string =
-        nya_string_sprintf(arena, "  { \"%.*s\", " FMTu64 ", " FMTu64 " },\n", NYA_FMT_STRING_ARG(file), cursor, content->length);
-    nya_string_extend(header_string, header_element_string);
+    nya_string_extend_sprintf(header_string, "  { \"%.*s\", " FMTu64 ", " FMTu64 " },\n", NYA_FMT_STRING_ARG(file), cursor, content->length);
 
     nya_array_foreach (content, c) {
       NYA_String* new = nya_string_sprintf(arena, "0x%02X,\n", *c);
@@ -809,14 +828,22 @@ NYA_INTERNAL void hook_bundle_assets(NYA_BuildRule* rule) {
   nya_string_extend(result, header_string);
   nya_string_extend(result, blob_string);
 
-  b8 ok = nya_file_write(output_file, result);
-  nya_assert(ok);
+  nya_expect(nya_file_write(output_file, result));
 
   NYA_Command format_command = {
     .program   = "clang-format",
     .arguments = { "-i", output_file, },
   };
-  nya_command_run(&format_command);
+  nya_expect(nya_command_run(&format_command));
+}
+
+NYA_INTERNAL void hook_insert_integrity_hash(NYA_BuildRule* rule) {
+  nya_assert(rule != nullptr);
+  nya_assert(rule->output_file != nullptr, "Output file must be specified to insert integrity hash.");
+
+  u64 integrity_hash;
+  b8  ok = nya_integrity_patch(rule->output_file, &integrity_hash);
+  nya_assert(ok, "Failed to insert integrity hash into binary.");
 }
 
 /*
@@ -838,7 +865,7 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
     .program   = "find",
     .arguments = { "./tests/", "-name", "*.c", },
   };
-  nya_command_run(&find_tests_command);
+  nya_expect(nya_command_run(&find_tests_command));
   NYA_StringArray* tests = nya_string_split_lines(nya_arena_global, find_tests_command.stdout_content);
 
   nya_array_foreach (tests, original_test) {
@@ -883,6 +910,7 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
         },
 
         .pre_build_hooks = { &hook_add_version_flag_and_git_hash, },
+        .dependencies    = { &build_linux_x64_64_sdl, },
     };
 
     NYA_String* run_test_name = nya_string_sprintf(nya_arena_global, "run_test:%s", test_binary);
@@ -905,8 +933,7 @@ NYA_INTERNAL void test_runner(NYA_ArgCommand* command) {
         .post_build_hooks  = { &hook_remove_output_file, },
     };
 
-    b8 ok = nya_build(&run_test_rule);
-    nya_assert(ok, "Failed to build and run test: %s", test_binary);
+    nya_expect(nya_build(&run_test_rule));
   }
 }
 
@@ -1061,8 +1088,15 @@ NYA_ArgParser parser = {
  */
 
 s32 main(s32 argc, NYA_CString* argv) {
-  parser.executable_name  = argv[0];
-  NYA_ArgCommand* command = nya_args_parse_argv(&parser, argc, argv);
+  parser.executable_name = argv[0];
+
+  NYA_ArgCommand* command;
+  NYA_Result      parse_result = nya_args_parse(&parser, argc, argv, &command);
+  if (parse_result.error != NYA_ERROR_NONE) {
+    (void)fprintf(stderr, "Error: %s\n\n", parse_result.message);
+    nya_args_print_usage(&parser, nullptr);
+    return EXIT_FAILURE;
+  }
 
   if (!skip_self_rebuild_flag.value.as_bool) nya_rebuild_yourself(&argc, argv, build_rebuild_command);
 
@@ -1071,7 +1105,9 @@ s32 main(s32 argc, NYA_CString* argv) {
     return EXIT_SUCCESS;
   }
 
-  if (!nya_args_run_command(command)) {
+  NYA_Result run_result = nya_args_run_command(command);
+  if (run_result.error != NYA_ERROR_NONE) {
+    (void)fprintf(stderr, "Error: %s\n\n", run_result.message);
     nya_args_print_usage(&parser, command);
     return EXIT_FAILURE;
   }

@@ -6,7 +6,7 @@
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-#if NYA_IS_DEBUG
+#if NYA_DEBUG
 NYA_INTERNAL NYA_LogLevel _nya_log_level_current = NYA_LOG_LEVEL_DEBUG;
 #else
 NYA_INTERNAL NYA_LogLevel _nya_log_level_current = NYA_LOG_LEVEL_INFO;
@@ -87,7 +87,7 @@ void _nya_log_message(NYA_LogLevel level, const char* function, const char* file
       if (prevent_crash) return;
     }
 
-    if (NYA_IS_DEBUG) __builtin_trap();
+    if (NYA_MODE_CURRENT == NYA_MODE_DEBUG) __builtin_trap();
     exit(EXIT_FAILURE);
   }
 }

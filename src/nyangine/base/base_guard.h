@@ -46,15 +46,10 @@
  * NYA_GUARDED_BY(nya_arena_destroy) NYA_Arena arena  = nya_arena_create();
  * NYA_String                                  buffer = nya_string_create(&arena);
  *
- * b8 ok;
+ * nya_try(nya_fd_read(source_fd, &buffer));
+ * nya_try(nya_fd_write(destination_fd, &buffer));
  *
- * ok = nya_fd_read(source_fd, &buffer);
- * if (!ok) return false;
- *
- * ok = nya_fd_write(destination_fd, &buffer);
- * if (!ok) return false;
- *
- * return true;
+ * return NYA_OK;
  * ```
  * */
 #define NYA_GUARDED_BY(cleanup_fn) __attr_cleanup(__cleanup_##cleanup_fn)

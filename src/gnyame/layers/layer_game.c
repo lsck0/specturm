@@ -1,32 +1,40 @@
 #include "gnyame/gnyame.h"
 
+u64 start_time;
+
 /*
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  * ON CREATE
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-void random_job_lol(NYA_Job* job) {
-  nya_info("Job ran: " FMTu64 "!", job->job_handle);
-}
+void gny_layer_game_on_create(NYA_Window* window) {
+  start_time = nya_clock_get_timestamp_ms();
 
-void gny_layer_game_on_create(void) {
   nya_asset_load((NYA_AssetLoadParameters){
       .type   = NYA_ASSET_TYPE_SHADER_VERTEX,
-      .handle = NYA_ASSETS_SHADERS_SOURCE_SAMPLE_VERT_HLSL,
+      .handle = NYA_ASSETS_SHADER_SAMPLE_VERT,
+      .as_shader = {
+          .num_uniform_buffers = 1,
+      },
   });
 
   nya_asset_load((NYA_AssetLoadParameters){
       .type   = NYA_ASSET_TYPE_SHADER_FRAGMENT,
-      .handle = NYA_ASSETS_SHADERS_SOURCE_SAMPLE_FRAG_HLSL,
+      .handle = NYA_ASSETS_SHADER_SAMPLE_FRAG,
+      .as_shader = {
+          .num_uniform_buffers = 1,
+      },
   });
 
-  nya_job_submit((NYA_Job){
-      .function = nya_callback(random_job_lol),
-  });
-
-  nya_job_submit((NYA_Job){
-      .function = nya_callback(random_job_lol),
+  nya_asset_load((NYA_AssetLoadParameters){
+      .type   = NYA_ASSET_TYPE_GRAPHICS_PIPELINE,
+      .handle = "sample_pipeline",
+      .as_graphics_pipeline = {
+          .window                 = window,
+          .vertex_shader_handle   = NYA_ASSETS_SHADER_SAMPLE_VERT,
+          .fragment_shader_handle = NYA_ASSETS_SHADER_SAMPLE_FRAG,
+      },
   });
 }
 
@@ -36,7 +44,8 @@ void gny_layer_game_on_create(void) {
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-void gny_layer_game_on_destroy(void) {
+void gny_layer_game_on_destroy(NYA_Window* window) {
+  nya_unused(window);
 }
 
 /*
@@ -57,25 +66,6 @@ void gny_layer_game_on_event(NYA_Window* window, NYA_Event* event) {
 
 void gny_layer_game_on_update(NYA_Window* window, f32 delta_time_s) {
   nya_unused(window, delta_time_s);
-
-  if (nya_input_key_just_pressed(NYA_KEY_A)) { nya_asset_release(NYA_ASSETS_TEXTS_HELLO_TXT); }
-
-  if (nya_input_key_just_pressed(NYA_KEY_B)) {
-    nya_asset_load((NYA_AssetLoadParameters){
-        .type   = NYA_ASSET_TYPE_TEXT,
-        .handle = NYA_ASSETS_TEXTS_HELLO_TXT,
-    });
-    nya_asset_acquire(NYA_ASSETS_TEXTS_HELLO_TXT);
-  }
-
-  NYA_Asset* hello_txt_asset = nya_asset_get(NYA_ASSETS_TEXTS_HELLO_TXT);
-  nya_asset_with(hello_txt_asset) {
-    nya_info("hello.txt: %.*s", (s32)hello_txt_asset->as_text.size, (char*)hello_txt_asset->as_text.data);
-  }
-
-  NYA_Asset* vertex_shader_asset   = nya_asset_get(NYA_ASSETS_SHADERS_SOURCE_SAMPLE_VERT_HLSL);
-  NYA_Asset* fragment_shader_asset = nya_asset_get(NYA_ASSETS_SHADERS_SOURCE_SAMPLE_FRAG_HLSL);
-  nya_unused(vertex_shader_asset, fragment_shader_asset);
 }
 
 /*
@@ -85,5 +75,15 @@ void gny_layer_game_on_update(NYA_Window* window, f32 delta_time_s) {
  */
 
 void gny_layer_game_on_render(NYA_Window* window) {
-  nya_unused(window);
+
+  NYA_Asset* gp_asset = nya_asset_get("sample_pipeline");
+  nya_asset_with(gp_asset) {
+    SDL_BindGPUGraphicsPipeline(window->render_system.render_pass, gp_asset->as_graphics_pipeline.pipeline);
+
+    f32 now = (f32)nya_time_ms_to_s(nya_clock_get_timestamp_ms() - start_time);
+    SDL_PushGPUVertexUniformData(window->render_system.render_commands, 0, &now, sizeof(now));
+    SDL_PushGPUFragmentUniformData(window->render_system.render_commands, 0, &now, sizeof(now));
+
+    SDL_DrawGPUPrimitives(window->render_system.render_pass, 3, 1, 0, 0);
+  }
 }

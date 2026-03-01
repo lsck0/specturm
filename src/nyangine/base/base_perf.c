@@ -91,21 +91,21 @@ NYA_PerfMeasurementArray* _nya_perf_timer_get_all(void) {
  * ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  */
 
-#if NYA_IS_DEBUG
+#if NYA_DEBUG
 __attr_constructor NYA_INTERNAL void _nya_perf_init(void) {
   nya_assert(_nya_perf_measurements == nullptr);
 
   _nya_perf_arena        = nya_arena_create(.name = "Perf Arena");
   _nya_perf_measurements = nya_array_create(_nya_perf_arena, NYA_PerfMeasurement);
 
-  _nya_perf_start_time_ns = nya_clock_get_timestamp_ms();
+  _nya_perf_start_time_ns = nya_clock_get_timestamp_ns();
   _nya_perf_start_cycles  = __rdtsc();
 }
 
 __attr_destructor NYA_INTERNAL void _nya_perf_shutdown(void) {
   nya_arena_destroy(_nya_perf_arena);
 }
-#endif // NYA_IS_DEBUG
+#endif // NYA_DEBUG
 
 NYA_INTERNAL u64 _nya_perf_time_since_start_ns(void) {
   return nya_clock_get_timestamp_ns() - _nya_perf_start_time_ns;

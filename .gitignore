@@ -1,6 +1,6 @@
 assets/assets.c
 assets/icon/icon.res
-assets/shaders/compiled/
+assets/shader/compiled/
 dist/
 docs/doxygen/
 
